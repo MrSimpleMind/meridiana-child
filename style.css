@@ -1,0 +1,24 @@
+/*
+Theme Name: Meridiana Child
+Theme URI: https://cooperativameridiana.it
+Description: Child theme per piattaforma formazione Cooperativa La Meridiana - Tema base: Blocksy (Free). Include design system personalizzato, gestione documentazione, corsi LearnDash, analytics visualizzazione documenti, membership custom e PWA.
+Author: Sviluppo Custom
+Author URI: https://cooperativameridiana.it
+Template: blocksy
+Version: 1.0.0
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: meridiana-child
+Tags: education, lms, corporate, custom-colors, custom-menu, featured-images, threaded-comments, translation-ready
+*/
+
+/* 
+ * NOTA: Il CSS effettivo è compilato in assets/css/dist/main.min.css
+ * Questo file contiene solo l'header del tema per WordPress.
+ * 
+ * Design System basato su:
+ * - Mobile-first approach
+ * - WCAG 2.1 AA compliant
+ * - Performance-optimized
+ * - Colori brand Cooperativa La Meridiana
+ */
