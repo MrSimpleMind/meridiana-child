@@ -116,8 +116,7 @@ require_once MERIDIANA_CHILD_DIR . '/includes/user-roles.php';
 
 // Membership logic (forza login globale)
 require_once MERIDIANA_CHILD_DIR . '/includes/membership.php';
-
-// Analytics tracking system
+require_once MERIDIANA_CHILD_DIR . '/includes/design-system-demo.php';
 // require_once MERIDIANA_CHILD_DIR . '/includes/analytics.php';
 
 // Notifiche (OneSignal + Brevo)
@@ -347,3 +346,6 @@ add_action('after_switch_theme', 'meridiana_theme_activation');
  * 
  * =====================================================================
  */
+
+
+

@@ -172,7 +172,12 @@
         border-radius: calc($width / 2);
         
         &:hover {
-            background: darken($thumb-color, 10%);
+            background: $thumb-color;
+            background: color-mix(in srgb, #{$thumb-color}, black 10%);
         }
     }
 }
+
+
+
+
