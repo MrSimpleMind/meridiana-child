@@ -1,0 +1,205 @@
+/**
+ * Grid & Layout System
+ * Piattaforma Formazione Cooperativa La Meridiana
+ */
+
+// ========================================
+// CONTAINER
+// ========================================
+
+.container {
+    width: 100%;
+    max-width: 1400px;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    
+    @include md {
+        padding-left: var(--space-6);
+        padding-right: var(--space-6);
+    }
+    
+    @include lg {
+        padding-left: var(--space-8);
+        padding-right: var(--space-8);
+    }
+}
+
+.container-fluid {
+    width: 100%;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+    
+    @include md {
+        padding-left: var(--space-6);
+        padding-right: var(--space-6);
+    }
+}
+
+.container-narrow {
+    max-width: 900px;
+}
+
+// ========================================
+// FLEXBOX GRID
+// ========================================
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: calc(var(--space-4) * -1);
+    margin-right: calc(var(--space-4) * -1);
+}
+
+.col {
+    flex: 1 0 0%;
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
+}
+
+// Column widths
+.col-1 { flex: 0 0 auto; width: 8.333333%; }
+.col-2 { flex: 0 0 auto; width: 16.666667%; }
+.col-3 { flex: 0 0 auto; width: 25%; }
+.col-4 { flex: 0 0 auto; width: 33.333333%; }
+.col-5 { flex: 0 0 auto; width: 41.666667%; }
+.col-6 { flex: 0 0 auto; width: 50%; }
+.col-7 { flex: 0 0 auto; width: 58.333333%; }
+.col-8 { flex: 0 0 auto; width: 66.666667%; }
+.col-9 { flex: 0 0 auto; width: 75%; }
+.col-10 { flex: 0 0 auto; width: 83.333333%; }
+.col-11 { flex: 0 0 auto; width: 91.666667%; }
+.col-12 { flex: 0 0 auto; width: 100%; }
+
+// Responsive columns
+@include md {
+    .col-md-1 { flex: 0 0 auto; width: 8.333333%; }
+    .col-md-2 { flex: 0 0 auto; width: 16.666667%; }
+    .col-md-3 { flex: 0 0 auto; width: 25%; }
+    .col-md-4 { flex: 0 0 auto; width: 33.333333%; }
+    .col-md-5 { flex: 0 0 auto; width: 41.666667%; }
+    .col-md-6 { flex: 0 0 auto; width: 50%; }
+    .col-md-7 { flex: 0 0 auto; width: 58.333333%; }
+    .col-md-8 { flex: 0 0 auto; width: 66.666667%; }
+    .col-md-9 { flex: 0 0 auto; width: 75%; }
+    .col-md-10 { flex: 0 0 auto; width: 83.333333%; }
+    .col-md-11 { flex: 0 0 auto; width: 91.666667%; }
+    .col-md-12 { flex: 0 0 auto; width: 100%; }
+}
+
+@include lg {
+    .col-lg-1 { flex: 0 0 auto; width: 8.333333%; }
+    .col-lg-2 { flex: 0 0 auto; width: 16.666667%; }
+    .col-lg-3 { flex: 0 0 auto; width: 25%; }
+    .col-lg-4 { flex: 0 0 auto; width: 33.333333%; }
+    .col-lg-5 { flex: 0 0 auto; width: 41.666667%; }
+    .col-lg-6 { flex: 0 0 auto; width: 50%; }
+    .col-lg-7 { flex: 0 0 auto; width: 58.333333%; }
+    .col-lg-8 { flex: 0 0 auto; width: 66.666667%; }
+    .col-lg-9 { flex: 0 0 auto; width: 75%; }
+    .col-lg-10 { flex: 0 0 auto; width: 83.333333%; }
+    .col-lg-11 { flex: 0 0 auto; width: 91.666667%; }
+    .col-lg-12 { flex: 0 0 auto; width: 100%; }
+}
+
+// ========================================
+// CSS GRID
+// ========================================
+
+.grid {
+    display: grid;
+    gap: var(--space-4);
+}
+
+.grid-cols-1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+
+@include md {
+    .grid-cols-md-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .grid-cols-md-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-cols-md-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
+@include lg {
+    .grid-cols-lg-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+    .grid-cols-lg-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+    .grid-cols-lg-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+}
+
+// Gap utilities
+.gap-0 { gap: 0; }
+.gap-1 { gap: var(--space-1); }
+.gap-2 { gap: var(--space-2); }
+.gap-3 { gap: var(--space-3); }
+.gap-4 { gap: var(--space-4); }
+.gap-5 { gap: var(--space-5); }
+.gap-6 { gap: var(--space-6); }
+.gap-8 { gap: var(--space-8); }
+
+// ========================================
+// FLEXBOX UTILITIES
+// ========================================
+
+.flex { display: flex; }
+.inline-flex { display: inline-flex; }
+
+// Flex direction
+.flex-row { flex-direction: row; }
+.flex-col { flex-direction: column; }
+.flex-row-reverse { flex-direction: row-reverse; }
+.flex-col-reverse { flex-direction: column-reverse; }
+
+// Flex wrap
+.flex-wrap { flex-wrap: wrap; }
+.flex-nowrap { flex-wrap: nowrap; }
+
+// Justify content
+.justify-start { justify-content: flex-start; }
+.justify-end { justify-content: flex-end; }
+.justify-center { justify-content: center; }
+.justify-between { justify-content: space-between; }
+.justify-around { justify-content: space-around; }
+.justify-evenly { justify-content: space-evenly; }
+
+// Align items
+.items-start { align-items: flex-start; }
+.items-end { align-items: flex-end; }
+.items-center { align-items: center; }
+.items-baseline { align-items: baseline; }
+.items-stretch { align-items: stretch; }
+
+// Align self
+.self-start { align-self: flex-start; }
+.self-end { align-self: flex-end; }
+.self-center { align-self: center; }
+.self-stretch { align-self: stretch; }
+
+// Flex grow/shrink
+.flex-1 { flex: 1 1 0%; }
+.flex-auto { flex: 1 1 auto; }
+.flex-initial { flex: 0 1 auto; }
+.flex-none { flex: none; }
+
+// ========================================
+// DISPLAY UTILITIES
+// ========================================
+
+.block { display: block; }
+.inline-block { display: inline-block; }
+.inline { display: inline; }
+.hidden { display: none; }
+
+@include md {
+    .md\:block { display: block; }
+    .md\:inline-block { display: inline-block; }
+    .md\:hidden { display: none; }
+}
+
+@include lg {
+    .lg\:block { display: block; }
+    .lg\:inline-block { display: inline-block; }
+    .lg\:hidden { display: none; }
+}

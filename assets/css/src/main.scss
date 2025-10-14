@@ -1,0 +1,151 @@
+/**
+ * Main SCSS Entry Point
+ * Piattaforma Formazione Cooperativa La Meridiana
+ * 
+ * Questo file viene compilato in: assets/css/dist/main.min.css
+ * 
+ * COMANDI:
+ * - npm run watch    → Sviluppo (watch mode)
+ * - npm run build    → Production (minified)
+ */
+
+// ========================================
+// 1. VARIABILI & CONFIGURAZIONE
+// ========================================
+
+@import 'variables';
+@import 'mixins';
+
+// ========================================
+// 2. RESET & BASE
+// ========================================
+
+@import 'reset';
+
+// ========================================
+// 3. BASE STYLES
+// ========================================
+
+@import 'base/typography';
+@import 'base/grid';
+@import 'base/utilities';
+
+// ========================================
+// 4. COMPONENTI UI
+// ========================================
+
+@import 'components/buttons';
+@import 'components/cards';
+@import 'components/badges';
+@import 'components/forms';
+@import 'components/tables';
+
+// ========================================
+// 5. LAYOUT
+// (Da implementare nelle fasi successive)
+// ========================================
+
+// @import 'layout/header';
+// @import 'layout/footer';
+// @import 'layout/navigation';
+// @import 'layout/sidebar';
+
+// ========================================
+// 6. PAGINE SPECIFICHE
+// (Da implementare nelle fasi successive)
+// ========================================
+
+// @import 'pages/home';
+// @import 'pages/documentazione';
+// @import 'pages/corsi';
+// @import 'pages/analytics';
+
+// ========================================
+// 7. OVERRIDES BLOCKSY
+// ========================================
+
+// Override stili parent theme dove necessario
+body {
+    background-color: var(--color-bg-tertiary);
+}
+
+// Forza colore primario Blocksy
+:root {
+    --theme-palette-color-1: #{$color-primary};
+    --theme-palette-color-1-hover: #{$color-primary-dark};
+}
+
+// ========================================
+// 8. UTILITY CLASSES EXTRA
+// ========================================
+
+// Spaziature custom per layout specifici
+.page-wrapper {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.main-content {
+    flex: 1;
+    padding-top: var(--space-6);
+    padding-bottom: var(--space-8);
+    
+    @include md {
+        padding-top: var(--space-8);
+        padding-bottom: var(--space-12);
+    }
+}
+
+// Bottom navigation spacing (mobile)
+@media (max-width: 768px) {
+    body.has-bottom-nav {
+        padding-bottom: 70px; // Spazio per bottom nav fixed
+    }
+}
+
+// ========================================
+// 9. PRINT STYLES
+// ========================================
+
+@media print {
+    .btn,
+    .bottom-nav,
+    .mobile-menu,
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background-color: white;
+    }
+    
+    .table {
+        box-shadow: none;
+    }
+}
+
+// ========================================
+// 10. ACCESSIBILITY
+// ========================================
+
+// Focus visible per keyboard navigation
+:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+}
+
+// Riduci animazioni per chi ha preferenze
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+// ========================================
+// FINE MAIN.SCSS
+// ========================================

@@ -1,0 +1,323 @@
+/**
+ * Tables Component
+ * Piattaforma Formazione Cooperativa La Meridiana
+ */
+
+// ========================================
+// BASE TABLE
+// ========================================
+
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+    
+    thead {
+        background-color: var(--color-bg-secondary);
+        
+        th {
+            padding: 16px 20px;
+            text-align: left;
+            font-weight: var(--font-weight-semibold);
+            font-size: var(--font-size-sm);
+            color: var(--color-text-primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 2px solid var(--color-border);
+        }
+    }
+    
+    tbody {
+        tr {
+            border-bottom: 1px solid var(--color-border-light);
+            transition: background-color 0.2s ease;
+            
+            &:hover {
+                background-color: var(--color-bg-hover);
+            }
+            
+            &:last-child {
+                border-bottom: none;
+            }
+        }
+        
+        td {
+            padding: 16px 20px;
+            font-size: var(--font-size-sm);
+            color: var(--color-text-primary);
+            vertical-align: middle;
+        }
+    }
+    
+    // Tabella clickable rows
+    &.table-clickable {
+        tbody tr {
+            cursor: pointer;
+            
+            &:active {
+                background-color: var(--color-bg-secondary);
+            }
+        }
+    }
+}
+
+// ========================================
+// TABLE VARIANTS
+// ========================================
+
+.table-striped {
+    tbody tr:nth-child(even) {
+        background-color: var(--color-bg-quaternary);
+    }
+}
+
+.table-bordered {
+    border: 1px solid var(--color-border);
+    
+    th, td {
+        border: 1px solid var(--color-border-light);
+    }
+}
+
+.table-compact {
+    thead th {
+        padding: 12px 16px;
+    }
+    
+    tbody td {
+        padding: 12px 16px;
+    }
+}
+
+// ========================================
+// TABLE RESPONSIVE
+// ========================================
+
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    @include custom-scrollbar;
+    
+    @media (max-width: 768px) {
+        .table {
+            display: block;
+            
+            thead {
+                display: none;
+            }
+            
+            tbody {
+                display: block;
+            }
+            
+            tr {
+                display: block;
+                margin-bottom: var(--space-4);
+                border: 1px solid var(--color-border);
+                border-radius: var(--radius-md);
+                padding: var(--space-3);
+                
+                &:hover {
+                    background-color: var(--color-bg-primary);
+                }
+            }
+            
+            td {
+                display: block;
+                padding: var(--space-2) 0;
+                position: relative;
+                padding-left: 40%;
+                text-align: left;
+                border: none;
+                
+                &::before {
+                    content: attr(data-label);
+                    position: absolute;
+                    left: 0;
+                    font-weight: var(--font-weight-semibold);
+                    color: var(--color-text-secondary);
+                    font-size: var(--font-size-xs);
+                    text-transform: uppercase;
+                    letter-spacing: 0.5px;
+                }
+                
+                &:first-child {
+                    padding-top: 0;
+                }
+                
+                &:last-child {
+                    padding-bottom: 0;
+                }
+            }
+        }
+    }
+}
+
+// ========================================
+// TABLE CELL ALIGNMENT
+// ========================================
+
+.table {
+    th, td {
+        &.text-center {
+            text-align: center;
+        }
+        
+        &.text-right {
+            text-align: right;
+        }
+    }
+}
+
+// ========================================
+// TABLE WITH ACTIONS
+// ========================================
+
+.table-actions {
+    display: flex;
+    gap: var(--space-2);
+    justify-content: flex-end;
+    
+    .btn {
+        padding: var(--space-1) var(--space-3);
+        font-size: var(--font-size-xs);
+        min-height: auto;
+    }
+}
+
+// ========================================
+// TABLE SORTING
+// ========================================
+
+.table-sortable {
+    thead th {
+        cursor: pointer;
+        position: relative;
+        padding-right: 32px;
+        user-select: none;
+        
+        &::after {
+            content: '';
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-left: 4px solid transparent;
+            border-right: 4px solid transparent;
+            border-top: 6px solid var(--color-text-muted);
+            opacity: 0.3;
+            transition: all 0.2s ease;
+        }
+        
+        &:hover::after {
+            opacity: 0.6;
+        }
+        
+        &.sort-asc::after {
+            border-top: 0;
+            border-bottom: 6px solid var(--color-primary);
+            opacity: 1;
+        }
+        
+        &.sort-desc::after {
+            border-top: 6px solid var(--color-primary);
+            opacity: 1;
+        }
+    }
+}
+
+// ========================================
+// TABLE STATUS CELLS
+// ========================================
+
+.table-status {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        
+        &.status-active {
+            background-color: var(--color-success);
+        }
+        
+        &.status-pending {
+            background-color: var(--color-warning);
+        }
+        
+        &.status-inactive {
+            background-color: var(--color-text-muted);
+        }
+        
+        &.status-error {
+            background-color: var(--color-error);
+        }
+    }
+}
+
+// ========================================
+// TABLE EMPTY STATE
+// ========================================
+
+.table-empty {
+    padding: var(--space-8) var(--space-4);
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: var(--font-size-sm);
+    
+    i, svg {
+        width: 48px;
+        height: 48px;
+        margin-bottom: var(--space-4);
+        color: var(--color-text-muted);
+        opacity: 0.5;
+    }
+}
+
+// ========================================
+// TABLE PAGINATION
+// ========================================
+
+.table-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: var(--space-4);
+    border-top: 1px solid var(--color-border);
+    
+    .pagination-info {
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    .pagination-buttons {
+        display: flex;
+        gap: var(--space-2);
+    }
+}
+
+// ========================================
+// TABLE FILTERS
+// ========================================
+
+.table-filters {
+    display: flex;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background-color: var(--color-bg-secondary);
+    border-bottom: 1px solid var(--color-border);
+    flex-wrap: wrap;
+    
+    @media (max-width: 768px) {
+        flex-direction: column;
+    }
+}

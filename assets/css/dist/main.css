@@ -1,0 +1,19 @@
+/* Error: $color: var(--color-border-input) is not a color.
+ *     ,
+ * 175 |             background: darken($thumb-color, 10%);
+ *     |                         ^^^^^^^^^^^^^^^^^^^^^^^^^
+ *     '
+ *   assets\css\src\_mixins.scss 175:25            custom-scrollbar()
+ *   assets\css\src\components\_tables.scss 102:5  @import
+ *   assets\css\src\main.scss 41:9                 root stylesheet */
+
+body::before {
+  font-family: "Source Code Pro", "SF Mono", Monaco, Inconsolata, "Fira Mono",
+      "Droid Sans Mono", monospace, monospace;
+  white-space: pre;
+  display: block;
+  padding: 1em;
+  margin-bottom: 1em;
+  border-bottom: 2px solid black;
+  content: "Error: $color: var(--color-border-input) is not a color.\a     \2577 \a 175 \2502              background: darken($thumb-color, 10%);\a     \2502                          ^^^^^^^^^^^^^^^^^^^^^^^^^\a     \2575 \a   assets\\css\\src\\_mixins.scss 175:25            custom-scrollbar()\a   assets\\css\\src\\components\\_tables.scss 102:5  @import\a   assets\\css\\src\\main.scss 41:9                 root stylesheet";
+}

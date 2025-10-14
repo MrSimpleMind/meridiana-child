@@ -1,0 +1,211 @@
+/**
+ * CSS Reset - Modern Normalize
+ * Piattaforma Formazione Cooperativa La Meridiana
+ * 
+ * Reset minimalista per consistenza cross-browser
+ */
+
+// ========================================
+// BOX SIZING
+// ========================================
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
+
+// ========================================
+// ROOT & BODY
+// ========================================
+
+html {
+    font-size: 16px;
+    -webkit-text-size-adjust: 100%;
+    -moz-tab-size: 4;
+    tab-size: 4;
+}
+
+body {
+    margin: 0;
+    font-family: var(--font-family-base);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-normal);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-tertiary);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+// ========================================
+// HEADINGS
+// ========================================
+
+h1, h2, h3, h4, h5, h6 {
+    margin: 0 0 var(--space-4) 0;
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-text-primary);
+}
+
+// ========================================
+// TEXT ELEMENTS
+// ========================================
+
+p {
+    margin: 0 0 var(--space-4) 0;
+}
+
+a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: color 0.2s ease;
+    
+    &:hover {
+        color: var(--color-primary-dark);
+        text-decoration: underline;
+    }
+    
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+    }
+}
+
+strong, b {
+    font-weight: var(--font-weight-bold);
+}
+
+em, i {
+    font-style: italic;
+}
+
+small {
+    font-size: var(--font-size-sm);
+}
+
+// ========================================
+// LISTS
+// ========================================
+
+ul, ol {
+    margin: 0 0 var(--space-4) 0;
+    padding-left: var(--space-6);
+}
+
+li {
+    margin-bottom: var(--space-2);
+}
+
+// ========================================
+// IMAGES & MEDIA
+// ========================================
+
+img, 
+picture, 
+video, 
+canvas, 
+svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+}
+
+// ========================================
+// FORMS
+// ========================================
+
+button, 
+input, 
+optgroup, 
+select, 
+textarea {
+    font-family: inherit;
+    font-size: 100%;
+    line-height: inherit;
+    margin: 0;
+}
+
+button,
+select {
+    text-transform: none;
+}
+
+button,
+[type='button'],
+[type='reset'],
+[type='submit'] {
+    -webkit-appearance: button;
+    cursor: pointer;
+}
+
+button:disabled,
+[disabled] {
+    cursor: not-allowed;
+}
+
+// Remove default button styles
+button {
+    background: none;
+    border: none;
+    padding: 0;
+}
+
+// ========================================
+// TABLES
+// ========================================
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+// ========================================
+// HR
+// ========================================
+
+hr {
+    border: 0;
+    border-top: 1px solid var(--color-border);
+    margin: var(--space-6) 0;
+}
+
+// ========================================
+// MISC
+// ========================================
+
+// Remove default fieldset styles
+fieldset {
+    margin: 0;
+    padding: 0;
+    border: 0;
+}
+
+// Remove default legend styles
+legend {
+    padding: 0;
+}
+
+// Accessibility: Skip to content link
+.skip-to-content {
+    @include visually-hidden;
+    
+    &:focus {
+        position: fixed;
+        top: var(--space-2);
+        left: var(--space-2);
+        z-index: var(--z-notification);
+        padding: var(--space-3) var(--space-6);
+        background-color: var(--color-primary);
+        color: white;
+        border-radius: var(--radius-md);
+        box-shadow: var(--shadow-lg);
+        clip: auto;
+        width: auto;
+        height: auto;
+        overflow: visible;
+        white-space: normal;
+    }
+}

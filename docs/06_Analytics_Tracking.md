@@ -63,6 +63,110 @@ register_activation_hook(__FILE__, 'crea_tabella_analytics');
 - ✅ **Report**: Aggregazioni SQL native
 - ❌ wp_postmeta esploderebbe e rallenterebbe
 
+### Scalabilità a Lungo Termine
+
+**Stima crescita dati:**
+- 300 utenti × 200 documenti × 5 visualizzazioni media = **300.000 record/anno**
+- Dopo 3 anni: **~900.000 record**
+
+**Strategie di scalabilità:**
+
+#### 1. Archiving Record Vecchi
+
+```php
+// includes/analytics.php
+
+function archiving_analytics_vecchi() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'document_views';
+    $archive_table = $wpdb->prefix . 'document_views_archive';
+    
+    // Crea tabella archive se non esiste
+    $wpdb->query("CREATE TABLE IF NOT EXISTS $archive_table LIKE $table");
+    
+    // Sposta record più vecchi di 2 anni in archive
+    $date_threshold = date('Y-m-d', strtotime('-2 years'));
+    
+    $wpdb->query($wpdb->prepare(
+        "INSERT INTO $archive_table SELECT * FROM $table WHERE view_timestamp < %s",
+        $date_threshold
+    ));
+    
+    $deleted = $wpdb->query($wpdb->prepare(
+        "DELETE FROM $table WHERE view_timestamp < %s",
+        $date_threshold
+    ));
+    
+    error_log("Analytics archiving: {$deleted} record spostati in archive");
+}
+
+// Cron job trimestrale
+if (!wp_next_scheduled('archiving_analytics')) {
+    wp_schedule_event(time(), 'monthly', 'archiving_analytics');
+}
+add_action('archiving_analytics', 'archiving_analytics_vecchi');
+```
+
+#### 2. Database Partitioning (Se >1M Record)
+
+```sql
+-- Solo se necessario dopo ~3 anni di utilizzo
+-- Eseguire via phpMyAdmin o wp-cli
+
+ALTER TABLE wp_document_views 
+PARTITION BY RANGE (YEAR(view_timestamp)) (
+    PARTITION p2025 VALUES LESS THAN (2026),
+    PARTITION p2026 VALUES LESS THAN (2027),
+    PARTITION p2027 VALUES LESS THAN (2028),
+    PARTITION p_future VALUES LESS THAN MAXVALUE
+);
+```
+
+**Benefici partitioning:**
+- Query su anno corrente: solo 1 partizione scannerizzata
+- Performance queries: 5-10x più veloci
+- Manutenzione facilitata (drop vecchie partizioni)
+
+#### 3. Monitoring Dimensione Tabella
+
+```php
+// Dashboard widget per admin
+function analytics_table_size_widget() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'document_views';
+    
+    $size = $wpdb->get_var("SELECT 
+        ROUND((DATA_LENGTH + INDEX_LENGTH) / 1024 / 1024, 2) AS size_mb
+        FROM information_schema.TABLES 
+        WHERE TABLE_SCHEMA = DATABASE() 
+        AND TABLE_NAME = '$table'"
+    );
+    
+    $count = $wpdb->get_var("SELECT COUNT(*) FROM $table");
+    
+    echo "<div class='analytics-size-widget'>";
+    echo "<h3>Analytics Database</h3>";
+    echo "<p>Record: " . number_format($count) . "</p>";
+    echo "<p>Dimensione: {$size} MB</p>";
+    
+    if ($size > 100) {
+        echo "<p style='color:orange;'>⚠️ Considera archiving dei vecchi record</p>";
+    }
+    
+    if ($size > 500) {
+        echo "<p style='color:red;'>🚨 Implementa partitioning urgente</p>";
+    }
+    
+    echo "</div>";
+}
+```
+
+**Quando intervenire:**
+- **< 50 MB**: Tutto ok, nessuna azione
+- **50-100 MB**: Pianifica archiving entro 6 mesi
+- **> 100 MB**: Attiva archiving automatico
+- **> 500 MB**: Implementa partitioning
+
 ---
 
 ## 📡 REST API Endpoints

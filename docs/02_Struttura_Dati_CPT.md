@@ -17,7 +17,7 @@
 3. **Convenzione** - Convenzioni aziendali per dipendenti
 4. **Organigramma** - Rubrica figure apicali
 5. **Salute e Benessere** - Contenuti welfare
-6. **Comunicazione** - News aziendali (post classici)
+6. **Comunicazioni** - Post standard WordPress (no CPT custom)
 7. **Corsi** - LearnDash (gestito da plugin)
 
 ---
@@ -576,48 +576,58 @@ acf_add_local_field_group(array(
 
 ---
 
-## 📢 CPT: COMUNICAZIONE
+## 📢 COMUNICAZIONI (Post Standard)
 
 ### Descrizione
-News e comunicazioni aziendali (usa post classici WordPress).
+Le comunicazioni aziendali utilizzano **post standard di WordPress** senza custom field o CPT aggiuntivi.
 
-**Nota**: Non richiede CPT custom, usa `post` standard.
+### Campi Disponibili (Nativi WordPress)
+- **Titolo** - Oggetto della comunicazione
+- **Editor** - Contenuto completo (supporta formattazione, link, elenchi)
+- **Immagine in evidenza** - Immagine copertina
+- **Categorie** - Per organizzare le comunicazioni (es. "HR", "Sicurezza", "Welfare")
+- **Data pubblicazione** - Timestamp automatico
+- **Autore** - Chi ha pubblicato
 
-### Custom Fields (ACF) - Opzionale
-
-Se serve, puoi aggiungere:
-- Priorità (alta/media/bassa)
-- Data scadenza visualizzazione
-- Target utenti (per ruolo/UDO)
+### Configurazione Categorie Suggerite
 
 ```php
-acf_add_local_field_group(array(
-    'key' => 'group_comunicazione',
-    'title' => 'Opzioni Comunicazione',
-    'fields' => array(
-        array(
-            'key' => 'field_priorita',
-            'label' => 'Priorità',
-            'name' => 'priorita',
-            'type' => 'select',
-            'choices' => array(
-                'normale' => 'Normale',
-                'importante' => 'Importante',
-                'urgente' => 'Urgente',
-            ),
-            'default_value' => 'normale',
-        ),
-    ),
-    'location' => array(
-        array(
-            array(
-                'param' => 'post_type',
-                'operator' => '==',
-                'value' => 'post',
-            ),
-        ),
-    ),
-));
+// includes/taxonomies.php
+
+function crea_categorie_comunicazioni() {
+    $categorie = array(
+        'HR e Risorse Umane',
+        'Sicurezza',
+        'Welfare',
+        'Procedure',
+        'Eventi',
+        'Generale'
+    );
+    
+    foreach($categorie as $cat) {
+        if(!term_exists($cat, 'category')) {
+            wp_insert_term($cat, 'category');
+        }
+    }
+}
+add_action('init', 'crea_categorie_comunicazioni', 11);
+```
+
+### Display Frontend
+
+```php
+// Query comunicazioni recenti
+$args = array(
+    'post_type' => 'post',
+    'posts_per_page' => 10,
+    'orderby' => 'date',
+    'order' => 'DESC'
+);
+$comunicazioni = new WP_Query($args);
+
+while($comunicazioni->have_posts()): $comunicazioni->the_post();
+    // Display card
+endwhile;
 ```
 
 ---

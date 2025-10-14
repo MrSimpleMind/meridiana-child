@@ -1,0 +1,145 @@
+{
+    "key": "group_user_fields",
+    "title": "Campi Custom Utente",
+    "fields": [
+        {
+            "key": "field_stato_utente",
+            "label": "Stato Utente",
+            "name": "stato_utente",
+            "aria-label": "",
+            "type": "radio",
+            "instructions": "Stato corrente dell'utente nella cooperativa",
+            "required": 1,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "attivo": "Attivo",
+                "sospeso": "Sospeso",
+                "licenziato": "Licenziato"
+            },
+            "default_value": "attivo",
+            "layout": "horizontal",
+            "other_choice": 0,
+            "save_other_choice": 0,
+            "allow_null": 0,
+            "return_format": "value"
+        },
+        {
+            "key": "field_link_autologin",
+            "label": "Link Autologin Piattaforma Esterna",
+            "name": "link_autologin_esterno",
+            "aria-label": "",
+            "type": "url",
+            "instructions": "URL per l'autologin alla piattaforma formazione certificata esterna",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": "",
+            "placeholder": ""
+        },
+        {
+            "key": "field_profilo_professionale_user",
+            "label": "Profilo Professionale",
+            "name": "profilo_professionale",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "Seleziona il profilo professionale dell'utente",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "addetto_manutenzione": "Addetto Manutenzione",
+                "asa_oss": "ASA\/OSS",
+                "assistente_sociale": "Assistente Sociale",
+                "coordinatore": "Coordinatore Unità di Offerta",
+                "educatore": "Educatore",
+                "fkt": "FKT",
+                "impiegato_amministrativo": "Impiegato Amministrativo",
+                "infermiere": "Infermiere",
+                "logopedista": "Logopedista",
+                "medico": "Medico",
+                "psicologa": "Psicologa",
+                "receptionista": "Receptionista",
+                "terapista_occupazionale": "Terapista Occupazionale",
+                "volontari": "Volontari"
+            },
+            "allow_null": 1,
+            "return_format": "value",
+            "multiple": 0,
+            "default_value": false,
+            "ui": 0,
+            "ajax": 0,
+            "placeholder": "",
+            "create_options": 0,
+            "save_options": 0
+        },
+        {
+            "key": "field_udo_riferimento_user",
+            "label": "Unità di Offerta di Riferimento",
+            "name": "udo_riferimento",
+            "aria-label": "",
+            "type": "select",
+            "instructions": "Seleziona l'unità di offerta di riferimento dell'utente",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "choices": {
+                "ambulatori": "Ambulatori",
+                "ap": "AP",
+                "cdi": "CDI",
+                "cure_domiciliari": "Cure Domiciliari",
+                "hospice": "Hospice",
+                "paese": "Paese",
+                "r20": "R20",
+                "rsa": "RSA",
+                "rsa_aperta": "RSA Aperta",
+                "rsd": "RSD"
+            },
+            "allow_null": 1,
+            "return_format": "value",
+            "multiple": 0,
+            "default_value": false,
+            "ui": 0,
+            "ajax": 0,
+            "placeholder": "",
+            "create_options": 0,
+            "save_options": 0
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "user_form",
+                "operator": "==",
+                "value": "all"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "modified": 1760472049
+}

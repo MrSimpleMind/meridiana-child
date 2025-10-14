@@ -110,20 +110,47 @@ add_filter('acf/settings/show_admin', 'meridiana_hide_acf_menu');
 */
 
 /**
- * Personalizza path per salvataggio Field Groups (opzionale)
- * Utile per version control
+ * Personalizza path per salvataggio Field Groups
+ * IMPORTANTE: Abilita version control per configurazioni ACF
+ * 
+ * NOTA: Questi filtri DEVONO essere eseguiti PRIMA che ACF si inizializzi
  */
-/*
-add_filter('acf/settings/save_json', function($path) {
-    return MERIDIANA_CHILD_DIR . '/acf-json';
-});
 
-add_filter('acf/settings/load_json', function($paths) {
+// Save JSON path - priorità 10 (default)
+add_filter('acf/settings/save_json', 'meridiana_acf_json_save_point');
+function meridiana_acf_json_save_point($path) {
+    // Percorso assoluto alla cartella acf-json del child theme
+    $path = MERIDIANA_CHILD_DIR . '/acf-json';
+    
+    // Verifica che la cartella esista e sia scrivibile
+    if (!file_exists($path)) {
+        wp_mkdir_p($path);
+    }
+    
+    // Log per debug (solo in WP_DEBUG mode)
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('ACF JSON Save Path: ' . $path);
+    }
+    
+    return $path;
+}
+
+// Load JSON path - priorità 10 (default)
+add_filter('acf/settings/load_json', 'meridiana_acf_json_load_point');
+function meridiana_acf_json_load_point($paths) {
+    // Rimuovi il path originale di ACF
     unset($paths[0]);
+    
+    // Aggiungi il path del child theme
     $paths[] = MERIDIANA_CHILD_DIR . '/acf-json';
+    
+    // Log per debug (solo in WP_DEBUG mode)
+    if (defined('WP_DEBUG') && WP_DEBUG) {
+        error_log('ACF JSON Load Paths: ' . print_r($paths, true));
+    }
+    
     return $paths;
-});
-*/
+}
 
 /**
  * Helper: Ottieni valore campo ACF in modo sicuro

@@ -155,23 +155,34 @@ Roadmap sviluppo fase per fase, checklist pre-lancio, testing, manutenzione, sca
 - [x] Analisi requisiti
 - [x] Scelta stack tecnologico
 - [x] Struttura documentazione
+- [x] Setup hosting e WordPress
+- [x] Configurazione Blocksy base
+- [x] Creazione child theme structure
+- [x] Functions.php con enqueue e includes
+- [x] Costanti tema (MERIDIANA_CHILD_DIR/URI)
+- [x] Filtri ACF JSON sync configurati
+- [x] User roles system implementato
+- [x] Helper functions base
+- [x] Security hardening base
+- [x] Tasklist priorità creata
 
 ### 🟡 In Corso
-- [X] Setup hosting e WordPress
-- [X] Configurazione Blocksy base
-- [X] Creazione child theme structure
+- [ ] Verifica ACF JSON sync funzionante
+- [ ] Creazione Field Groups in ACF UI
+- [ ] Creazione CPT in ACF UI
+- [ ] Creazione Taxonomies in ACF UI
 
-### ⬜ Da Fare
+### ⬜ Da Fare (Prossime 2 settimane)
 - [ ] Design system (SCSS)
-- [ ] Custom Post Types
-- [ ] Taxonomies
-- [ ] ACF Fields
-- [ ] Template pagine
-- [ ] Form frontend
+- [ ] Template pagine core
+- [ ] Form frontend ACF
 - [ ] Analytics system
-- [ ] Notifiche
-- [ ] Testing
-- [ ] Launch
+- [ ] Notifiche push/email
+- [ ] Testing cross-browser
+- [ ] Launch beta
+
+**Ultimo Aggiornamento**: 14 Ottobre 2025, 22:30  
+**Fase Corrente**: 1 - Fondamenta (Setup e Configurazione Base)
 
 ---
 

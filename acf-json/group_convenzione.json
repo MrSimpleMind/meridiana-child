@@ -1,0 +1,188 @@
+{
+    "key": "group_convenzione",
+    "title": "Convenzione - Campi Custom",
+    "fields": [
+        {
+            "key": "field_convenzione_attiva",
+            "label": "Convenzione Attiva",
+            "name": "convenzione_attiva",
+            "aria-label": "",
+            "type": "true_false",
+            "instructions": "Indica se la convenzione è attualmente attiva o scaduta",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "default_value": 1,
+            "ui": 1,
+            "ui_on_text": "Attiva",
+            "ui_off_text": "Scaduta",
+            "message": ""
+        },
+        {
+            "key": "field_descrizione_convenzione",
+            "label": "Descrizione",
+            "name": "descrizione",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Descrizione completa della convenzione",
+            "required": 1,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "tabs": "all",
+            "toolbar": "full",
+            "media_upload": 1,
+            "default_value": "",
+            "delay": 0
+        },
+        {
+            "key": "field_immagine_convenzione",
+            "label": "Immagine in Evidenza",
+            "name": "immagine_evidenza",
+            "aria-label": "",
+            "type": "image",
+            "instructions": "Immagine principale della convenzione",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "return_format": "id",
+            "preview_size": "medium",
+            "library": "all",
+            "min_width": 0,
+            "min_height": 0,
+            "min_size": 0,
+            "max_width": 0,
+            "max_height": 0,
+            "max_size": 0,
+            "mime_types": ""
+        },
+        {
+            "key": "field_contatti_convenzione",
+            "label": "Contatti",
+            "name": "contatti",
+            "aria-label": "",
+            "type": "wysiwyg",
+            "instructions": "Informazioni di contatto per la convenzione",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "tabs": "all",
+            "toolbar": "basic",
+            "media_upload": 0,
+            "default_value": "",
+            "delay": 0
+        },
+        {
+            "key": "field_allegati_convenzione",
+            "label": "Allegati",
+            "name": "allegati",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Aggiungi eventuali file allegati alla convenzione",
+            "required": 0,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "layout": "table",
+            "button_label": "Aggiungi Allegato",
+            "min": 0,
+            "max": 0,
+            "rows_per_page": 20,
+            "collapsed": "",
+            "sub_fields": [
+                {
+                    "key": "field_allegato_file",
+                    "label": "File",
+                    "name": "file",
+                    "aria-label": "",
+                    "type": "file",
+                    "instructions": "",
+                    "required": 1,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "return_format": "array",
+                    "library": "all",
+                    "min_size": 0,
+                    "max_size": 0,
+                    "mime_types": "",
+                    "parent_repeater": "field_allegati_convenzione"
+                },
+                {
+                    "key": "field_allegato_descrizione",
+                    "label": "Descrizione",
+                    "name": "descrizione",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "",
+                    "required": 0,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_allegati_convenzione"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "post_type",
+                "operator": "==",
+                "value": "convenzione"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": [
+        "the_content",
+        "excerpt",
+        "discussion",
+        "comments",
+        "revisions",
+        "slug",
+        "author",
+        "format",
+        "featured_image",
+        "tags",
+        "send-trackbacks"
+    ],
+    "active": true,
+    "description": "",
+    "show_in_rest": 0,
+    "display_title": "",
+    "modified": 1760472064
+}

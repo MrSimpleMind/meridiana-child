@@ -1,0 +1,178 @@
+/**
+ * Mixins - Stati Interattivi & Responsive
+ * Piattaforma Formazione Cooperativa La Meridiana
+ */
+
+// ========================================
+// STATI INTERATTIVI
+// ========================================
+
+// Hover state
+@mixin hover-state {
+    transition: all 0.2s ease;
+    
+    &:hover {
+        @content;
+    }
+}
+
+// Focus state (accessibilità WCAG)
+@mixin focus-state {
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--shadow-focus);
+        @content;
+    }
+}
+
+// Active state
+@mixin active-state {
+    &:active {
+        transform: scale(0.98);
+        @content;
+    }
+}
+
+// Disabled state
+@mixin disabled-state {
+    &:disabled,
+    &[disabled],
+    &.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text-muted);
+        @content;
+    }
+}
+
+// Combinazione stati completi
+@mixin interactive-states {
+    @include hover-state {
+        @content;
+    }
+    @include focus-state;
+    @include active-state;
+    @include disabled-state;
+}
+
+// ========================================
+// RESPONSIVE BREAKPOINTS
+// ========================================
+
+// Mobile landscape e superiore
+@mixin sm {
+    @media (min-width: $breakpoint-sm) { 
+        @content; 
+    }
+}
+
+// Tablet portrait e superiore
+@mixin md {
+    @media (min-width: $breakpoint-md) { 
+        @content; 
+    }
+}
+
+// Tablet landscape e superiore
+@mixin lg {
+    @media (min-width: $breakpoint-lg) { 
+        @content; 
+    }
+}
+
+// Desktop e superiore
+@mixin xl {
+    @media (min-width: $breakpoint-xl) { 
+        @content; 
+    }
+}
+
+// Large desktop
+@mixin xxl {
+    @media (min-width: $breakpoint-2xl) { 
+        @content; 
+    }
+}
+
+// ========================================
+// UTILITY MIXINS
+// ========================================
+
+// Clearfix
+@mixin clearfix {
+    &::after {
+        content: "";
+        display: table;
+        clear: both;
+    }
+}
+
+// Visually hidden (accessibilità)
+@mixin visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}
+
+// Truncate text
+@mixin truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+// Line clamp (multiline truncate)
+@mixin line-clamp($lines) {
+    display: -webkit-box;
+    -webkit-line-clamp: $lines;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+// Aspect ratio
+@mixin aspect-ratio($width, $height) {
+    position: relative;
+    
+    &::before {
+        content: "";
+        display: block;
+        padding-top: ($height / $width) * 100%;
+    }
+    
+    > * {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
+}
+
+// Scrollbar custom (webkit)
+@mixin custom-scrollbar($width: 8px, $track-color: var(--color-bg-secondary), $thumb-color: var(--color-border-input)) {
+    &::-webkit-scrollbar {
+        width: $width;
+        height: $width;
+    }
+    
+    &::-webkit-scrollbar-track {
+        background: $track-color;
+        border-radius: calc($width / 2);
+    }
+    
+    &::-webkit-scrollbar-thumb {
+        background: $thumb-color;
+        border-radius: calc($width / 2);
+        
+        &:hover {
+            background: darken($thumb-color, 10%);
+        }
+    }
+}

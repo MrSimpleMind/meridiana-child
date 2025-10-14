@@ -99,14 +99,14 @@ function meridiana_defer_alpinejs($tag, $handle) {
  * =====================================================================
  */
 
-// Custom Post Types (gestiti tramite ACF Pro UI)
+// Custom Post Types (gestiti tramite ACF Pro UI - no file PHP necessario)
 // require_once MERIDIANA_CHILD_DIR . '/includes/cpt-register.php';
 
-// Taxonomies (gestite tramite ACF Pro UI)
+// Taxonomies (gestite tramite ACF Pro UI - no file PHP necessario)
 // require_once MERIDIANA_CHILD_DIR . '/includes/taxonomies.php';
 
-// Configurazione ACF (field groups da interfaccia ACF Pro)
-// require_once MERIDIANA_CHILD_DIR . '/includes/acf-config.php';
+// Configurazione ACF (JSON sync + helper functions)
+require_once MERIDIANA_CHILD_DIR . '/includes/acf-config.php';
 
 // ACF Frontend Forms per Gestore Piattaforma
 // require_once MERIDIANA_CHILD_DIR . '/includes/acf-forms.php';

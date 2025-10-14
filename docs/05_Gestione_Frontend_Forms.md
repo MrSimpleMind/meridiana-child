@@ -169,6 +169,363 @@ function elimina_file_archiviato($file_path) {
     }
 }
 add_action('elimina_file_archiviato', 'elimina_file_archiviato');
+
+---
+
+## 🔄 Sistema di Recovery File Archiviati
+
+### Perché Serve
+
+Se il Gestore carica un file sbagliato per errore, ha 30 giorni per recuperare la versione precedente prima che venga eliminata definitivamente.
+
+### Query File Archiviati per Documento
+
+```php
+// includes/file-management.php
+
+function get_archived_files($post_id) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'file_archive_log';
+    
+    // Get ID file attuale
+    $post_type = get_post_type($post_id);
+    $field_name = ($post_type === 'protocollo') ? 'pdf_protocollo' : 'pdf_modulo';
+    $current_file_id = get_field($field_name, $post_id);
+    
+    // Query file archiviati
+    $archived = $wpdb->get_results($wpdb->prepare(
+        "SELECT * FROM $table 
+        WHERE file_id != %d 
+        AND deleted_date IS NULL
+        AND archived_path LIKE %s
+        ORDER BY archived_date DESC",
+        $current_file_id,
+        '%' . sanitize_title(get_the_title($post_id)) . '%'
+    ));
+    
+    return $archived;
+}
+```
+
+### UI: Lista File Archiviati
+
+```php
+// Template part per form modifica documento
+// templates/parts/forms/file-recovery-section.php
+
+<?php
+$archived_files = get_archived_files(get_the_ID());
+
+if (empty($archived_files)) {
+    return;
+}
+?>
+
+<div class="file-recovery-section">
+    <h3>📋 Versioni Precedenti (Recovery)</h3>
+    <p class="helper-text">File archiviati disponibili per recupero (eliminazione automatica dopo 30 giorni)</p>
+    
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Nome File</th>
+                <th>Data Archiving</th>
+                <th>Archiviato Da</th>
+                <th>Giorni Rimanenti</th>
+                <th>Azioni</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php foreach ($archived_files as $file): 
+                $days_left = 30 - floor((time() - strtotime($file->archived_date)) / DAY_IN_SECONDS);
+                $user = get_userdata($file->user_id);
+            ?>
+            <tr>
+                <td><?php echo basename($file->archived_path); ?></td>
+                <td><?php echo wp_date('d/m/Y H:i', strtotime($file->archived_date)); ?></td>
+                <td><?php echo $user ? $user->display_name : 'N/A'; ?></td>
+                <td>
+                    <span class="badge <?php echo $days_left < 7 ? 'badge-warning' : 'badge-info'; ?>">
+                        <?php echo $days_left; ?> giorni
+                    </span>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline" 
+                            onclick="recuperaFile(<?php echo $file->id; ?>, <?php echo get_the_ID(); ?>)">
+                        <i data-lucide="rotate-ccw"></i> Recupera
+                    </button>
+                    <a href="<?php echo site_url('/wp-content/uploads/archive/' . basename($file->archived_path)); ?>" 
+                       class="btn btn-sm" 
+                       target="_blank">
+                        <i data-lucide="eye"></i> Anteprima
+                    </a>
+                </td>
+            </tr>
+            <?php endforeach; ?>
+        </tbody>
+    </table>
+</div>
+```
+
+### Function: Recupera File Archiviato
+
+```php
+// includes/file-management.php
+
+function recupera_file_archiviato($archive_id, $post_id) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'file_archive_log';
+    
+    // Check permission
+    if (!current_user_can('edit_posts')) {
+        return new WP_Error('unauthorized', 'Non autorizzato');
+    }
+    
+    // Get archived file info
+    $archived = $wpdb->get_row($wpdb->prepare(
+        "SELECT * FROM $table WHERE id = %d",
+        $archive_id
+    ));
+    
+    if (!$archived || !file_exists($archived->archived_path)) {
+        return new WP_Error('file_not_found', 'File archiviato non trovato');
+    }
+    
+    // Get current file
+    $post_type = get_post_type($post_id);
+    $field_name = ($post_type === 'protocollo') ? 'pdf_protocollo' : 'pdf_modulo';
+    $current_file_id = get_field($field_name, $post_id);
+    
+    // Archivia il file ATTUALE (quello che stiamo per sostituire)
+    archivia_file_vecchio($current_file_id);
+    
+    // Ripristina il file archiviato
+    $upload_dir = wp_upload_dir();
+    $new_filename = basename($archived->archived_path);
+    $new_path = $upload_dir['path'] . '/' . $new_filename;
+    
+    // Copia (non sposta) file archiviato
+    if (!copy($archived->archived_path, $new_path)) {
+        return new WP_Error('copy_failed', 'Errore copia file');
+    }
+    
+    // Crea nuovo attachment in WordPress
+    $attachment = array(
+        'post_mime_type' => 'application/pdf',
+        'post_title' => preg_replace('/\.[^.]+$/', '', $new_filename),
+        'post_content' => '',
+        'post_status' => 'inherit',
+    );
+    
+    $attach_id = wp_insert_attachment($attachment, $new_path, $post_id);
+    
+    // Update ACF field
+    update_field($field_name, $attach_id, $post_id);
+    
+    // Log recovery
+    $wpdb->insert(
+        $table,
+        array(
+            'file_id' => $attach_id,
+            'archived_path' => $new_path,
+            'archived_date' => current_time('mysql'),
+            'user_id' => get_current_user_id(),
+        ),
+        array('%d', '%s', '%s', '%d')
+    );
+    
+    return array(
+        'success' => true,
+        'message' => 'File recuperato con successo',
+        'new_attachment_id' => $attach_id,
+    );
+}
+
+// REST API endpoint per recovery
+function register_file_recovery_endpoint() {
+    register_rest_route('piattaforma/v1', '/file-recovery', array(
+        'methods' => 'POST',
+        'callback' => 'api_file_recovery',
+        'permission_callback' => function() {
+            return current_user_can('edit_posts');
+        },
+    ));
+}
+add_action('rest_api_init', 'register_file_recovery_endpoint');
+
+function api_file_recovery($request) {
+    $archive_id = intval($request->get_param('archive_id'));
+    $post_id = intval($request->get_param('post_id'));
+    
+    $result = recupera_file_archiviato($archive_id, $post_id);
+    
+    if (is_wp_error($result)) {
+        return new WP_Error(
+            $result->get_error_code(),
+            $result->get_error_message(),
+            array('status' => 400)
+        );
+    }
+    
+    return rest_ensure_response($result);
+}
+```
+
+### JavaScript: AJAX Recovery
+
+```javascript
+// assets/js/src/file-recovery.js
+
+async function recuperaFile(archiveId, postId) {
+    if (!confirm('Sei sicuro di voler recuperare questa versione? Il file attuale verrà archiviato.')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/wp-json/piattaforma/v1/file-recovery', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-WP-Nonce': window.meridiana.nonce,
+            },
+            body: JSON.stringify({
+                archive_id: archiveId,
+                post_id: postId,
+            }),
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            alert('File recuperato con successo!');
+            location.reload();
+        } else {
+            alert('Errore: ' + data.message);
+        }
+    } catch (error) {
+        console.error('Recovery error:', error);
+        alert('Errore durante il recupero del file');
+    }
+}
+```
+
+### Shortcode: Integrazione nel Form Modifica
+
+```php
+// Aggiungere nel form di modifica documento (dopo il campo file)
+
+<div class="form-section">
+    <?php 
+    if (isset($_GET['edit'])) {
+        echo do_shortcode('[file_recovery_list post_id="' . intval($_GET['edit']) . '"]');
+    }
+    ?>
+</div>
+
+// Shortcode
+function shortcode_file_recovery_list($atts) {
+    $atts = shortcode_atts(array(
+        'post_id' => 0,
+    ), $atts);
+    
+    if (!$atts['post_id']) {
+        return '';
+    }
+    
+    ob_start();
+    set_query_var('post_id', $atts['post_id']);
+    get_template_part('templates/parts/forms/file-recovery-section');
+    return ob_get_clean();
+}
+add_shortcode('file_recovery_list', 'shortcode_file_recovery_list');
+```
+
+### CSS Styling
+
+```scss
+// assets/css/src/components/_file-recovery.scss
+
+.file-recovery-section {
+    margin-top: var(--space-8);
+    padding: var(--space-6);
+    background: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 2px dashed var(--color-border);
+    
+    h3 {
+        display: flex;
+        align-items: center;
+        gap: var(--space-2);
+        margin-bottom: var(--space-4);
+    }
+    
+    .helper-text {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+        margin-bottom: var(--space-4);
+    }
+    
+    .badge-warning {
+        background-color: var(--color-warning);
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+    }
+}
+```
+
+### Dashboard Widget: File in Scadenza
+
+```php
+// Widget per Gestore: file archiviati che scadranno tra 7 giorni
+
+function widget_file_in_scadenza() {
+    global $wpdb;
+    $table = $wpdb->prefix . 'file_archive_log';
+    
+    $expiring = $wpdb->get_results(
+        "SELECT * FROM $table 
+        WHERE deleted_date IS NULL 
+        AND archived_date < DATE_SUB(NOW(), INTERVAL 23 DAY)
+        ORDER BY archived_date ASC
+        LIMIT 10"
+    );
+    
+    if (empty($expiring)) {
+        return;
+    }
+    
+    echo '<div class="widget-file-expiring">';
+    echo '<h3>⚠️ File in Scadenza (< 7 giorni)</h3>';
+    echo '<ul>';
+    
+    foreach ($expiring as $file) {
+        $days_left = 30 - floor((time() - strtotime($file->archived_date)) / DAY_IN_SECONDS);
+        echo '<li>';
+        echo basename($file->archived_path) . ' - <strong>' . $days_left . ' giorni</strong>';
+        echo '</li>';
+    }
+    
+    echo '</ul>';
+    echo '</div>';
+}
+```
+
+### Checklist Recovery System
+
+- [ ] Tabella `file_archive_log` creata
+- [ ] Function `recupera_file_archiviato()` implementata
+- [ ] REST API endpoint `/file-recovery` registrato
+- [ ] Template part `file-recovery-section.php` creato
+- [ ] JavaScript AJAX funzionante
+- [ ] CSS styling applicato
+- [ ] Shortcode `[file_recovery_list]` funzionante
+- [ ] Widget file in scadenza per dashboard
+- [ ] Test: archivia file, modifica, recupera versione precedente
+- [ ] Test: verifica eliminazione automatica dopo 30 giorni
 ```
 
 ### Database Table per Log
