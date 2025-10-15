@@ -39,12 +39,25 @@ function meridiana_enqueue_styles() {
     $css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.min.css';
     $css_version = file_exists($css_file) ? filemtime($css_file) : MERIDIANA_CHILD_VERSION;
     
-    wp_enqueue_style(
-        'meridiana-child-style',
-        MERIDIANA_CHILD_URI . '/assets/css/dist/main.min.css',
-        array('blocksy-parent-style'),
-        $css_version
-    );
+    if (file_exists($css_file)) {
+        wp_enqueue_style(
+            'meridiana-child-style',
+            MERIDIANA_CHILD_URI . '/assets/css/dist/main.min.css',
+            array('blocksy-parent-style'),
+            $css_version
+        );
+    } else {
+        // HOTFIX: CSS temporaneo se main.min.css non esiste
+        $hotfix_file = MERIDIANA_CHILD_DIR . '/assets/css/hotfix-home.css';
+        if (file_exists($hotfix_file)) {
+            wp_enqueue_style(
+                'meridiana-hotfix-style',
+                MERIDIANA_CHILD_URI . '/assets/css/hotfix-home.css',
+                array('blocksy-parent-style'),
+                filemtime($hotfix_file)
+            );
+        }
+    }
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
 
