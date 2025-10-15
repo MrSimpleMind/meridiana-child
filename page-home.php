@@ -16,8 +16,8 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
         <!-- Header Utente Mobile -->
         <div class="home-header">
             <div class="home-header__user">
-                <div class="user-avatar" onclick="openUserProfileModal()" style="cursor: pointer;" role="button" tabindex="0" aria-label="Apri profilo utente">
-                    <i data-lucide="user"></i>
+                <div onclick="openUserProfileModal()" style="cursor: pointer;" role="button" tabindex="0" aria-label="Apri profilo utente">
+                    <?php echo meridiana_get_user_avatar(get_current_user_id(), 'medium'); ?>
                 </div>
                 <h1 class="home-header__greeting">Ciao <?php echo esc_html($user_first_name); ?></h1>
             </div>

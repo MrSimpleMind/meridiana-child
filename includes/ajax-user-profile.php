@@ -87,12 +87,13 @@ function handle_update_user_profile() {
         update_user_meta($user_id, 'user_phone', $user_phone);
     }
     
-    // Gestione upload avatar
-    if (isset($_FILES['avatar']) && !empty($_FILES['avatar']['name'])) {
-        $upload_result = handle_avatar_upload($user_id, $_FILES['avatar']);
+    // Gestione avatar predefinito
+    if (isset($_POST['predefined_avatar'])) {
+        $avatar_key = sanitize_text_field($_POST['predefined_avatar']);
+        $avatar_updated = meridiana_update_user_avatar($user_id, $avatar_key);
         
-        if (is_wp_error($upload_result)) {
-            wp_send_json_error('Profilo aggiornato ma errore upload avatar: ' . $upload_result->get_error_message());
+        if (!$avatar_updated) {
+            wp_send_json_error('Profilo aggiornato ma errore nel salvataggio dell\'avatar.');
             return;
         }
     }

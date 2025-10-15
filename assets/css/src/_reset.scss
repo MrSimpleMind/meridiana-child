@@ -65,12 +65,22 @@ a {
     
     &:hover {
         color: var(--color-primary-dark);
-        text-decoration: underline;
+        // NO text-decoration globale - gestito per contesto
     }
     
     &:focus-visible {
         outline: 2px solid var(--color-primary);
         outline-offset: 2px;
+    }
+}
+
+// Sottolineatura SOLO per link in contenuto testuale
+p a,
+article a,
+.content a,
+.entry-content a {
+    &:hover {
+        text-decoration: underline;
     }
 }
 

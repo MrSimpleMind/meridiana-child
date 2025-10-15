@@ -43,8 +43,8 @@ if (current_user_can('view_analytics')) {
             <span>Documentazione</span>
         </a>
         
-        <a href="<?php echo get_post_type_archive_link('sfwd-courses'); ?>" 
-           class="sidebar-nav__item <?php echo is_post_type_archive('sfwd-courses') ? 'active' : ''; ?>">
+        <a href="<?php echo home_url('/corsi/'); ?>" 
+           class="sidebar-nav__item <?php echo (is_post_type_archive('sfwd-courses') || is_page('corsi')) ? 'active' : ''; ?>">
             <i data-lucide="graduation-cap"></i>
             <span>Corsi</span>
             <?php 
@@ -56,8 +56,8 @@ if (current_user_can('view_analytics')) {
             <?php endif; ?>
         </a>
         
-        <a href="<?php echo get_permalink(get_page_by_path('organigramma')); ?>" 
-           class="sidebar-nav__item <?php echo is_page('organigramma') ? 'active' : ''; ?>">
+        <a href="<?php echo home_url('/contatti/'); ?>" 
+           class="sidebar-nav__item <?php echo is_page('contatti') ? 'active' : ''; ?>">
             <i data-lucide="users"></i>
             <span>Organigramma</span>
         </a>
@@ -101,9 +101,7 @@ if (current_user_can('view_analytics')) {
     <!-- Footer con info utente -->
     <div class="sidebar-nav__footer">
         <div class="sidebar-nav__user" onclick="openUserProfileModal()" role="button" tabindex="0" aria-label="Apri profilo utente">
-            <div class="user-avatar">
-                <i data-lucide="user"></i>
-            </div>
+            <?php echo meridiana_get_user_avatar(get_current_user_id(), 'medium'); ?>
             <div class="user-info">
                 <span class="user-name"><?php echo esc_html($user_name); ?></span>
                 <span class="user-role"><?php echo esc_html($user_role); ?></span>

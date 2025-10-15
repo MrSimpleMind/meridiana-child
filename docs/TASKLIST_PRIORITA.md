@@ -9,6 +9,46 @@
 
 ## 🔧 FIX APPLICATI - Sessione Corrente
 
+### ✅ Fix Navigazione + Avatar System (16 Ottobre 2025 - Mattina)
+**Navigazione Desktop**:
+- **Fix**: Corretto link "Corsi" e "Organigramma" nella sidebar desktop che non funzionavano
+- **Causa**: Usavano `get_post_type_archive_link('sfwd-courses')` e `get_permalink(get_page_by_path('organigramma'))` invece degli slug diretti
+- **Soluzione**: Allineato con bottom nav mobile usando `home_url('/corsi/')` e `home_url('/contatti/')`
+- **File modificato**: `templates/parts/navigation/sidebar-nav.php`
+
+**Hover Card Home**:
+- **Fix**: Rimosso sottolineamento su titolo e riassunto card News e Salute all'hover
+- **Causa**: Stile globale `a:hover { text-decoration: underline; }` in `_reset.scss` si applicava anche alle card
+- **Soluzione**: Aggiunto `text-decoration: none;` su `.news-item:hover`, `.news-item__title`, `.news-item__excerpt` (e stessi per salute)
+- **File modificato**: `assets/css/src/pages/_home.scss` (richiede `npm run build`)
+
+**Avatar System Predefiniti**:
+- **Feature**: Sistema avatar predefiniti con 6 icone Lucide + colori (lightweight, ~1KB)
+- **Opzioni**: 
+  1. User (Blu) - Profilo Standard
+  2. Briefcase (Verde) - Professionale
+  3. User-Check (Viola) - Certificato
+  4. Shield (Arancione) - Sicurezza
+  5. Heart (Rosa) - Assistenza
+  6. Users (Turchese) - Team
+- **Implementazione**:
+  - Helper functions: `meridiana_get_avatar_options()`, `meridiana_get_user_avatar()`, `meridiana_update_user_avatar()`, `meridiana_render_avatar_selector()`
+  - User meta salvato: `predefined_avatar` (key avatar selezionato)
+  - Modal profilo aggiornato con selettore grid responsive (2 col mobile, 3 col desktop)
+  - Preview real-time al cambio selezione (JavaScript)
+  - AJAX handler aggiornato per salvare avatar scelto
+  - Avatar mostrato dinamicamente in: Home header, Sidebar footer, Modal preview
+- **File creati/modificati**:
+  - `includes/avatar-system.php` (nuovo)
+  - `templates/parts/user-profile-modal.php`
+  - `assets/css/src/components/_user-profile-modal.scss` (richiede `npm run build`)
+  - `includes/ajax-user-profile.php`
+  - `page-home.php`
+  - `templates/parts/navigation/sidebar-nav.php`
+  - `functions.php` (include avatar-system.php)
+
+**Note**: Compilare SCSS con `npm run build` per applicare modifiche CSS
+
 ### ✅ Fix Convenzioni + User Profile Modal (15 Ottobre 2025 - Sera - Sessione 2)
 **Convenzioni Carousel**:
 - **Mobile**: Aggiunto feedback visivo click (cursor pointer, bordo rosso hover, scale al tap)

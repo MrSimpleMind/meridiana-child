@@ -28,7 +28,7 @@
     }
     
     &__greeting {
-        font-size: var(--font-size-xl); // Ridotto da 2xl a xl (stesso dei titoli sezioni)
+        font-size: var(--font-size-base); // Allineato alle card title
         font-weight: var(--font-weight-bold);
         color: var(--color-text-primary);
         margin: 0;
@@ -301,6 +301,7 @@
     &:hover {
         border-color: var(--color-primary);
         box-shadow: var(--shadow-sm);
+        text-decoration: none; // Previene sottolineatura del reset globale
         
         .news-item__arrow,
         .salute-item__arrow {
@@ -319,6 +320,7 @@
         color: var(--color-text-primary);
         margin: 0 0 var(--space-1);
         line-height: var(--line-height-tight);
+        text-decoration: none; // Mai sottolineare il titolo
     }
     
     &__excerpt {
@@ -326,6 +328,7 @@
         color: var(--color-text-secondary);
         margin: 0;
         line-height: var(--line-height-normal);
+        text-decoration: none; // Mai sottolineare l'estratto
     }
     
     &__arrow {
@@ -368,12 +371,12 @@
     }
     
     .home-header {
-        padding: var(--space-8) 0;
-        margin-bottom: var(--space-10);
+        padding: var(--space-6) 0;
+        margin-bottom: var(--space-8);
         border-bottom: 1px solid var(--color-border-light);
         
         &__greeting {
-            font-size: var(--font-size-3xl);
+            font-size: var(--font-size-base);
         }
         
         &__notifications {
@@ -409,19 +412,18 @@
         }
     }
     
-    // Convenzioni in griglia su desktop
+    // Convenzioni carousel su desktop: 3 card visibili con scroll
     .convenzioni-carousel__wrapper {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-6);
-        overflow: visible;
+        display: flex;
+        gap: var(--space-4);
+        overflow-x: auto;
     }
-    
+
     .convenzione-card {
-        flex: none;
-        max-width: none;
+        flex: 0 0 calc((100% - (2 * var(--space-4))) / 3);
+        max-width: calc((100% - (2 * var(--space-4))) / 3);
+        min-width: calc((100% - (2 * var(--space-4))) / 3);
     }
-    
     // News e salute in 2 colonne su desktop
     .news-list,
     .salute-list {
@@ -443,12 +445,16 @@
         margin-bottom: var(--space-12);
     }
     
-    // Convenzioni 3 colonne su schermi grandi
+    // Convenzioni carousel su schermi grandi: 3 card con maggiore respiro
     .convenzioni-carousel__wrapper {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-8);
+        gap: var(--space-5);
     }
-    
+
+    .convenzione-card {
+        flex: 0 0 calc((100% - (2 * var(--space-5))) / 3);
+        max-width: calc((100% - (2 * var(--space-5))) / 3);
+        min-width: calc((100% - (2 * var(--space-5))) / 3);
+    }
     // News e salute rimangono a 2 colonne
     .news-list,
     .salute-list {
