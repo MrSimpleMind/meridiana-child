@@ -41,12 +41,12 @@ function meridiana_enqueue_styles() {
     );
     
     // Enqueue child theme compiled CSS
-    $css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.min.css';
+    $css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
     $css_version = file_exists($css_file) ? filemtime($css_file) : MERIDIANA_CHILD_VERSION;
     
     wp_enqueue_style(
         'meridiana-child-style',
-        MERIDIANA_CHILD_URI . '/assets/css/dist/main.min.css',
+        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
         array('blocksy-parent-style'),
         $css_version
     );

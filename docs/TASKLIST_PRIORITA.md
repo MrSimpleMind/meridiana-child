@@ -9,6 +9,59 @@
 
 ## 🔧 FIX APPLICATI - Sessione Corrente
 
+### ✅ Correzioni Post-Codex (16 Ottobre 2025 - Pomeriggio)
+**Problema**: Codex ha applicato alcuni fix ma con errori/mancanze
+
+**PROBLEMA CRITICO RISOLTO - CSS non compilato**:
+- **Sintomo**: Modifiche SCSS non si vedevano nel sito anche dopo `npm run build`
+- **Causa 1**: `functions.php` caricava `main.min.css` ma sass genera `main.css`
+- **Causa 2**: Breakpoint 1200px sovrascriveva padding header con vecchio valore
+- **Soluzione**:
+  - Cambiato `functions.php` per caricare `main.css` invece di `main.min.css`
+  - Fixato breakpoint 1200px per mantenere padding ridotto
+- **File**: `functions.php`, `_home.scss`
+
+**Fix Padding Header Home Desktop**:
+- **Problema**: Codex diceva di aver ridotto il padding ma invece l'aveva AUMENTATO (da space-4 a space-6)
+- **Soluzione**: Ridotto veramente il padding-top su desktop: `padding: var(--space-2) 0 var(--space-4)` invece di `var(--space-6) 0`
+- **Risultato**: Header home ora ha meno spazio in alto SOLO su desktop (mobile invariato)
+- **File**: `assets/css/src/pages/_home.scss`
+
+**Navigazione Carousel Convenzioni**:
+- **Problema 1**: Pallini non funzionavano correttamente su desktop
+- **Problema 2**: Freccette inizialmente tutte a sinistra invece che centrate
+- **Soluzione Finale**: Freccette ai **lati opposti** del carousel (solo desktop)
+  - Posizionate in assoluto direttamente sul `.convenzioni-carousel` (non più in wrapper)
+  - Freccetta sinistra: `left: -24px`
+  - Freccetta destra: `right: -24px`
+  - Centrate verticalmente: `top: 50%; transform: translateY(-50%)`
+  - Auto-disable quando si raggiunge inizio/fine scroll
+  - Hover con colore primario e scale
+  - Z-index per stare sopra eventuali elementi
+- **Mobile**: Solo hint scroll che si nasconde dopo primo scroll
+- **File modificati**:
+  - `assets/css/src/pages/_home.scss` (posizionamento assoluto, rimosso wrapper)
+  - `templates/parts/home/convenzioni-carousel.php` (HTML freccette dirette + script)
+
+**Fix Archivio Convenzioni**:
+- **Problema**: Layout rotto nell'archivio (3 card sopra + 1 sotto invece di grid corretto)
+- **Causa**: Card avevano flex/max-width dal carousel che sovrapponevano il grid
+- **Soluzione**:
+  - Aggiunto CSS specifico per `.convenzioni-grid .convenzione-card` che resetta flex e imposta width: 100%
+  - Aumentato gap su desktop per maggiore respiro
+  - Aggiunto padding-top al content-wrapper
+- **File**: `archive-convenzione.php`
+
+**Lavori Codex Confermati OK**:
+- ✅ Fix hover underline (solo su testi, non su card/menu)
+- ✅ Font-size greeting ridotto a `var(--font-size-base)`
+- ✅ Carousel 3 card su desktop con calc() dinamico
+- ✅ CSS compilati aggiornati
+
+**Action Required**: Compilare SCSS con `npm run build` per applicare tutte le modifiche CSS
+
+---
+
 ### ✅ Fix Navigazione + Avatar System (16 Ottobre 2025 - Mattina)
 **Navigazione Desktop**:
 - **Fix**: Corretto link "Corsi" e "Organigramma" nella sidebar desktop che non funzionavano

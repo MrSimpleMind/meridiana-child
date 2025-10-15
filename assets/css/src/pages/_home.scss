@@ -125,7 +125,7 @@
 // -----------------------------------------------------------------------------
 
 .convenzioni-carousel {
-    position: relative; // Per posizionare gli indicatori
+    position: relative; // Per posizionare controlli
 }
 
 .convenzioni-carousel__wrapper {
@@ -140,18 +140,6 @@
     scrollbar-width: none; // Firefox
     &::-webkit-scrollbar {
         display: none; // Chrome, Safari
-    }
-}
-
-// Indicatori carousel (mobile only)
-.convenzioni-carousel__indicators {
-    display: flex;
-    justify-content: center;
-    gap: var(--space-2);
-    margin-top: var(--space-4);
-    
-    @media (min-width: 768px) {
-        display: none; // Nascondi su desktop
     }
 }
 
@@ -187,17 +175,52 @@
     }
 }
 
-.carousel-indicator {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background-color: var(--color-border-input);
-    transition: all 0.3s ease;
+// Controlli navigazione carousel (solo desktop)
+.carousel-control {
+    display: none;
     
-    &.active {
+    @media (min-width: 768px) {
+        display: flex;
+        position: absolute;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 48px;
+        height: 48px;
+        border-radius: var(--radius-full);
+        background-color: var(--color-bg-primary);
+        border: 2px solid var(--color-border);
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        color: var(--color-text-primary);
+        box-shadow: var(--shadow-md);
+        z-index: 10;
+    }
+    
+    i, svg {
         width: 24px;
-        border-radius: 4px;
+        height: 24px;
+    }
+    
+    &:hover:not(:disabled) {
         background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        color: white;
+        transform: translateY(-50%) scale(1.1);
+    }
+    
+    &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+    }
+    
+    &--prev {
+        left: -24px;
+    }
+    
+    &--next {
+        right: -24px;
     }
 }
 
@@ -371,7 +394,7 @@
     }
     
     .home-header {
-        padding: var(--space-6) 0;
+        padding: var(--space-2) 0 var(--space-4);
         margin-bottom: var(--space-8);
         border-bottom: 1px solid var(--color-border-light);
         
@@ -441,7 +464,8 @@
     }
     
     .home-header {
-        padding: var(--space-10) 0;
+        // Mantieni padding ridotto anche su schermi grandi
+        padding: var(--space-2) 0 var(--space-4);
         margin-bottom: var(--space-12);
     }
     

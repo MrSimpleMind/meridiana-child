@@ -61,7 +61,7 @@ $total_posts = $convenzioni->post_count;
         <?php endwhile; wp_reset_postdata(); ?>
     </div>
     
-    <?php if ($total_posts > 1): // Mostra hint e indicatori solo se ci sono più elementi ?>
+    <?php if ($total_posts > 1): // Mostra hint e controlli solo se ci sono più elementi ?>
     
     <!-- Hint scroll (solo mobile) -->
     <div class="convenzioni-carousel__scroll-hint">
@@ -69,35 +69,68 @@ $total_posts = $convenzioni->post_count;
         <i data-lucide="chevron-right"></i>
     </div>
     
-    <!-- Indicatori -->
-    <div class="convenzioni-carousel__indicators">
-        <?php for ($i = 0; $i < $total_posts; $i++): ?>
-        <span class="carousel-indicator <?php echo $i === 0 ? 'active' : ''; ?>" data-index="<?php echo $i; ?>"></span>
-        <?php endfor; ?>
-    </div>
+    <!-- Controlli navigazione (solo desktop) -->
+    <button class="carousel-control carousel-control--prev" id="carousel-prev" aria-label="Convenzione precedente">
+        <i data-lucide="chevron-left"></i>
+    </button>
+    <button class="carousel-control carousel-control--next" id="carousel-next" aria-label="Convenzione successiva">
+        <i data-lucide="chevron-right"></i>
+    </button>
+    
     <?php endif; ?>
 </div>
 
 <script>
-// Script per aggiornare gli indicatori durante lo scroll (solo mobile)
-if (window.innerWidth < 768) {
+// Gestione controlli navigazione carousel (solo desktop)
+if (window.innerWidth >= 768) {
     const wrapper = document.querySelector('.convenzioni-carousel__wrapper');
-    const indicators = document.querySelectorAll('.carousel-indicator');
+    const prevBtn = document.getElementById('carousel-prev');
+    const nextBtn = document.getElementById('carousel-next');
     const scrollHint = document.querySelector('.convenzioni-carousel__scroll-hint');
     
-    if (wrapper && indicators.length > 0) {
-        // Aggiorna indicatori durante scroll
-        wrapper.addEventListener('scroll', function() {
+    if (wrapper && prevBtn && nextBtn) {
+        // Calcola la larghezza di scroll (1 card alla volta)
+        const getScrollAmount = () => {
+            const card = wrapper.querySelector('.convenzione-card');
+            if (card) {
+                const cardWidth = card.offsetWidth;
+                const gap = parseFloat(getComputedStyle(wrapper).gap) || 16;
+                return cardWidth + gap;
+            }
+            return wrapper.offsetWidth / 3;
+        };
+        
+        // Aggiorna stato pulsanti
+        const updateButtons = () => {
             const scrollLeft = wrapper.scrollLeft;
-            const cardWidth = 280 + 16; // Card width + gap
-            const activeIndex = Math.round(scrollLeft / cardWidth);
+            const maxScroll = wrapper.scrollWidth - wrapper.clientWidth;
             
-            indicators.forEach((indicator, index) => {
-                indicator.classList.toggle('active', index === activeIndex);
-            });
-            
-            // Nascondi hint dopo primo scroll
-            if (scrollLeft > 10 && scrollHint) {
+            prevBtn.disabled = scrollLeft <= 0;
+            nextBtn.disabled = scrollLeft >= maxScroll - 1;
+        };
+        
+        // Event listeners
+        prevBtn.addEventListener('click', () => {
+            wrapper.scrollBy({ left: -getScrollAmount(), behavior: 'smooth' });
+        });
+        
+        nextBtn.addEventListener('click', () => {
+            wrapper.scrollBy({ left: getScrollAmount(), behavior: 'smooth' });
+        });
+        
+        wrapper.addEventListener('scroll', updateButtons);
+        
+        // Stato iniziale
+        updateButtons();
+    }
+} else {
+    // Mobile: nascondi hint dopo primo scroll
+    const wrapper = document.querySelector('.convenzioni-carousel__wrapper');
+    const scrollHint = document.querySelector('.convenzioni-carousel__scroll-hint');
+    
+    if (wrapper && scrollHint) {
+        wrapper.addEventListener('scroll', function() {
+            if (wrapper.scrollLeft > 10) {
                 scrollHint.style.display = 'none';
             }
         });

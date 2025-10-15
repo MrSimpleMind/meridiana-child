@@ -69,6 +69,10 @@ get_header();
 </div>
 
 <style>
+.content-wrapper {
+    padding-top: var(--space-6);
+}
+
 .archive-header {
     margin-bottom: var(--space-8);
     padding-bottom: var(--space-6);
@@ -98,13 +102,22 @@ get_header();
 @media (min-width: 768px) {
     .convenzioni-grid {
         grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-6);
     }
 }
 
 @media (min-width: 1200px) {
     .convenzioni-grid {
         grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-8);
     }
+}
+
+/* Card convenzione per archivio */
+.convenzioni-grid .convenzione-card {
+    flex: none;
+    max-width: none;
+    width: 100%;
 }
 </style>
 

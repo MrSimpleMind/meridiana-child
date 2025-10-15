@@ -235,6 +235,24 @@ Costo per utente/anno: $1.86
 2. **In base al task dell'utente**: Leggi i file specifici secondo l'indice sopra
 3. **Dopo completamento task**: Aggiorna la sezione "Timeline e Stato Avanzamento" in questo file
 
+### ⚠️ REGOLE CRITICHE - COMPILAZIONE CSS
+
+**SE le modifiche CSS/SCSS non vengono applicate nel browser:**
+
+1. **VERIFICA quale file viene caricato**: Controlla `functions.php` → `wp_enqueue_style` → quale file CSS viene effettivamente caricato?
+2. **VERIFICA quale file viene generato**: Controlla `package.json` → script `build:scss` → quale file genera? (`main.css` o `main.min.css`?)
+3. **DEVONO COINCIDERE**: Il file caricato da WordPress DEVE essere lo stesso generato da sass
+4. **FIX**: Se non coincidono, modifica `functions.php` per caricare il file corretto
+
+**MAI E POI MAI:**
+- ❌ Scrivere hotfix CSS inline con `<style>` nei template PHP
+- ❌ Usare `!important` per "forzare" stili che non funzionano
+- ❌ Aggiungere CSS temporaneo "da rimuovere dopo"
+
+**Il problema è SEMPRE nella pipeline di compilazione, mai nel CSS stesso.**
+
+---
+
 ### Priorità Contestuali
 
 - **Design/UI** → File 01
