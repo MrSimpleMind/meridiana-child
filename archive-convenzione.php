@@ -9,7 +9,10 @@ get_header();
 
 <div class="content-wrapper">
     <div class="container">
-        <h1>Tutte le convenzioni</h1>
+        <header class="archive-header">
+            <h1 class="archive-title">Tutte le convenzioni</h1>
+            <p class="archive-description">Scopri tutte le convenzioni attive per i dipendenti</p>
+        </header>
         
         <?php
         $convenzioni = new WP_Query(array(
@@ -29,8 +32,10 @@ get_header();
         if ($convenzioni->have_posts()): ?>
             <div class="convenzioni-grid">
                 <?php while ($convenzioni->have_posts()): $convenzioni->the_post(); 
-                    $immagine_id = get_post_thumbnail_id();
+                    // CORRETTO: USA CAMPO ACF 'immagine_evidenza' che ritorna ID
+                    $immagine_id = get_field('immagine_evidenza');
                     $immagine_url = $immagine_id ? wp_get_attachment_image_url($immagine_id, 'medium') : '';
+                    
                     $descrizione_raw = get_field('descrizione');
                     $descrizione = $descrizione_raw ? wp_trim_words(strip_tags($descrizione_raw), 20) : '';
                 ?>
@@ -64,11 +69,30 @@ get_header();
 </div>
 
 <style>
+.archive-header {
+    margin-bottom: var(--space-8);
+    padding-bottom: var(--space-6);
+    border-bottom: 1px solid var(--color-border-light);
+}
+
+.archive-title {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    margin: 0 0 var(--space-2);
+}
+
+.archive-description {
+    font-size: var(--font-size-base);
+    color: var(--color-text-secondary);
+    margin: 0;
+}
+
 .convenzioni-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 24px;
-    margin-top: 32px;
+    gap: var(--space-6);
+    margin-top: var(--space-6);
 }
 
 @media (min-width: 768px) {

@@ -15,6 +15,11 @@ if (!defined('ABSPATH')) {
     exit;
 }
 
+// Aumenta memory limit per evitare fatal errors
+if (!defined('WP_MEMORY_LIMIT')) {
+    define('WP_MEMORY_LIMIT', '256M');
+}
+
 // Definisci costanti utili
 define('MERIDIANA_CHILD_VERSION', '1.0.0');
 define('MERIDIANA_CHILD_DIR', get_stylesheet_directory());
@@ -137,6 +142,9 @@ require_once MERIDIANA_CHILD_DIR . '/includes/design-system-demo.php';
 
 // File management system
 // require_once MERIDIANA_CHILD_DIR . '/includes/file-management.php';
+
+// AJAX Handlers
+require_once MERIDIANA_CHILD_DIR . '/includes/ajax-user-profile.php';
 
 // Helper functions
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';

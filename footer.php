@@ -6,6 +6,14 @@
 ?>
 
         <?php 
+        // User Profile Modal (solo per utenti loggati)
+        if (is_user_logged_in()) {
+            get_template_part('templates/parts/user-profile-modal');
+        }
+        
+        // Sidebar Navigation Desktop (sempre visibile su desktop)
+        get_template_part('templates/parts/navigation/sidebar-nav'); 
+        
         // Bottom Navigation Mobile
         get_template_part('templates/parts/navigation/bottom-nav'); 
         ?>

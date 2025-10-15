@@ -9,6 +9,50 @@
 
 ## 🔧 FIX APPLICATI - Sessione Corrente
 
+### ✅ Fix Convenzioni + User Profile Modal (15 Ottobre 2025 - Sera - Sessione 2)
+**Convenzioni Carousel**:
+- **Mobile**: Aggiunto feedback visivo click (cursor pointer, bordo rosso hover, scale al tap)
+- **Mobile**: Hint "Scorri per vedere altre convenzioni" con animazione pulsante
+- **Mobile**: Script auto-hide hint dopo primo scroll
+- **Result**: UX molto più chiara, utente capisce subito che può scrollare
+
+**User Profile Modal - Sistema Completo**:
+- **CSS**: Modal full-screen responsive con animazioni (`_user-profile-modal.scss`)
+- **PHP**: Template modal con form completo (`user-profile-modal.php`)
+- **JavaScript**: Open/close modal, avatar preview, AJAX save
+- **Backend**: AJAX handler con security (`ajax-user-profile.php`)
+- **Features**: 
+  - Upload avatar con preview real-time
+  - Cambio password sicuro (verifica password attuale)
+  - Validazione client + server side
+  - Campi read-only per dati admin (email, UDO, profilo)
+  - Custom avatar system con filter WordPress
+  - Loading spinner durante salvataggio
+- **Trigger**: Click avatar home + sidebar apre modal
+- **Security**: Nonce, sanitization, validazione password, file upload sicuro
+- **File creati**: 
+  - `assets/css/src/components/_user-profile-modal.scss`
+  - `templates/parts/user-profile-modal.php`
+  - `includes/ajax-user-profile.php`
+
+### ✅ Ottimizzazioni Home Page Mobile & Desktop (15 Ottobre 2025 - Sera)
+- **Mobile**: Ridotto font-size "Ciao [Nome]" da `2xl` a `xl` (allineato con titoli sezioni)
+- **Mobile**: Aggiunto carousel wrapper con indicatori visivi per convenzioni
+- **Mobile**: Indicatori carousel animati (pallini che mostrano posizione scroll)
+- **Mobile**: Rimosso padding bottom-nav (da 8px a 0px per look più pulito)
+- **Desktop**: Creata sidebar navigation completa (sostituisce bottom nav)
+- **Desktop**: Sidebar con logo, menu, user info e logout
+- **Desktop**: Layout home ottimizzato con max-width e spacing migliorati
+- **Desktop**: Grid convenzioni 2 colonne (768px) e 3 colonne (1200px+)
+- **Desktop**: News e Salute in 2 colonne su desktop
+- **Fix**: Convenzioni ora usano campo ACF `immagine` invece di post thumbnail
+- **File modificati**:
+  - `assets/css/src/pages/_home.scss`
+  - `assets/css/src/layout/_navigation.scss`
+  - `templates/parts/home/convenzioni-carousel.php`
+  - `templates/parts/navigation/sidebar-nav.php` (nuovo)
+  - `footer.php` (aggiunta sidebar)
+
 ### ✅ Correzione Campi ACF (15 Ottobre 2025)
 - **Fix**: Corretto campo `descrizione_breve` → `descrizione` in tutti i template convenzioni
   - `templates/parts/home/convenzioni-carousel.php`
@@ -73,7 +117,7 @@
 ### 1.3 Navigazione e Layout ✅
 - [x] **P0** - Implementare bottom navigation mobile (HTML/CSS/Alpine.js)
 - [x] **P0** - Integrare Lucide Icons
-- [ ] **P0** - Creare desktop header navigation
+- [x] **P0** - Creare sidebar navigation desktop ✅
 - [ ] **P0** - Implementare menu overlay mobile
 - [ ] **P0** - Testare navigation su dispositivi touch
 
