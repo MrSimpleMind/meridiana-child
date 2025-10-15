@@ -165,6 +165,10 @@ Roadmap sviluppo fase per fase, checklist pre-lancio, testing, manutenzione, sca
 - [x] Helper functions base
 - [x] Security hardening base
 - [x] Tasklist priorità creata
+- [x] Design System SCSS completo (variabili, componenti, responsive)
+- [x] Setup compilazione SCSS/JS (npm, webpack, package.json)
+- [x] Risoluzione errori compilazione (mixin custom-scrollbar)
+- [x] File demo Design System per testing componenti
 
 ### 🟡 In Corso
 - [ ] Verifica ACF JSON sync funzionante
@@ -181,8 +185,8 @@ Roadmap sviluppo fase per fase, checklist pre-lancio, testing, manutenzione, sca
 - [ ] Testing cross-browser
 - [ ] Launch beta
 
-**Ultimo Aggiornamento**: 14 Ottobre 2025, 22:30  
-**Fase Corrente**: 1 - Fondamenta (Setup e Configurazione Base)
+**Ultimo Aggiornamento**: 15 Ottobre 2025, 10:45  
+**Fase Corrente**: 1 - Fondamenta (Setup e Configurazione Base - SCSS/JS Completato)
 
 ---
 

@@ -972,9 +972,56 @@ assets/css/src/
 ### Build Process
 
 ```bash
-npm run watch  # Development
-npm run build  # Production
+# Installazione dipendenze (prima volta)
+npm install
+
+# Development (watch mode con auto-compile)
+npm run watch
+
+# Build singoli
+npm run build:scss  # Compila solo SCSS
+npm run build:js    # Compila solo JS
+
+# Production (tutto insieme)
+npm run build
 ```
+
+#### ✅ Risoluzione Errori Compilazione (Ottobre 2025)
+
+**Problema**: Il mixin `custom-scrollbar` usava `darken($thumb-color, 10%)` con default `var(--color-border-input)`, causando errore "is not a color" perché Sass non può manipolare CSS custom properties.
+
+**Soluzione Implementata**:
+```scss
+// _mixins.scss - Line 171
+// Usa color-mix() CSS per compatibilità con custom properties
+background: $thumb-color;
+background: color-mix(in srgb, #{$thumb-color}, black 10%);
+```
+
+**Altri Fix**:
+- Creato `webpack.config.js` per configurare entry point corretto (`assets/js/src/index.js`)
+- Creato `assets/js/src/index.js` come entry point minimale con evento `meridiana:frontend-ready`
+- Bundle JS generato correttamente in `assets/js/dist/main.min.js`
+
+**Warning Residui** (da gestire in futuro):
+- `@import` deprecato → Migrare a `@use/@forward` (Dart Sass 3.0)
+- Funzioni globali `darken()` → Usare `sass:color.adjust()`
+
+#### 📋 File Demo Design System
+
+È disponibile un file demo per testare tutti i componenti:
+```
+templates/design-system-demo.php
+includes/design-system-demo.php
+```
+
+**Come visualizzarlo**:
+1. Assicurati di essere loggato come amministratore
+2. Aggiungi `?design-system-demo=1` alla URL del tuo sito
+   - Esempio: `https://nuova-formazione.local/?design-system-demo=1`
+3. Vedrai una pagina vetrina con tutti i componenti stilati
+
+**Nota**: Visibile solo agli amministratori autenticati. Per disattivare, rimuovi la `require_once` corrispondente da `functions.php` e cancella i due file.
 
 ---
 
