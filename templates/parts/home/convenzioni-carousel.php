@@ -29,7 +29,8 @@ if (!$convenzioni->have_posts()) {
     <?php while ($convenzioni->have_posts()): $convenzioni->the_post(); 
         $immagine_id = get_post_thumbnail_id();
         $immagine_url = $immagine_id ? wp_get_attachment_image_url($immagine_id, 'medium') : '';
-        $descrizione = get_field('descrizione_breve') ? get_field('descrizione_breve') : get_the_excerpt();
+        $descrizione_raw = get_field('descrizione');
+        $descrizione = $descrizione_raw ? wp_trim_words(strip_tags($descrizione_raw), 15) : get_the_excerpt();
     ?>
     
     <a href="<?php the_permalink(); ?>" class="convenzione-card">

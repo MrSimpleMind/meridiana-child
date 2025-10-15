@@ -28,7 +28,8 @@ get_header();
         if ($salute->have_posts()): ?>
             <div class="salute-list">
                 <?php while ($salute->have_posts()): $salute->the_post(); 
-                    $excerpt = has_excerpt() ? get_the_excerpt() : wp_trim_words(get_the_content(), 20);
+                    $contenuto = get_field('contenuto');
+                    $excerpt = $contenuto ? wp_trim_words(strip_tags($contenuto), 20) : '';
                 ?>
                 
                 <a href="<?php the_permalink(); ?>" class="salute-item">

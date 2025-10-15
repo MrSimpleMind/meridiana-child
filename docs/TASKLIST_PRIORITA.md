@@ -1,9 +1,41 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 15 Ottobre 2025 - 10:00  
+> **Aggiornato**: 15 Ottobre 2025 - [ORA ATTUALE]  
 > **Stato**: In Sviluppo - Fase 1 COMPLETATA AL 100% 🎉  
 > **Hotfix Applicato**: CSS temporaneo attivo (compilare SCSS per soluzione definitiva)  
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+
+---
+
+## 🔧 FIX APPLICATI - Sessione Corrente
+
+### ✅ Correzione Campi ACF (15 Ottobre 2025)
+- **Fix**: Corretto campo `descrizione_breve` → `descrizione` in tutti i template convenzioni
+  - `templates/parts/home/convenzioni-carousel.php`
+  - `archive-convenzione.php`
+  - `page-archivio-convenzioni.php`
+- **Fix**: Corretto campo `get_the_content()` → `get_field('contenuto')` in tutti i template salute
+  - `templates/parts/home/salute-list.php`
+  - `archive-salute-e-benessere-l.php`
+  - `page-archivio-salute.php`
+- **Fix**: Link "Vedi tutto" in home ora usano `get_post_type_archive_link()` invece di cercare pagine per titolo
+  - `page-home.php` (sezioni convenzioni e salute)
+
+### 📁 Riorganizzazione File (15 Ottobre 2025)
+- **Spostati**: 7 file .md dalla root a `docs/archive/`
+  - CHANGELOG.md
+  - COMPILAZIONE_SCSS.md
+  - FIX_APPLICATI.md
+  - FIX_SESSIONE_2.md
+  - IMPLEMENTAZIONE_DESIGN_SYSTEM.md
+  - IMPLEMENTAZIONE_HOME.md
+  - RIEPILOGO_SESSIONE.md
+- **Mantenuto**: README.md rimane in root per convenzione
+
+### 🔍 Note
+- Has Archive: Abilitato per tutti i CPT come richiesto
+- Struttura file: Verificata e organizzata correttamente
+- Testing: Home page, convenzioni e salute ora mostrano descrizioni/estratti corretti
 
 ---
 

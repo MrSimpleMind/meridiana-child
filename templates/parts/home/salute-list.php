@@ -20,8 +20,9 @@ if (!$salute->have_posts()) {
 
 <div class="salute-list">
     <?php while ($salute->have_posts()): $salute->the_post(); 
-        // Usa l'excerpt WordPress standard o il contenuto
-        $excerpt = has_excerpt() ? get_the_excerpt() : wp_trim_words(get_the_content(), 12);
+        // Usa il campo ACF contenuto
+        $contenuto = get_field('contenuto');
+        $excerpt = $contenuto ? wp_trim_words(strip_tags($contenuto), 12) : '';
     ?>
     
     <a href="<?php the_permalink(); ?>" class="salute-item">

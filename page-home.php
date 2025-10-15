@@ -38,16 +38,12 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
             <div class="home-section__header">
                 <h2 class="home-section__title">Per te</h2>
                 <?php 
-                // Cerca la pagina per titolo invece che per slug
-                $convenzioni_page = get_page_by_title('Archivio convenzioni');
-                echo '<!-- DEBUG Convenzioni: ' . ($convenzioni_page ? 'Trovata ID: ' . $convenzioni_page->ID : 'NON TROVATA') . ' -->';
-                if ($convenzioni_page):
+                $convenzioni_link = get_post_type_archive_link('convenzione');
+                if ($convenzioni_link):
                 ?>
-                <a href="<?php echo get_permalink($convenzioni_page); ?>" class="btn btn-link">
+                <a href="<?php echo esc_url($convenzioni_link); ?>" class="btn btn-link">
                     Vedi tutto <i data-lucide="arrow-right"></i>
                 </a>
-                <?php else: ?>
-                <!-- DEBUG: Pagina Archivio convenzioni non trovata -->
                 <?php endif; ?>
             </div>
             
@@ -75,16 +71,12 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
             <div class="home-section__header">
                 <h2 class="home-section__title">Salute e benessere</h2>
                 <?php 
-                // Cerca la pagina per titolo invece che per slug
-                $salute_page = get_page_by_title('Archivio salute e benessere');
-                echo '<!-- DEBUG Salute: ' . ($salute_page ? 'Trovata ID: ' . $salute_page->ID : 'NON TROVATA') . ' -->';
-                if ($salute_page):
+                $salute_link = get_post_type_archive_link('salute-e-benessere-l');
+                if ($salute_link):
                 ?>
-                <a href="<?php echo get_permalink($salute_page); ?>" class="btn btn-link">
+                <a href="<?php echo esc_url($salute_link); ?>" class="btn btn-link">
                     Vedi tutto <i data-lucide="arrow-right"></i>
                 </a>
-                <?php else: ?>
-                <!-- DEBUG: Pagina Archivio salute e benessere non trovata -->
                 <?php endif; ?>
             </div>
             
