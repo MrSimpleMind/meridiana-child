@@ -1,0 +1,381 @@
+// =============================================================================
+// SINGLE TEMPLATES - MOBILE FIRST
+// Convenzioni, News, Salute e Benessere
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// PAGE WRAPPER
+// -----------------------------------------------------------------------------
+
+.single-convenzione-page,
+.single-news-page,
+.single-salute-page {
+    min-height: 100vh;
+    background-color: var(--color-bg-tertiary);
+    padding-bottom: 100px; // Spazio per bottom nav
+    
+    @media (min-width: 768px) {
+        padding-bottom: var(--space-8);
+    }
+}
+
+.single-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-4);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-8) var(--space-6);
+    }
+    
+    @media (min-width: 1200px) {
+        padding: var(--space-10) var(--space-8);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// HEADER CON BACK LINK
+// -----------------------------------------------------------------------------
+
+.single-header {
+    margin-bottom: var(--space-6);
+}
+
+.back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
+    color: var(--color-text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    i, svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    &:hover {
+        color: var(--color-primary);
+        gap: var(--space-3);
+    }
+    
+    &:active {
+        transform: translateX(-2px);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// CONTENT CARD
+// -----------------------------------------------------------------------------
+
+.single-content {
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-sm);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-8);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// TITOLO
+// -----------------------------------------------------------------------------
+
+.single-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-text-primary);
+    line-height: var(--line-height-tight);
+    margin: 0 0 var(--space-4);
+    
+    @media (min-width: 768px) {
+        font-size: var(--font-size-3xl);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// STATUS BADGE (convenzioni)
+// -----------------------------------------------------------------------------
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--space-4);
+    
+    i, svg {
+        width: 16px;
+        height: 16px;
+    }
+    
+    &--error {
+        background-color: rgba(220, 38, 38, 0.1);
+        color: var(--color-error);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// NEWS META
+// -----------------------------------------------------------------------------
+
+.news-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border-light);
+    
+    &__item {
+        display: inline-flex;
+        align-items: center;
+        gap: var(--space-2);
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+        
+        i, svg {
+            width: 16px;
+            height: 16px;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// BODY CONTENT (WYSIWYG)
+// -----------------------------------------------------------------------------
+
+.single-body {
+    &.wysiwyg-content {
+        line-height: var(--line-height-relaxed);
+        color: var(--color-text-tertiary);
+        
+        // Headings
+        h2, h3, h4 {
+            margin-top: var(--space-6);
+            margin-bottom: var(--space-3);
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+        }
+        
+        h2 {
+            font-size: var(--font-size-xl);
+        }
+        
+        h3 {
+            font-size: var(--font-size-lg);
+        }
+        
+        // Paragraphs
+        p {
+            margin-bottom: var(--space-4);
+            
+            &:last-child {
+                margin-bottom: 0;
+            }
+        }
+        
+        // Lists
+        ul, ol {
+            margin: var(--space-4) 0;
+            padding-left: var(--space-6);
+        }
+        
+        li {
+            margin-bottom: var(--space-2);
+        }
+        
+        // Links
+        a {
+            color: var(--color-primary);
+            text-decoration: underline;
+            transition: color 0.2s ease;
+            
+            &:hover {
+                color: var(--color-primary-dark);
+            }
+        }
+        
+        // Strong/Bold
+        strong, b {
+            font-weight: var(--font-weight-semibold);
+            color: var(--color-text-primary);
+        }
+        
+        // Images
+        img {
+            max-width: 100%;
+            height: auto;
+            border-radius: var(--radius-md);
+            margin: var(--space-6) 0;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// CONTENT SECTIONS (Allegati, Contatti, Risorse)
+// -----------------------------------------------------------------------------
+
+.content-section {
+    margin-top: var(--space-8);
+    padding-top: var(--space-8);
+    border-top: 1px solid var(--color-border-light);
+    
+    &:first-of-type {
+        margin-top: var(--space-6);
+        padding-top: 0;
+        border-top: none;
+    }
+}
+
+.section-heading {
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    margin: 0 0 var(--space-4);
+}
+
+// -----------------------------------------------------------------------------
+// RESOURCE LIST (Allegati e Risorse)
+// -----------------------------------------------------------------------------
+
+.resource-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.resource-card {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background-color: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    box-shadow: var(--shadow-xs);
+    
+    &:hover {
+        border-color: var(--color-primary);
+        background-color: rgba(171, 17, 32, 0.03);
+        transform: translateX(4px);
+        
+        .resource-card__arrow {
+            color: var(--color-primary);
+            transform: translateX(2px);
+        }
+    }
+    
+    &:active {
+        transform: translateX(2px);
+    }
+    
+    &__icon {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(171, 17, 32, 0.1);
+        border-radius: var(--radius-md);
+        color: var(--color-primary);
+        
+        i, svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+    
+    &__content {
+        flex: 1;
+        min-width: 0; // Per ellipsis
+    }
+    
+    &__title {
+        display: block;
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--space-1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    &__meta {
+        display: block;
+        font-size: var(--font-size-sm);
+        color: var(--color-text-secondary);
+    }
+    
+    &__arrow {
+        flex-shrink: 0;
+        color: var(--color-text-muted);
+        transition: all 0.2s ease;
+        
+        i, svg {
+            width: 20px;
+            height: 20px;
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// CONTACT BOX (per convenzioni)
+// -----------------------------------------------------------------------------
+
+.contact-box {
+    &.wysiwyg-content {
+        padding: var(--space-6);
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius-md);
+        border-left: 4px solid var(--color-primary);
+        
+        // Email e telefono cliccabili
+        a[href^="mailto:"],
+        a[href^="tel:"] {
+            color: var(--color-primary);
+            font-weight: var(--font-weight-semibold);
+            text-decoration: none;
+            
+            &:hover {
+                text-decoration: underline;
+            }
+        }
+    }
+}
+
+// -----------------------------------------------------------------------------
+// CTA BOX (per news con link esterni)
+// -----------------------------------------------------------------------------
+
+.cta-box {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border-light);
+    text-align: center;
+    
+    @media (min-width: 768px) {
+        text-align: left;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+        
+        @media (min-width: 768px) {
+            width: auto;
+        }
+    }
+}

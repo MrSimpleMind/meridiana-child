@@ -87,14 +87,33 @@ function handle_update_user_profile() {
         update_user_meta($user_id, 'user_phone', $user_phone);
     }
     
-    // Gestione avatar predefinito
-    if (isset($_POST['predefined_avatar'])) {
-        $avatar_key = sanitize_text_field($_POST['predefined_avatar']);
-        $avatar_updated = meridiana_update_user_avatar($user_id, $avatar_key);
+    // Gestione avatar selezionato (nuovo sistema con immagini)
+    if (isset($_POST['user_avatar']) && !empty($_POST['user_avatar'])) {
+        // Non usare sanitize_file_name() perché rimuove gli spazi!
+        // Usa stripslashes() + trim() per sicurezza ma mantieni il nome originale
+        $avatar_filename = trim(stripslashes($_POST['user_avatar']));
         
-        if (!$avatar_updated) {
-            wp_send_json_error('Profilo aggiornato ma errore nel salvataggio dell\'avatar.');
+        // Validazione: il filename deve contenere solo caratteri validi per file
+        if (!preg_match('/^[\w\s\-\.()]+\.(jpg|jpeg|png|gif)$/i', $avatar_filename)) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Avatar AJAX] Invalid filename format: ' . $avatar_filename);
+            }
+            wp_send_json_error('Nome avatar non valido.');
             return;
+        }
+        
+        // Salva avatar scelto
+        $avatar_saved = meridiana_save_user_avatar($user_id, $avatar_filename);
+        
+        if (!$avatar_saved) {
+            if (defined('WP_DEBUG') && WP_DEBUG) {
+                error_log('[Avatar AJAX] Failed to save avatar for user ' . $user_id . ': ' . $avatar_filename);
+            }
+            wp_send_json_error('Avatar non valido o file non trovato.');
+            return;
+        }
+        if (defined('WP_DEBUG') && WP_DEBUG) {
+            error_log('[Avatar AJAX] ✓ Avatar salvato - ' . $avatar_filename . ' per user ' . $user_id);
         }
     }
     

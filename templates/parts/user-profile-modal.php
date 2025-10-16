@@ -2,10 +2,12 @@
 /**
  * User Profile Modal
  * Modal per modificare informazioni profilo utente
+ * Sistema avatar: Immagini reali da cartella /assets/images/avatar/
  */
 
 $current_user = wp_get_current_user();
 $user_meta = get_user_meta($current_user->ID);
+$selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
 ?>
 
 <div class="user-profile-modal" id="userProfileModal">
@@ -32,16 +34,8 @@ $user_meta = get_user_meta($current_user->ID);
                 
                 <!-- Avatar Selection -->
                 <div class="profile-avatar-section">
-                    <!-- Preview Avatar Corrente -->
-                    <div class="profile-avatar-preview">
-                        <label class="profile-form-label">Avatar Attuale</label>
-                        <div id="avatarPreview">
-                            <?php echo meridiana_get_user_avatar($current_user->ID, 'large'); ?>
-                        </div>
-                    </div>
-                    
-                    <!-- Avatar Selector -->
-                    <?php echo meridiana_render_avatar_selector($current_user->ID); ?>
+                    <!-- Avatar Selector Grid -->
+                    <?php echo meridiana_render_avatar_selector_html($current_user->ID); ?>
                 </div>
                 
                 <!-- Nome -->
@@ -193,48 +187,6 @@ function closeUserProfileModal() {
     }
 }
 
-// Handle avatar selection change
-document.addEventListener('DOMContentLoaded', function() {
-    // Update avatar preview when radio changes
-    const avatarRadios = document.querySelectorAll('input[name="predefined_avatar"]');
-    if (avatarRadios) {
-        avatarRadios.forEach(radio => {
-            radio.addEventListener('change', function() {
-                updateAvatarPreview(this.value);
-            });
-        });
-    }
-});
-
-function updateAvatarPreview(avatarKey) {
-    const preview = document.getElementById('avatarPreview');
-    if (!preview) return;
-    
-    // Avatar options
-    const avatars = {
-        'user-blue': { icon: 'user', color: '#3B82F6' },
-        'briefcase-green': { icon: 'briefcase', color: '#10B981' },
-        'user-check-purple': { icon: 'user-check', color: '#8B5CF6' },
-        'shield-orange': { icon: 'shield', color: '#F59E0B' },
-        'heart-pink': { icon: 'heart', color: '#EC4899' },
-        'users-teal': { icon: 'users', color: '#14B8A6' }
-    };
-    
-    const avatar = avatars[avatarKey];
-    if (!avatar) return;
-    
-    preview.innerHTML = `
-        <div class="user-avatar user-avatar--large" style="width: 64px; height: 64px; background-color: ${avatar.color};">
-            <i data-lucide="${avatar.icon}" style="width: 32px; height: 32px; color: white;"></i>
-        </div>
-    `;
-    
-    // Re-initialize Lucide icons
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-}
-
 // Salva profilo
 function saveUserProfile() {
     const form = document.getElementById('userProfileForm');
@@ -268,8 +220,6 @@ function saveUserProfile() {
     // Prepara FormData
     const formData = new FormData(form);
     formData.append('action', 'update_user_profile');
-    
-    // Non serve più upload file, usiamo avatar predefiniti
     
     // AJAX Request
     fetch('<?php echo admin_url('admin-ajax.php'); ?>', {

@@ -9,7 +9,6 @@ get_header();
 
 <div class="content-wrapper">
     <div class="container">
-        <h1>Tutte le notizie sulla Salute</h1>
         
         <?php
         $salute = new WP_Query(array(

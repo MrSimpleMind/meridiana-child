@@ -9,7 +9,6 @@ get_header();
 
 <div class="content-wrapper">
     <div class="container">
-        <h1>Tutte le Convenzioni</h1>
         
         <?php
         // Query tutte le convenzioni attive

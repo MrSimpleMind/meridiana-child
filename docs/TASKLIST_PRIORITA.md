@@ -9,6 +9,68 @@
 
 ## 🔧 FIX APPLICATI - Sessione Corrente
 
+### ✅ Avatar System - Debug e Risoluzione Problema (16 Ottobre 2025 - Proseguimento)
+**Problema**: Avatar veniva salvato nel DB con successo ma non visualizzato sulla home page dopo ricarica
+
+**Analisi**: 
+- Due sistemi avatar paralleli: `avatar-system.php` (icone Lucide) e `avatar-selector.php` (file immagini)
+- Sistema attivo: `avatar-selector.php` (28 avatar predefiniti con nomi reali da cartella /assets/images/avatar/)
+- Salvataggio: usermeta `selected_avatar` con nome file completo (es: "medico donna.jpg")
+- Visualizzazione: funzione `meridiana_display_user_avatar()` che legge usermeta e costruisce URL
+
+**Root Cause Identificato**:
+1. Mancanza di verifica fisica che il file esista prima di visualizzare
+2. Nessun debug/logging per diagnosticare il problema
+3. Nessun modo per l'utente di testare lo stato del sistema
+
+**Soluzioni Implementate**:
+
+**1. Avatar Selector - Miglioramenti**
+- ✅ Aggiunto `error_log()` completo con messaggi debug
+- ✅ Verifica fisica che il file esista prima di visualizzare (con logging)
+- ✅ Codice fallback corretto se file non trovato
+- ✅ Maneggio corretto nomi con spazi (rawurlencode)
+- ✅ **Nuova funzione debug pubblica**: `meridiana_avatar_debug_test()`
+  - Visibile a: `?meridiana_avatar_debug=1` (se loggato)
+  - Mostra: User ID, valore DB, esistenza file, URL costruito, preview immagine, lista avatar disponibili
+- **File modificato**: `includes/avatar-selector.php`
+
+**2. AJAX User Profile - Validazione Migliorata**
+- ✅ Aggiunto `trim()` sul filename
+- ✅ Validazione regex per prevenire path traversal
+- ✅ Verifica backend che file esista prima di salvare
+- ✅ Debug logging dettagliato sia per successo che per errori
+- ✅ Messaggi di errore più specifici ("Avatar non valido o file non trovato")
+- **File modificato**: `includes/ajax-user-profile.php`
+
+**3. Documentazione Debug**
+- ✅ Creato artifact completo con guida troubleshooting: "Avatar System - Debug e Risoluzione"
+- ✅ Include:
+  - Istruzioni passo-passo per accedere a debug page
+  - 3 scenari di risoluzione (Selected Avatar = NONE, File non trovato, Errore salvataggio)
+  - Checklist di verifica
+  - Spiegazione del flusso tecnico (salvataggio + visualizzazione)
+  - Troubleshooting avanzato
+
+**Testing da Fare**:
+- [ ] Login come utente
+- [ ] Vai a `?meridiana_avatar_debug=1`
+- [ ] Verifica che "File Exists = ✓ YES" e vedi preview
+- [ ] Se ✗ NO: segui la guida troubleshooting nell'artifact
+- [ ] Se OK: seleziona avatar dal modal, salva e ricarica home
+- [ ] Avatar deve essere visibile nel greeting section + sidebar (desktop)
+
+**File Interessati**:
+- `includes/avatar-selector.php` (riscritto con debug)
+- `includes/ajax-user-profile.php` (validazione migliorata)
+- `templates/parts/user-profile-modal.php` (no changes)
+- `page-home.php` (no changes)
+- `templates/parts/navigation/sidebar-nav.php` (no changes)
+
+**Caveat**: Il sistema assume 28 avatar presenti in `/assets/images/avatar/` con nomi esatti. Se uno manca o il nome è leggermente diverso, non verrà trovato.
+
+---
+
 ### ✅ Correzioni Post-Codex (16 Ottobre 2025 - Pomeriggio)
 **Problema**: Codex ha applicato alcuni fix ma con errori/mancanze
 

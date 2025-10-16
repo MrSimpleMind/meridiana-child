@@ -101,7 +101,7 @@ if (current_user_can('view_analytics')) {
     <!-- Footer con info utente -->
     <div class="sidebar-nav__footer">
         <div class="sidebar-nav__user" onclick="openUserProfileModal()" role="button" tabindex="0" aria-label="Apri profilo utente">
-            <?php echo meridiana_get_user_avatar(get_current_user_id(), 'medium'); ?>
+            <?php echo meridiana_display_user_avatar(get_current_user_id(), 'medium'); ?>
             <div class="user-info">
                 <span class="user-name"><?php echo esc_html($user_name); ?></span>
                 <span class="user-role"><?php echo esc_html($user_role); ?></span>

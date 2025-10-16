@@ -1,0 +1,472 @@
+// =============================================================================
+// PAGINA CONTATTI - MOBILE FIRST
+// Rubrica contatti con ricerca e filtri
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// PAGE WRAPPER
+// -----------------------------------------------------------------------------
+
+.page-contatti {
+    min-height: 100vh;
+    background-color: var(--color-bg-tertiary);
+    padding-bottom: 100px; // Spazio per bottom nav
+    
+    @media (min-width: 768px) {
+        padding-bottom: var(--space-8);
+    }
+}
+
+.contatti-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: var(--space-4) var(--space-4);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-8) var(--space-6);
+    }
+    
+    @media (min-width: 1200px) {
+        padding: var(--space-10) var(--space-8);
+    }
+}
+
+.page-title-section {
+    margin-bottom: var(--space-6);
+}
+
+.page-title {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-primary);
+    margin: 0;
+    
+    @media (min-width: 768px) {
+        font-size: var(--font-size-3xl);
+    }
+}
+
+// -----------------------------------------------------------------------------
+// SEARCH & FILTERS
+// -----------------------------------------------------------------------------
+
+.contatti-filters {
+    margin-bottom: var(--space-16);
+}
+
+// Search Box
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+    transition: all 0.2s ease;
+    
+    &:focus-within {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-focus);
+    }
+    
+    i, svg {
+        width: 20px;
+        height: 20px;
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+    }
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: none;
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    outline: none;
+    
+    &::placeholder {
+        color: var(--color-text-muted);
+    }
+}
+
+.search-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    background: none;
+    border: none;
+    border-radius: var(--radius-full);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-primary);
+    }
+    
+    i, svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+// Filter Group
+.filter-group {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-4);
+    }
+}
+
+.filter-item {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filter-label {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-primary);
+    
+    i, svg {
+        width: 16px;
+        height: 16px;
+        color: var(--color-primary);
+    }
+}
+
+.filter-label__icon {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
+    color: var(--color-primary);
+}
+
+// Filter Wrapper Container
+.filter-wrapper {
+    position: relative;
+    display: flex;
+    gap: var(--space-2);
+}
+
+.filter-select {
+    width: 100%;
+    padding: var(--space-4) var(--space-4);
+    min-height: 48px;
+    font-size: var(--font-size-base);
+    line-height: 1.5;
+    color: transparent;
+    background-color: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right var(--space-3) center;
+    background-size: 20px;
+    padding-right: var(--space-10);
+    
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-focus);
+    }
+    
+    option {
+        color: var(--color-text-primary);
+        background-color: var(--color-bg-primary);
+    }
+}
+
+// Badge per valore selezionato
+.filter-badge {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4);
+    padding-right: var(--space-10);
+    font-size: var(--font-size-base);
+    color: var(--color-text-primary);
+    background-color: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-md);
+    pointer-events: none;
+    gap: var(--space-2);
+    z-index: 1;
+    transition: all 0.2s ease;
+    
+    span {
+        flex: 1;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+.filter-badge__icon {
+    width: 18px;
+    height: 18px;
+    color: var(--color-text-secondary);
+    flex-shrink: 0;
+}
+
+// -----------------------------------------------------------------------------
+// LOADING & NO RESULTS
+// -----------------------------------------------------------------------------
+
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-12);
+    
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 4px solid var(--color-border);
+        border-top-color: var(--color-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+    }
+    
+    p {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-sm);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-12);
+    background-color: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    
+    i, svg {
+        width: 48px;
+        height: 48px;
+        color: var(--color-text-muted);
+    }
+    
+    p {
+        color: var(--color-text-secondary);
+        font-size: var(--font-size-base);
+        margin: 0;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// CONTATTI LIST
+// -----------------------------------------------------------------------------
+
+.contatti-list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    margin-top: var(--space-8);
+}
+
+// -----------------------------------------------------------------------------
+// CONTACT CARD
+// -----------------------------------------------------------------------------
+
+.contact-card {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4);
+    background-color: var(--color-bg-primary);
+    border: 2px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    transition: all 0.2s ease;
+    flex-wrap: wrap;
+    
+    &:hover {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-sm);
+    }
+    
+    @media (min-width: 768px) {
+        flex-wrap: nowrap;
+        align-items: center;
+    }
+    
+    // Avatar
+    &__avatar {
+        flex-shrink: 0;
+        width: 48px;
+        height: 48px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: var(--color-bg-secondary);
+        border-radius: var(--radius-full);
+        color: var(--color-text-secondary);
+        overflow: hidden;
+        
+        i, svg {
+            width: 24px;
+            height: 24px;
+        }
+    }
+    
+    &__avatar-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        display: block;
+    }
+    
+    // Info
+    &__info {
+        flex: 1 1 100%;
+        min-width: 0;
+        
+        @media (min-width: 768px) {
+            flex: 1 1 auto;
+        }
+    }
+    
+    &__name {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin: 0 0 var(--space-1);
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    &__meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--space-2);
+    }
+    
+    // Actions - Mobile: full width, Desktop: side by side
+    &__actions {
+        flex: 1 1 100%;
+        display: flex;
+        flex-direction: row;
+        gap: var(--space-2);
+        
+        @media (min-width: 768px) {
+            flex: 0 0 auto;
+        }
+        
+        .btn {
+            white-space: nowrap;
+            flex: 1;
+            
+            @media (min-width: 768px) {
+                flex: 0 1 auto;
+            }
+            
+            i, svg {
+                width: 16px;
+                height: 16px;
+            }
+        }
+    }
+}
+
+.contact-meta__profilo,
+.contact-meta__udo {
+    display: inline-block;
+    padding: 2px var(--space-2);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-sm);
+}
+
+.contact-meta__profilo {
+    color: var(--color-primary);
+    background-color: rgba(171, 17, 32, 0.1);
+}
+
+// Button variants
+.btn-sm {
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+}
+
+.btn-outline {
+    background-color: transparent;
+    border: 2px solid var(--color-border);
+    color: var(--color-text-primary);
+    
+    &:hover {
+        border-color: var(--color-primary);
+        background-color: rgba(171, 17, 32, 0.05);
+        color: var(--color-primary);
+    }
+}
+
+.btn-primary {
+    background-color: var(--color-primary);
+    border: 2px solid var(--color-primary);
+    color: white;
+    
+    &:hover {
+        background-color: rgba(171, 17, 32, 0.9);
+        border-color: rgba(171, 17, 32, 0.9);
+        color: white;
+    }
+}
+
+// -----------------------------------------------------------------------------
+// RESPONSIVE
+// -----------------------------------------------------------------------------
+
+@media (min-width: 768px) {
+    .contact-card {
+        padding: var(--space-5);
+        
+        &__avatar {
+            width: 56px;
+            height: 56px;
+            
+            i, svg {
+                width: 28px;
+                height: 28px;
+            }
+        }
+        
+        &__name {
+            font-size: var(--font-size-lg);
+        }
+    }
+}

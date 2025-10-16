@@ -136,6 +136,9 @@ require_once MERIDIANA_CHILD_DIR . '/includes/ajax-user-profile.php';
 // Avatar System (predefined icons)
 require_once MERIDIANA_CHILD_DIR . '/includes/avatar-system.php';
 
+// Avatar Selector (avatar predefiniti da immagini)
+require_once MERIDIANA_CHILD_DIR . '/includes/avatar-selector.php';
+
 // Helper functions
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
 

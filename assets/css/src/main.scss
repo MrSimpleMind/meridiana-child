@@ -40,6 +40,7 @@
 @import 'components/forms';
 @import 'components/tables';
 @import 'components/user-profile-modal';
+@import 'components/avatar-selector';
 
 // ========================================
 // 5. LAYOUT
@@ -55,6 +56,9 @@
 // ========================================
 
 @import 'pages/home';
+@import 'pages/single';
+@import 'pages/archive';
+@import 'pages/contatti';
 // @import 'pages/documentazione';
 // @import 'pages/corsi';
 // @import 'pages/analytics';

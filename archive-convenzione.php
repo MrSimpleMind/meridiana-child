@@ -9,11 +9,7 @@ get_header();
 
 <div class="content-wrapper">
     <div class="container">
-        <header class="archive-header">
-            <h1 class="archive-title">Tutte le convenzioni</h1>
-            <p class="archive-description">Scopri tutte le convenzioni attive per i dipendenti</p>
-        </header>
-        
+
         <?php
         $convenzioni = new WP_Query(array(
             'post_type' => 'convenzione',

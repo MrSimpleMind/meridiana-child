@@ -1,0 +1,126 @@
+// =============================================================================
+// AVATAR SELECTOR
+// Griglia scrollabile orizzontalmente - Compatta e mobile-friendly
+// =============================================================================
+
+.avatar-selector {
+    width: 100%;
+    
+    &__title {
+        font-size: var(--font-size-base);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin: 0 0 var(--space-3);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    &__grid {
+        // Scroll orizzontale interno
+        display: flex;
+        gap: var(--space-3);
+        overflow-x: auto;
+        overflow-y: hidden;
+        padding-bottom: var(--space-2); // Spazio per scrollbar
+        scroll-behavior: smooth;
+        
+        // Scroll snap per UX fluida
+        scroll-snap-type: x mandatory;
+        
+        // Nascondi scrollbar su desktop (più pulito)
+        // Ma rimane scrollabile
+        scrollbar-width: thin;
+        scrollbar-color: var(--color-border) transparent;
+        
+        &::-webkit-scrollbar {
+            height: 4px;
+        }
+        
+        &::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        
+        &::-webkit-scrollbar-thumb {
+            background: var(--color-border);
+            border-radius: 2px;
+            
+            &:hover {
+                background: var(--color-border-dark);
+            }
+        }
+        
+        // Mobile: 4 avatar visibili per volta
+        // Desktop: 6 avatar visibili per volta
+        @media (min-width: 768px) {
+            padding-right: var(--space-2);
+        }
+    }
+    
+    &__item {
+        // Flex per evitare shrinking
+        flex: 0 0 auto;
+        width: 80px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        scroll-snap-align: center;
+        
+        @media (min-width: 768px) {
+            width: 85px;
+        }
+    }
+    
+    &__radio {
+        display: none;  // Nascondi radio standard
+        
+        &:checked + .avatar-selector__label {
+            border-color: var(--color-primary);
+            box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+            transform: scale(1.08);
+        }
+    }
+    
+    &__label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: var(--space-1);
+        padding: var(--space-1) var(--space-1);
+        background-color: var(--color-bg-primary);
+        border: 2px solid var(--color-border);
+        border-radius: var(--radius-md);
+        cursor: pointer;
+        transition: all 0.2s ease;
+        width: 100%;
+        
+        &:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-sm);
+        }
+    }
+    
+    &__image {
+        width: 56px;
+        height: 56px;
+        flex-shrink: 0;
+        border-radius: var(--radius-full);
+        object-fit: cover;
+        border: 2px solid var(--color-border);
+        transition: all 0.2s ease;
+        display: block;
+    }
+    
+    &__name {
+        font-size: var(--font-size-xs);
+        color: var(--color-text-secondary);
+        text-align: center;
+        font-weight: var(--font-weight-medium);
+        word-break: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+        line-height: var(--line-height-tight);
+        padding: 0 var(--space-1);
+        // Nascosto sia su mobile che desktop - solo immagini!
+        display: none;
+    }
+}
