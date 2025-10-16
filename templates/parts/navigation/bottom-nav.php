@@ -2,15 +2,14 @@
 /**
  * Bottom Navigation - Mobile Only
  * Navigazione principale mobile con 4 tab fisse
+ * 
+ * UNIFORME AL DESKTOP: Punta agli stessi percorsi di sidebar-nav.php
+ * per garantire coerenza UX tra mobile e desktop
  */
-
-// Slug delle pagine
-$slug_documentazione = 'docs';
-$slug_corsi = 'corsi';
-$slug_contatti = 'contatti';
 ?>
 
 <nav class="bottom-nav" role="navigation" aria-label="Navigazione principale">
+    <!-- HOME -->
     <a href="<?php echo home_url(); ?>" 
        class="bottom-nav__item <?php echo is_front_page() ? 'active' : ''; ?>"
        <?php echo is_front_page() ? 'aria-current="page"' : ''; ?>>
@@ -18,27 +17,29 @@ $slug_contatti = 'contatti';
         <span>Home</span>
     </a>
     
-    <a href="<?php echo home_url('/' . $slug_documentazione . '/'); ?>" 
-       class="bottom-nav__item <?php echo (is_post_type_archive('protocollo') || is_post_type_archive('modulo') || is_singular('protocollo') || is_singular('modulo') || is_page($slug_documentazione)) ? 'active' : ''; ?>">
+    <!-- DOCUMENTAZIONE - Archive CPT 'protocollo' (come desktop) -->
+    <a href="<?php echo get_post_type_archive_link('protocollo'); ?>" 
+       class="bottom-nav__item <?php echo (is_post_type_archive('protocollo') || is_post_type_archive('modulo') || is_singular('protocollo') || is_singular('modulo')) ? 'active' : ''; ?>">
         <i data-lucide="file-text"></i>
-        <span>Docs</span>
+        <span>Documenti</span>
     </a>
     
-    <a href="<?php echo home_url('/' . $slug_corsi . '/'); ?>" 
-       class="bottom-nav__item <?php echo (is_post_type_archive('sfwd-courses') || is_singular('sfwd-courses') || is_page($slug_corsi)) ? 'active' : ''; ?>">
+    <!-- CORSI - Archive CPT 'sfwd-courses' (come desktop) -->
+    <a href="<?php echo get_post_type_archive_link('sfwd-courses'); ?>" 
+       class="bottom-nav__item <?php echo (is_post_type_archive('sfwd-courses') || is_singular('sfwd-courses')) ? 'active' : ''; ?>">
         <i data-lucide="graduation-cap"></i>
         <span>Corsi</span>
         <?php 
-        // TODO: implementare conteggio notifiche corsi
-        $corsi_notifiche = 0;
-        if ($corsi_notifiche > 0): 
+        $notifiche_corsi = 0; // TODO: Implementare conteggio notifiche corsi
+        if ($notifiche_corsi > 0): 
         ?>
-        <span class="badge-dot" aria-label="<?php echo $corsi_notifiche; ?> nuove notifiche"></span>
+        <span class="badge-dot" aria-label="<?php echo $notifiche_corsi; ?> nuove notifiche"></span>
         <?php endif; ?>
     </a>
     
-    <a href="<?php echo home_url('/' . $slug_contatti . '/'); ?>" 
-       class="bottom-nav__item <?php echo (is_page($slug_contatti) || is_singular('organigramma')) ? 'active' : ''; ?>">
+    <!-- CONTATTI - Page 'contatti' (come desktop) -->
+    <a href="<?php echo home_url('/contatti/'); ?>" 
+       class="bottom-nav__item <?php echo is_page('contatti') ? 'active' : ''; ?>">
         <i data-lucide="users"></i>
         <span>Contatti</span>
     </a>
