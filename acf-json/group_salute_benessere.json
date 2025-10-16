@@ -23,31 +23,6 @@
             "delay": 0
         },
         {
-            "key": "field_immagine_salute",
-            "label": "Immagine in Evidenza",
-            "name": "immagine_evidenza",
-            "aria-label": "",
-            "type": "image",
-            "instructions": "Immagine principale dell'articolo",
-            "required": 0,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "return_format": "id",
-            "preview_size": "medium",
-            "library": "all",
-            "min_width": 0,
-            "min_height": 0,
-            "min_size": 0,
-            "max_width": 0,
-            "max_height": 0,
-            "max_size": 0,
-            "mime_types": ""
-        },
-        {
             "key": "field_risorse_salute",
             "label": "Risorse",
             "name": "risorse",
@@ -195,5 +170,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1760472070
+    "modified": 1760629566
 }
