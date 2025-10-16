@@ -50,8 +50,10 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
             <?php get_template_part('templates/parts/home/convenzioni-carousel'); ?>
         </section>
 
-        <!-- Sezione "Ultime notizie" -->
-        <section class="home-section home-news">
+        <!-- Wrapper per affiancare News e Salute su desktop -->
+        <div class="home-sections-grid">
+            <!-- Sezione "Ultime notizie" -->
+            <section class="home-section home-news">
             <div class="home-section__header">
                 <h2 class="home-section__title">Ultime notizie</h2>
                 <?php 
@@ -82,6 +84,7 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
             
             <?php get_template_part('templates/parts/home/salute-list'); ?>
         </section>
+        </div>
 
     </div>
 </div>

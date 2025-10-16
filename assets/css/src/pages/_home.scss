@@ -93,6 +93,11 @@
         color: var(--color-primary);
         margin: 0;
     }
+    
+    // Maggior spazio prima della sezione convenzioni
+    &.home-convenzioni {
+        margin-bottom: var(--space-12);
+    }
 }
 
 .btn-link {
@@ -297,9 +302,33 @@
     }
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
+// HOME SECTIONS GRID - Affianca News e Salute su desktop
+// =============================================================================
+
+.home-sections-grid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-8);
+    
+    @media (min-width: 768px) {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-8);
+    }
+    
+    // Aggiunge separatore tra le due sezioni
+    .home-section:first-child {
+        @media (min-width: 768px) {
+            padding-right: var(--space-8);
+            border-right: 1px solid var(--color-border-light);
+        }
+    }
+}
+
+// =============================================================================
 // NEWS LIST & SALUTE LIST
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 .news-list,
 .salute-list {
@@ -378,9 +407,9 @@
     }
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 // NO CONTENT STATE
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 .no-content {
     padding: var(--space-8) var(--space-4);
@@ -389,9 +418,9 @@
     font-size: var(--font-size-sm);
 }
 
-// -----------------------------------------------------------------------------
+// =============================================================================
 // DESKTOP ADJUSTMENTS
-// -----------------------------------------------------------------------------
+// =============================================================================
 
 @media (min-width: 768px) {
     .home-container {
@@ -435,7 +464,7 @@
     }
     
     .home-section {
-        margin-bottom: var(--space-12);
+        margin-bottom: 0; // Rimuovi margin perché il grid ha gap
         
         &__title {
             font-size: var(--font-size-2xl);
@@ -454,11 +483,11 @@
         max-width: calc((100% - (2 * var(--space-4))) / 3);
         min-width: calc((100% - (2 * var(--space-4))) / 3);
     }
-    // News e salute in 2 colonne su desktop
+    // News e salute in 1 colonna su desktop (uno sotto l'altro)
     .news-list,
     .salute-list {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        display: flex;
+        flex-direction: column;
         gap: var(--space-4);
     }
 }
@@ -486,9 +515,9 @@
         max-width: calc((100% - (2 * var(--space-5))) / 3);
         min-width: calc((100% - (2 * var(--space-5))) / 3);
     }
-    // News e salute rimangono a 2 colonne
+    // News e salute rimangono in 1 colonna
     .news-list,
     .salute-list {
-        grid-template-columns: repeat(2, 1fr);
+        flex-direction: column;
     }
 }
