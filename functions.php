@@ -157,11 +157,14 @@ require_once MERIDIANA_CHILD_DIR . '/includes/ajax-user-profile.php';
 // Avatar System (predefined icons)
 require_once MERIDIANA_CHILD_DIR . '/includes/avatar-system.php';
 
-// Avatar Selector (avatar predefiniti da immagini)
+// Avatar Selector (avatar predefiniti da immagini) - PROMPT 1-3
 require_once MERIDIANA_CHILD_DIR . '/includes/avatar-selector.php';
 
-// Avatar Persistence System (salvataggio + visualizzazione persistente)
+// Avatar Persistence System (salvataggio + visualizzazione persistente) - PROMPT 1-3
 require_once MERIDIANA_CHILD_DIR . '/includes/avatar-persistence.php';
+
+// PROMPT 5: Breadcrumb & Back Navigation Intelligente
+require_once MERIDIANA_CHILD_DIR . '/includes/breadcrumb-navigation.php';
 
 // Helper functions
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
@@ -384,6 +387,3 @@ add_action('after_switch_theme', 'meridiana_theme_activation');
  * 
  * =====================================================================
  */
-
-
-

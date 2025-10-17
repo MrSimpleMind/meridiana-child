@@ -1,0 +1,111 @@
+/**
+ * PROMPT 5: Back Button & Breadcrumb Intelligenti
+ * 
+ * Stili per navigazione intelligente
+ */
+
+// Pulsante "Torna indietro" intelligente
+.btn-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-md);
+    
+    i, svg {
+        width: 16px;
+        height: 16px;
+        flex-shrink: 0;
+    }
+    
+    &:hover {
+        color: var(--color-primary);
+        background-color: var(--color-bg-secondary);
+        gap: var(--space-3); // Sposta freccia verso sinistra al hover
+        
+        i, svg {
+            transform: translateX(-2px);
+        }
+    }
+    
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--shadow-focus);
+    }
+    
+    &:active {
+        transform: scale(0.98);
+    }
+}
+
+// Breadcrumb navigazione
+.breadcrumb {
+    margin-bottom: var(--space-6);
+}
+
+.breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+}
+
+.breadcrumb__item {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    
+    // Divider tra items
+    &:not(:last-child)::after {
+        content: '/';
+        display: inline-block;
+        margin: 0 var(--space-2);
+        color: var(--color-border);
+    }
+}
+
+.breadcrumb__link {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    
+    &:hover {
+        color: var(--color-primary-dark);
+        text-decoration: underline;
+    }
+    
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
+        border-radius: var(--radius-sm);
+        padding: 2px 4px;
+    }
+}
+
+.breadcrumb__current {
+    color: var(--color-text-secondary);
+    font-weight: var(--font-weight-medium);
+}
+
+// Mobile: breadcrumb più compatto
+@media (max-width: 576px) {
+    .breadcrumb__list {
+        font-size: var(--font-size-xs);
+        gap: var(--space-1);
+    }
+    
+    .breadcrumb__item:not(:last-child)::after {
+        margin: 0 var(--space-1);
+    }
+}
