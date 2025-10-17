@@ -50,6 +50,14 @@ function meridiana_enqueue_styles() {
         array('blocksy-parent-style'),
         $css_version
     );
+    
+    // PROMPT 6: Enqueue CSS inline per comunicazioni (design system compliant)
+    wp_enqueue_style(
+        'meridiana-comunicazioni-style',
+        MERIDIANA_CHILD_URI . '/assets/css/comunicazioni-inline.css',
+        array('meridiana-child-style'),
+        MERIDIANA_CHILD_VERSION
+    );
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
 
@@ -108,6 +116,15 @@ function meridiana_enqueue_scripts() {
         'isAdmin' => current_user_can('manage_options'),
         'isGestore' => current_user_can('gestore_piattaforma'),
     ));
+    
+    // PROMPT 6: Enqueue Comunicazioni Filter Script
+    wp_enqueue_script(
+        'meridiana-comunicazioni-filter',
+        MERIDIANA_CHILD_URI . '/assets/js/comunicazioni-filter.js',
+        array('meridiana-child-scripts'),
+        MERIDIANA_CHILD_VERSION,
+        true
+    );
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_scripts');
 
@@ -165,6 +182,9 @@ require_once MERIDIANA_CHILD_DIR . '/includes/avatar-persistence.php';
 
 // PROMPT 5: Breadcrumb & Back Navigation Intelligente
 require_once MERIDIANA_CHILD_DIR . '/includes/breadcrumb-navigation.php';
+
+// PROMPT 6: Filtro Comunicazioni per Categoria con AJAX
+require_once MERIDIANA_CHILD_DIR . '/includes/comunicazioni-filter.php';
 
 // Helper functions
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';

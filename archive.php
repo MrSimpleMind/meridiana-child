@@ -1,65 +1,53 @@
 <?php
 /**
- * Archive Template: News/Comunicazioni
- * Loop di tutti gli articoli/news
+ * Template Archivio Comunicazioni
  * 
- * @package Meridiana Child
+ * Mostra tutte le comunicazioni con filtro per categoria AJAX
+ * 
+ * PROMPT 6: Filtro Comunicazioni con AJAX Dinamico
  */
 
-if (!defined('ABSPATH')) exit;
-
 get_header();
+
+// Recupera comunicazioni per la query iniziale
+$args = array(
+    'post_type' => 'post',
+    'posts_per_page' => 10,
+    'orderby' => 'date',
+    'order' => 'DESC',
+);
+$comunicazioni = new WP_Query($args);
 ?>
 
-<div class="content-wrapper">
-    <?php 
-    // Include navigation (mobile + desktop)
-    get_template_part('templates/parts/navigation/mobile-bottom-nav');
-    get_template_part('templates/parts/navigation/desktop-sidebar');
-    ?>
-    
-    <main class="archive-page archive-news-page">
-        <div class="archive-container">
+<main class="site-main">
+    <div class="container">
+        
+        <!-- Intestazione -->
+        <header class="page-header">
+            <h1><?php single_post_title(); ?></h1>
+            <p class="page-subtitle">Tutte le comunicazioni aziendali</p>
+        </header>
+        
+        <!-- Breadcrumb (PROMPT 5) -->
+        <?php meridiana_breadcrumb(); ?>
+        
+        <!-- Filtro per Categoria (PROMPT 6) -->
+        <?php meridiana_comunicazioni_filter(array(
+            'placeholder' => 'Tutte le categorie',
+            'class' => 'mb-6',
+        )); ?>
+        
+        <!-- Lista Comunicazioni (iniziale) -->
+        <div id="comunicazioni-container">
+            <?php meridiana_comunicazioni_list($comunicazioni); ?>
             
-            <!-- Header con Torna Indietro -->
-            <div class="archive-header">
-                <a href="#" onclick="history.back(); return false;" class="back-link">
-                    <i data-lucide="arrow-left"></i>
-                    <span>Torna indietro</span>
-                </a>
-            </div>
-            
-            <?php if (have_posts()): ?>
-            
-            <!-- Grid Articoli -->
-            <div class="articles-grid">
-                <?php while (have_posts()): the_post(); ?>
-                    <?php get_template_part('templates/parts/cards/card-article'); ?>
-                <?php endwhile; ?>
-            </div>
-            
-            <!-- Pagination -->
-            <?php 
-            $pagination = paginate_links(array(
-                'type' => 'array',
-                'prev_text' => '<i data-lucide="chevron-left"></i> Precedente',
-                'next_text' => 'Successivo <i data-lucide="chevron-right"></i>',
-            ));
-            
-            if ($pagination): ?>
-            <nav class="archive-pagination">
-                <?php foreach ($pagination as $page): ?>
-                    <?php echo $page; ?>
-                <?php endforeach; ?>
-            </nav>
+            <!-- Paginazione -->
+            <?php if ($comunicazioni->max_num_pages > 1): ?>
+                <?php meridiana_comunicazioni_pagination($comunicazioni); ?>
             <?php endif; ?>
-            
-            <?php else: ?>
-            <p class="no-content">Nessuna notizia disponibile al momento.</p>
-            <?php endif; ?>
-            
         </div>
-    </main>
-</div>
+        
+    </div>
+</main>
 
-<?php get_footer(); ?>
+<?php get_footer();
