@@ -41,6 +41,7 @@
 @import 'components/tables';
 @import 'components/user-profile-modal';
 @import 'components/avatar-selector';
+@import 'components/featured-image';  // PROMPT 4: Featured images
 
 // ========================================
 // 5. LAYOUT
@@ -57,9 +58,10 @@
 // ========================================
 
 @import 'pages/home';
-@import 'pages/single';
 @import 'pages/archive';
 @import 'pages/contatti';
+@import 'pages/single-convenzione';  // PROMPT 4: Immagine in evidenza
+@import 'pages/single-salute-benessere';  // PROMPT 4: Immagine in evidenza
 // @import 'pages/documentazione';
 // @import 'pages/corsi';
 // @import 'pages/analytics';
