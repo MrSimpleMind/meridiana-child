@@ -79,10 +79,10 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                 endif;
                 ?>
                 <div class="profile-form-group">
-                    <label class="profile-form-label">
+                    <div class="profile-form-label" style="cursor: default;">
                         <i data-lucide="briefcase" style="display: inline-block; width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i>
                         Profilo Professionale
-                    </label>
+                    </div>
                     <div class="profile-readonly-field">
                         <?php echo esc_html($profilo_nome); ?>
                     </div>
@@ -99,10 +99,10 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                 endif;
                 ?>
                 <div class="profile-form-group">
-                    <label class="profile-form-label">
+                    <div class="profile-form-label" style="cursor: default;">
                         <i data-lucide="building" style="display: inline-block; width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i>
                         Unità di Offerta
-                    </label>
+                    </div>
                     <div class="profile-readonly-field">
                         <?php echo esc_html($udo_nome); ?>
                     </div>
@@ -110,10 +110,10 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                 
                 <!-- Email (read-only) -->
                 <div class="profile-form-group">
-                    <label for="user_email" class="profile-form-label">
+                    <div class="profile-form-label" style="cursor: default;">
                         <i data-lucide="mail" style="display: inline-block; width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i>
                         Email
-                    </label>
+                    </div>
                     <div class="profile-readonly-field">
                         <?php echo esc_html($current_user->user_email); ?>
                     </div>
@@ -132,6 +132,7 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                         id="first_name" 
                         name="first_name" 
                         class="profile-form-input"
+                        autocomplete="given-name"
                         value="<?php echo esc_attr($current_user->first_name); ?>">
                 </div>
                 
@@ -143,6 +144,7 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                         id="last_name" 
                         name="last_name" 
                         class="profile-form-input"
+                        autocomplete="family-name"
                         value="<?php echo esc_attr($current_user->last_name); ?>">
                 </div>
                 
@@ -154,6 +156,7 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                         id="codice_fiscale" 
                         name="codice_fiscale" 
                         class="profile-form-input"
+                        autocomplete="off"
                         value="<?php echo esc_attr(get_user_meta($current_user->ID, 'codice_fiscale', true)); ?>"
                         placeholder="RSSMRA80A01H501U"
                         maxlength="16"
@@ -170,6 +173,7 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                         id="user_phone" 
                         name="user_phone" 
                         class="profile-form-input"
+                        autocomplete="tel"
                         value="<?php echo esc_attr(get_user_meta($current_user->ID, 'user_phone', true)); ?>"
                         placeholder="+39 333 123 4567">
                 </div>
@@ -219,8 +223,8 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                         id="confirm_password_required" 
                         name="confirm_password_required" 
                         class="profile-form-input"
-                        placeholder="Inserisci la tua password attuale"
-                        autocomplete="current-password">
+                        autocomplete="current-password"
+                        placeholder="Inserisci la tua password attuale">
                 </div>
                 
             </form>
