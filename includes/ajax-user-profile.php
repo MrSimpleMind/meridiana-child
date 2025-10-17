@@ -1,10 +1,57 @@
 <?php
 /**
  * AJAX Handler - User Profile Update
- * Gestisce l'aggiornamento del profilo utente da frontend
+ * 
+ * LOGICA DI SICUREZZA (NUOVA):
+ * 1. Avatar ONLY: Salva SENZA password richiesta (azione leggera)
+ * 2. Dati personali + password: Richiede password attuale (azione critica)
  */
 
-// Hook AJAX per utenti loggati
+// ============================================================================
+// HANDLER 1: UPDATE AVATAR ONLY (SENZA PASSWORD)
+// ============================================================================
+
+add_action('wp_ajax_update_user_avatar_only', 'handle_update_user_avatar_only');
+
+function handle_update_user_avatar_only() {
+    // Verifica nonce
+    if (!isset($_POST['avatar_nonce']) || !wp_verify_nonce($_POST['avatar_nonce'], 'update_user_profile')) {
+        wp_send_json_error('Nonce non valido.');
+        return;
+    }
+    
+    // Verifica utente loggato
+    if (!is_user_logged_in()) {
+        wp_send_json_error('Devi essere loggato.');
+        return;
+    }
+    
+    $user_id = get_current_user_id();
+    
+    // Verifica che avatar sia fornito
+    if (!isset($_POST['user_avatar']) || empty($_POST['user_avatar'])) {
+        wp_send_json_error('Avatar non fornito.');
+        return;
+    }
+    
+    $avatar_file = sanitize_file_name($_POST['user_avatar']);
+    
+    // Salva avatar usando la funzione robusta
+    $avatar_result = meridiana_save_user_avatar_robust($user_id, $avatar_file);
+    
+    if (!$avatar_result['success']) {
+        wp_send_json_error('Avatar: ' . $avatar_result['message']);
+        return;
+    }
+    
+    error_log('[Avatar Only] ✓ Avatar salvato per user ' . $user_id . ': ' . $avatar_file);
+    wp_send_json_success('Avatar salvato con successo!');
+}
+
+// ============================================================================
+// HANDLER 2: UPDATE PROFILE (DATI PERSONALI + PASSWORD OBBLIGATORIA)
+// ============================================================================
+
 add_action('wp_ajax_update_user_profile', 'handle_update_user_profile');
 
 function handle_update_user_profile() {
@@ -23,10 +70,29 @@ function handle_update_user_profile() {
     $user_id = get_current_user_id();
     $current_user = wp_get_current_user();
     
-    // Sanitizza input
+    // **STEP 1: VERIFICA PASSWORD ATTUALE (OBBLIGATORIA)** ⚠️
+    $confirm_password_required = $_POST['confirm_password_required'] ?? '';
+    
+    if (empty($confirm_password_required)) {
+        wp_send_json_error('⚠️ Per salvare le modifiche, devi inserire la tua password attuale.');
+        return;
+    }
+    
+    // Verifica che la password sia corretta
+    if (!wp_check_password($confirm_password_required, $current_user->user_pass, $user_id)) {
+        error_log('[Profile Update] ✗ Password non corretta per user ' . $user_id);
+        wp_send_json_error('❌ Password attuale non corretta. Riprovare.');
+        return;
+    }
+    
+    // Password corretta - procedi con aggiornamento
+    error_log('[Profile Update] ✓ Password verificata per user ' . $user_id);
+    
+    // **STEP 2: SANITIZZA E VALIDA INPUT**
     $first_name = sanitize_text_field($_POST['first_name'] ?? '');
     $last_name = sanitize_text_field($_POST['last_name'] ?? '');
     $user_phone = sanitize_text_field($_POST['user_phone'] ?? '');
+    $codice_fiscale = strtoupper(sanitize_text_field($_POST['codice_fiscale'] ?? ''));
     
     // Validazione campi obbligatori
     if (empty($first_name) || empty($last_name)) {
@@ -34,47 +100,44 @@ function handle_update_user_profile() {
         return;
     }
     
-    // Aggiorna dati utente
+    // Validazione Codice Fiscale (se fornito)
+    if (!empty($codice_fiscale)) {
+        if (!preg_match('/^[A-Z0-9]{16}$/i', $codice_fiscale)) {
+            wp_send_json_error('❌ Codice Fiscale non valido. Deve contenere 16 caratteri alfanumerici.');
+            return;
+        }
+    }
+    
+    // **STEP 3: AGGIORNA DATI UTENTE**
     $user_data = array(
         'ID' => $user_id,
         'first_name' => $first_name,
         'last_name' => $last_name,
     );
     
-    // Gestione cambio password
-    $current_password = $_POST['current_password'] ?? '';
+    // **STEP 4: GESTIONE CAMBIO PASSWORD**
     $new_password = $_POST['new_password'] ?? '';
-    $confirm_password = $_POST['confirm_password'] ?? '';
+    $confirm_new_password = $_POST['confirm_new_password'] ?? '';
     
-    if (!empty($new_password) || !empty($confirm_password)) {
-        // Verifica password attuale
-        if (empty($current_password)) {
-            wp_send_json_error('Inserisci la password attuale per cambiarla.');
-            return;
-        }
-        
-        if (!wp_check_password($current_password, $current_user->user_pass, $user_id)) {
-            wp_send_json_error('Password attuale non corretta.');
-            return;
-        }
-        
+    if (!empty($new_password) || !empty($confirm_new_password)) {
         // Verifica corrispondenza nuove password
-        if ($new_password !== $confirm_password) {
-            wp_send_json_error('Le nuove password non corrispondono.');
+        if ($new_password !== $confirm_new_password) {
+            wp_send_json_error('❌ Le nuove password non corrispondono.');
             return;
         }
         
         // Valida lunghezza password
         if (strlen($new_password) < 8) {
-            wp_send_json_error('La password deve essere di almeno 8 caratteri.');
+            wp_send_json_error('❌ La password deve essere di almeno 8 caratteri.');
             return;
         }
         
         // Aggiungi nuova password all'update
         $user_data['user_pass'] = $new_password;
+        error_log('[Profile Update] ✓ Password modificata per user ' . $user_id);
     }
     
-    // Aggiorna utente
+    // Aggiorna utente WordPress
     $result = wp_update_user($user_data);
     
     if (is_wp_error($result)) {
@@ -82,42 +145,18 @@ function handle_update_user_profile() {
         return;
     }
     
-    // Aggiorna user meta (telefono)
+    // **STEP 5: AGGIORNA USER META**
     if (!empty($user_phone)) {
         update_user_meta($user_id, 'user_phone', $user_phone);
     }
     
-    // Gestione avatar selezionato (nuovo sistema con immagini)
-    if (isset($_POST['user_avatar']) && !empty($_POST['user_avatar'])) {
-        // Non usare sanitize_file_name() perché rimuove gli spazi!
-        // Usa stripslashes() + trim() per sicurezza ma mantieni il nome originale
-        $avatar_filename = trim(stripslashes($_POST['user_avatar']));
-        
-        // Validazione: il filename deve contenere solo caratteri validi per file
-        if (!preg_match('/^[\w\s\-\.()]+\.(jpg|jpeg|png|gif)$/i', $avatar_filename)) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Avatar AJAX] Invalid filename format: ' . $avatar_filename);
-            }
-            wp_send_json_error('Nome avatar non valido.');
-            return;
-        }
-        
-        // Salva avatar scelto
-        $avatar_saved = meridiana_save_user_avatar($user_id, $avatar_filename);
-        
-        if (!$avatar_saved) {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Avatar AJAX] Failed to save avatar for user ' . $user_id . ': ' . $avatar_filename);
-            }
-            wp_send_json_error('Avatar non valido o file non trovato.');
-            return;
-        }
-        if (defined('WP_DEBUG') && WP_DEBUG) {
-            error_log('[Avatar AJAX] ✓ Avatar salvato - ' . $avatar_filename . ' per user ' . $user_id);
-        }
+    if (!empty($codice_fiscale)) {
+        update_user_meta($user_id, 'codice_fiscale', $codice_fiscale);
+        error_log('[Profile Update] ✓ Codice Fiscale aggiornato per user ' . $user_id . ': ' . $codice_fiscale);
     }
     
-    wp_send_json_success('Profilo aggiornato con successo!');
+    error_log('[Profile Update] ✓ Profilo completamente aggiornato per user ' . $user_id);
+    wp_send_json_success('✅ Profilo aggiornato con successo!');
 }
 
 /**

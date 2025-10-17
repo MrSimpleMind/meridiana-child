@@ -209,6 +209,75 @@ body {
 
 ## 📏 Spacing System
 
+### Sistema Container Unificato (✨ Nuovo - Ottobre 2025)
+
+**Tutte le pagine usano padding consistente tramite classi unificate**:
+
+```scss
+// layout/_containers.scss
+
+// Padding standard per TUTTE le pagine
+.page-container,
+.archive-container,
+.home-container,
+.contatti-container,
+.corsi-container,
+.documentazione-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    
+    // Mobile
+    padding: var(--space-4) var(--space-4);  // 16px
+    
+    // Tablet
+    @media (min-width: 768px) {
+        padding: var(--space-8) var(--space-6);  // 32px 24px
+    }
+    
+    // Desktop
+    @media (min-width: 1200px) {
+        padding: var(--space-10) var(--space-8);  // 40px 32px
+    }
+}
+
+// Container più stretto per contenuti di lettura
+.single-container {
+    max-width: 900px;
+    margin: 0 auto;
+    // Stesso padding delle altre pagine
+}
+```
+
+**Uso nei Template**:
+```php
+<!-- Archivi (Convenzioni, News, Salute) -->
+<div class="archive-container">
+    <!-- Contenuto archivio -->
+</div>
+
+<!-- Home -->
+<div class="home-container">
+    <!-- Contenuto homepage -->
+</div>
+
+<!-- Contatti/Organigramma -->
+<div class="contatti-container">
+    <!-- Contenuto organigramma -->
+</div>
+
+<!-- Corsi (quando implementato) -->
+<div class="corsi-container">
+    <!-- Contenuto corsi -->
+</div>
+
+<!-- Documentazione (quando implementato) -->
+<div class="documentazione-container">
+    <!-- Contenuto documentazione -->
+</div>
+```
+
+**⚠️ IMPORTANTE**: Non ridefinire mai `padding` o `max-width` nei file SCSS specifici delle pagine. Il padding è gestito centralmente in `layout/_containers.scss` per garantire consistenza.
+
 ### Scala Spaziatura (basata su 4px)
 
 ```scss

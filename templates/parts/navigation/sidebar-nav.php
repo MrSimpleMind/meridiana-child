@@ -2,16 +2,37 @@
 /**
  * Sidebar Navigation - Desktop Only
  * Navigazione laterale per versione desktop
+ * 
+ * NUOVO: Profilo Professionale Dinamico
+ * Mostra il "Profilo Professionale" dell'utente loggato al posto di "Dipendente"
+ * Fallback: Se vuoto, mostra "Dipendente" come default
  */
 
 $current_user = wp_get_current_user();
 $user_name = $current_user->display_name;
-$user_role = 'Dipendente'; // Default
 
-// Determina il ruolo leggibile
+// **NUOVO**: Recupera il Profilo Professionale dell'utente
+$profilo_term_id = get_field('profilo_professionale', 'user_' . $current_user->ID);
+
+if ($profilo_term_id) {
+    // Profilo professionale assegnato
+    $profilo_term = get_term($profilo_term_id);
+    if ($profilo_term && !is_wp_error($profilo_term)) {
+        $user_role = $profilo_term->name; // Es: "Infermiere", "Medico", "OSS"
+    } else {
+        $user_role = 'Dipendente'; // Fallback se il term non esiste
+    }
+} else {
+    // Nessun profilo assegnato - mostra default
+    $user_role = 'Dipendente';
+}
+
+// Se l'utente è Gestore, mostra questo al posto del profilo
 if (current_user_can('view_analytics')) {
     $user_role = 'Gestore Piattaforma';
 }
+
+error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_role);
 ?>
 
 <nav class="sidebar-nav" role="navigation" aria-label="Navigazione principale">

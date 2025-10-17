@@ -1,0 +1,47 @@
+// =============================================================================
+// CONTAINERS - PADDING UNIFICATO PER TUTTE LE PAGINE
+// =============================================================================
+
+// -----------------------------------------------------------------------------
+// STANDARD CONTAINER - Usato da tutte le pagine
+// -----------------------------------------------------------------------------
+
+// Padding standard consistente per TUTTE le pagine
+@mixin standard-container-padding {
+    padding: var(--space-4) var(--space-4);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-8) var(--space-6);
+    }
+    
+    @media (min-width: 1200px) {
+        padding: var(--space-10) var(--space-8);
+    }
+}
+
+// Max-width standard per contenuti
+@mixin standard-container-width {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+// -----------------------------------------------------------------------------
+// CLASSE UNIFICATA - Da usare in tutti i template
+// -----------------------------------------------------------------------------
+
+.page-container,
+.archive-container,
+.home-container,
+.contatti-container,
+.corsi-container,
+.documentazione-container {
+    @include standard-container-width;
+    @include standard-container-padding;
+}
+
+// Container più stretto per pagine di lettura (singoli post)
+.single-container {
+    max-width: 900px;
+    margin: 0 auto;
+    @include standard-container-padding;
+}

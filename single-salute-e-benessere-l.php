@@ -28,7 +28,7 @@ get_header();
         <div class="single-container">
             <!-- Header con Torna Indietro -->
             <div class="single-header">
-                <a href="<?php echo home_url('/'); ?>" class="back-link">
+                <a href="#" onclick="history.back(); return false;" class="back-link">
                     <i data-lucide="arrow-left"></i>
                     <span>Torna indietro</span>
                 </a>

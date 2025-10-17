@@ -18,17 +18,8 @@
 }
 
 .contatti-container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: var(--space-4) var(--space-4);
-    
-    @media (min-width: 768px) {
-        padding: var(--space-8) var(--space-6);
-    }
-    
-    @media (min-width: 1200px) {
-        padding: var(--space-10) var(--space-8);
-    }
+    // Padding unificato definito in layout/_containers.scss
+    // Non ridefinire qui per evitare inconsistenze
 }
 
 .page-title-section {

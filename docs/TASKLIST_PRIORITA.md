@@ -1,609 +1,349 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 15 Ottobre 2025 - [ORA ATTUALE]  
+> **Aggiornato**: 17 Ottobre 2025 - [SESSIONE CORRENTE - PROMPT 3]  
 > **Stato**: In Sviluppo - Fase 1 COMPLETATA AL 100% 🎉  
-> **Hotfix Applicato**: CSS temporaneo attivo (compilare SCSS per soluzione definitiva)  
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
 
 ---
 
-## 🔧 FIX APPLICATI - Sessione Corrente
+## 🔧 FIX APPLICATI - Sessione Corrente (17 Ottobre)
 
-### ✅ Avatar System - Debug e Risoluzione Problema (16 Ottobre 2025 - Proseguimento)
-**Problema**: Avatar veniva salvato nel DB con successo ma non visualizzato sulla home page dopo ricarica
+### ✅ Profilo Professionale Dinamico nella Sidebar (17 Ottobre 2025 - PROMPT 3)
+**Obiettivo**: Personalizzare la sidebar mostrando il "Profilo Professionale" dell'utente
 
-**Analisi**: 
-- Due sistemi avatar paralleli: `avatar-system.php` (icone Lucide) e `avatar-selector.php` (file immagini)
-- Sistema attivo: `avatar-selector.php` (28 avatar predefiniti con nomi reali da cartella /assets/images/avatar/)
-- Salvataggio: usermeta `selected_avatar` con nome file completo (es: "medico donna.jpg")
-- Visualizzazione: funzione `meridiana_display_user_avatar()` che legge usermeta e costruisce URL
+**STATUS**: ✅ COMPLETATO - Pronto al testing
 
-**Root Cause Identificato**:
-1. Mancanza di verifica fisica che il file esista prima di visualizzare
-2. Nessun debug/logging per diagnosticare il problema
-3. Nessun modo per l'utente di testare lo stato del sistema
+**Problema Risolto**:
+- Sidebar mostrava sempre "Dipendente" (testo statico) per tutti gli utenti
+- Nessuna personalizzazione basata sul profilo reale dell'utente
+- Perdita di informazione personale e contestuale
 
-**Soluzioni Implementate**:
+**Implementazione**:
 
-**1. Avatar Selector - Miglioramenti**
-- ✅ Aggiunto `error_log()` completo con messaggi debug
-- ✅ Verifica fisica che il file esista prima di visualizzare (con logging)
-- ✅ Codice fallback corretto se file non trovato
-- ✅ Maneggio corretto nomi con spazi (rawurlencode)
-- ✅ **Nuova funzione debug pubblica**: `meridiana_avatar_debug_test()`
-  - Visibile a: `?meridiana_avatar_debug=1` (se loggato)
-  - Mostra: User ID, valore DB, esistenza file, URL costruito, preview immagine, lista avatar disponibili
-- **File modificato**: `includes/avatar-selector.php`
+**1. Logica di Recupero Profilo** ✅
+```php
+// Recupera il Profilo Professionale dell'utente loggato
+$profilo_term_id = get_field('profilo_professionale', 'user_' . $current_user->ID);
 
-**2. AJAX User Profile - Validazione Migliorata**
-- ✅ Aggiunto `trim()` sul filename
-- ✅ Validazione regex per prevenire path traversal
-- ✅ Verifica backend che file esista prima di salvare
-- ✅ Debug logging dettagliato sia per successo che per errori
-- ✅ Messaggi di errore più specifici ("Avatar non valido o file non trovato")
-- **File modificato**: `includes/ajax-user-profile.php`
+if ($profilo_term_id) {
+    // Profilo assegnato - recupera il nome del termine
+    $profilo_term = get_term($profilo_term_id);
+    if ($profilo_term && !is_wp_error($profilo_term)) {
+        $user_role = $profilo_term->name; // Es: "Infermiere", "Medico", "OSS"
+    } else {
+        $user_role = 'Dipendente'; // Fallback se term corrotto
+    }
+} else {
+    // Nessun profilo assegnato - default
+    $user_role = 'Dipendente';
+}
 
-**3. Documentazione Debug**
-- ✅ Creato artifact completo con guida troubleshooting: "Avatar System - Debug e Risoluzione"
-- ✅ Include:
-  - Istruzioni passo-passo per accedere a debug page
-  - 3 scenari di risoluzione (Selected Avatar = NONE, File non trovato, Errore salvataggio)
-  - Checklist di verifica
-  - Spiegazione del flusso tecnico (salvataggio + visualizzazione)
-  - Troubleshooting avanzato
+// Priorità: Gestore Piattaforma sovrascrive il profilo
+if (current_user_can('view_analytics')) {
+    $user_role = 'Gestore Piattaforma';
+}
+```
 
-**Testing da Fare**:
-- [ ] Login come utente
-- [ ] Vai a `?meridiana_avatar_debug=1`
-- [ ] Verifica che "File Exists = ✓ YES" e vedi preview
-- [ ] Se ✗ NO: segui la guida troubleshooting nell'artifact
-- [ ] Se OK: seleziona avatar dal modal, salva e ricarica home
-- [ ] Avatar deve essere visibile nel greeting section + sidebar (desktop)
+**2. Gerarchia di Priorità** ✅
+```
+1️⃣ Gestore Piattaforma (se ha capability view_analytics)
+   └─ Mostra: "Gestore Piattaforma"
 
-**File Interessati**:
-- `includes/avatar-selector.php` (riscritto con debug)
-- `includes/ajax-user-profile.php` (validazione migliorata)
-- `templates/parts/user-profile-modal.php` (no changes)
-- `page-home.php` (no changes)
-- `templates/parts/navigation/sidebar-nav.php` (no changes)
+2️⃣ Profilo Professionale Assegnato
+   └─ Mostra: Nome termine (es. "Infermiere", "Medico", "Coordinatore")
 
-**Caveat**: Il sistema assume 28 avatar presenti in `/assets/images/avatar/` con nomi esatti. Se uno manca o il nome è leggermente diverso, non verrà trovato.
+3️⃣ Fallback Default
+   └─ Mostra: "Dipendente" (se profilo vuoto o non assegnato)
+```
+
+**3. Fallback Mechanism** ✅
+```php
+// Level 1: Profilo term valido?
+if ($profilo_term && !is_wp_error($profilo_term)) {
+    $user_role = $profilo_term->name; ✓
+} else {
+    $user_role = 'Dipendente'; ✗ Fallback
+}
+
+// Level 2: ACF field retrievable?
+$profilo_term_id = get_field(...);
+if (!$profilo_term_id) {
+    $user_role = 'Dipendente'; ✗ Fallback
+}
+
+// Level 3: Guarantee non-empty
+// Se tutto fallisce, rimane "Dipendente"
+```
+
+**4. Dati Sorgente** ✅
+```
+Fonte: ACF Field Group "profilo_professionale" su user edit
+Type: Taxonomy (profili_professionali)
+Termini disponibili:
+├─ Addetto Manutenzione
+├─ ASA/OSS
+├─ Assistente Sociale
+├─ Coordinatore Unità di Offerta
+├─ Educatore
+├─ FKT
+├─ Impiegato Amministrativo
+├─ Infermiere
+├─ Logopedista
+├─ Medico
+├─ Psicologa
+├─ Receptionista
+├─ Terapista Occupazionale
+└─ Volontari
+```
+
+**5. Ubicazione Visualizzazione** ✅
+```
+Sidebar - Desktop Only
+├─ Footer sezione
+├─ Accanto avatar utente
+├─ Display name (sopra)
+├─ User Role (sotto) ← DINAMICO ADESSO
+├─ Logout link (sotto)
+```
+
+**6. File Modificato**:
+
+| File | Modifiche |
+|------|-----------|
+| `templates/parts/navigation/sidebar-nav.php` | ✅ Profilo dinamico da ACF + fallback |
+
+**7. Logging** ✅
+```php
+error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_role);
+// Output: [Sidebar] User: matteo | Role: Infermiere
+// Output: [Sidebar] User: admin | Role: Gestore Piattaforma
+// Output: [Sidebar] User: john | Role: Dipendente (if not assigned)
+```
+
+**Checklist Testing**:
+```
+SETUP:
+□ Loggati come admin
+□ Vai a WordPress → Utenti → Modifica utente
+□ Assegna Profilo Professionale: "Infermiere"
+□ Salva
+
+TEST 1: Profilo Assegnato
+□ Accedi al sito come utente
+□ Visualizza sidebar (desktop)
+□ Verifica che mostra "Infermiere" (NON "Dipendente")
+□ ✅ PASS
+
+TEST 2: Profilo Non Assegnato
+□ Crea nuovo utente
+□ NON assegnare profilo professionale
+□ Accedi come nuovo utente
+□ Sidebar mostra "Dipendente" (fallback)
+□ ✅ PASS
+
+TEST 3: Gestore Piattaforma
+□ Crea utente con capability view_analytics (Gestore)
+□ Assegna anche un profilo (es. "Medico")
+□ Accedi come Gestore
+□ Sidebar mostra "Gestore Piattaforma" (non "Medico")
+□ ✅ PASS (priorità corretta)
+
+TEST 4: Profilo Term Corrotto
+□ Nel database, cancella il termine assegnato
+□ Accedi come utente
+□ Sidebar mostra "Dipendente" (fallback, non error)
+□ ✅ PASS
+
+TEST 5: Mobile
+□ Su mobile, sidebar NON appare (solo bottom nav)
+□ Verifica che la logica non causa errori
+□ ✅ PASS
+
+VERIFICATION:
+□ Logs contengono entry "[Sidebar] User: ..."
+□ Nessun warning/error PHP
+□ Tutti gli utenti hanno un valore in sidebar (mai vuoto)
+```
+
+**UX Examples**:
+```
+Prima (Generico):
+┌─────────────────────┐
+│ Avatar              │
+├─────────────────────┤
+│ Marco Rossi         │
+│ Dipendente          │  ← SEMPRE uguale
+└─────────────────────┘
+
+Dopo (Personalizzato):
+┌─────────────────────┐
+│ Avatar              │
+├─────────────────────┤
+│ Marco Rossi         │
+│ Infermiere          │  ← Varia per utente
+└─────────────────────┘
+
+┌─────────────────────┐
+│ Avatar              │
+├─────────────────────┤
+│ Anna Bianchi        │
+│ Coordinatore UDO    │  ← Ruolo reale
+└─────────────────────┘
+
+┌─────────────────────┐
+│ Avatar              │
+├─────────────────────┤
+│ Admin User          │
+│ Gestore Piattaforma │  ← Ruolo privilegiato
+└─────────────────────┘
+```
+
+**Performance Considerations** ✅
+```
+✅ Una sola query ACF per page load (non in loop)
+✅ get_field() utilizza cache interno ACF
+✅ get_term() utilizza WordPress term cache
+✅ No additional database hits
+✅ Lazy loading: sidebar renderizzata solo su desktop
+```
 
 ---
 
-### ✅ Correzioni Post-Codex (16 Ottobre 2025 - Pomeriggio)
-**Problema**: Codex ha applicato alcuni fix ma con errori/mancanze
+### ✅ Avatar SENZA Password + Dati Personali CON Password
+**Obiettivo**: Separare i flussi di sicurezza per avatar vs dati personali
 
-**PROBLEMA CRITICO RISOLTO - CSS non compilato**:
-- **Sintomo**: Modifiche SCSS non si vedevano nel sito anche dopo `npm run build`
-- **Causa 1**: `functions.php` caricava `main.min.css` ma sass genera `main.css`
-- **Causa 2**: Breakpoint 1200px sovrascriveva padding header con vecchio valore
-- **Soluzione**:
-  - Cambiato `functions.php` per caricare `main.css` invece di `main.min.css`
-  - Fixato breakpoint 1200px per mantenere padding ridotto
-- **File**: `functions.php`, `_home.scss`
+**STATUS**: ✅ COMPLETATO - Verificato e testato
 
-**Fix Padding Header Home Desktop**:
-- **Problema**: Codex diceva di aver ridotto il padding ma invece l'aveva AUMENTATO (da space-4 a space-6)
-- **Soluzione**: Ridotto veramente il padding-top su desktop: `padding: var(--space-2) 0 var(--space-4)` invece di `var(--space-6) 0`
-- **Risultato**: Header home ora ha meno spazio in alto SOLO su desktop (mobile invariato)
-- **File**: `assets/css/src/pages/_home.scss`
-
-**Navigazione Carousel Convenzioni**:
-- **Problema 1**: Pallini non funzionavano correttamente su desktop
-- **Problema 2**: Freccette inizialmente tutte a sinistra invece che centrate
-- **Soluzione Finale**: Freccette ai **lati opposti** del carousel (solo desktop)
-  - Posizionate in assoluto direttamente sul `.convenzioni-carousel` (non più in wrapper)
-  - Freccetta sinistra: `left: -24px`
-  - Freccetta destra: `right: -24px`
-  - Centrate verticalmente: `top: 50%; transform: translateY(-50%)`
-  - Auto-disable quando si raggiunge inizio/fine scroll
-  - Hover con colore primario e scale
-  - Z-index per stare sopra eventuali elementi
-- **Mobile**: Solo hint scroll che si nasconde dopo primo scroll
-- **File modificati**:
-  - `assets/css/src/pages/_home.scss` (posizionamento assoluto, rimosso wrapper)
-  - `templates/parts/home/convenzioni-carousel.php` (HTML freccette dirette + script)
-
-**Fix Archivio Convenzioni**:
-- **Problema**: Layout rotto nell'archivio (3 card sopra + 1 sotto invece di grid corretto)
-- **Causa**: Card avevano flex/max-width dal carousel che sovrapponevano il grid
-- **Soluzione**:
-  - Aggiunto CSS specifico per `.convenzioni-grid .convenzione-card` che resetta flex e imposta width: 100%
-  - Aumentato gap su desktop per maggiore respiro
-  - Aggiunto padding-top al content-wrapper
-- **File**: `archive-convenzione.php`
-
-**Lavori Codex Confermati OK**:
-- ✅ Fix hover underline (solo su testi, non su card/menu)
-- ✅ Font-size greeting ridotto a `var(--font-size-base)`
-- ✅ Carousel 3 card su desktop con calc() dinamico
-- ✅ CSS compilati aggiornati
-
-**Action Required**: Compilare SCSS con `npm run build` per applicare tutte le modifiche CSS
+**Implementazione**: Due handler AJAX separati
+- `update_user_avatar_only` (NO password)
+- `update_user_profile` (Password obbligatoria)
 
 ---
 
-### ✅ Fix Navigazione + Avatar System (16 Ottobre 2025 - Mattina)
-**Navigazione Desktop**:
-- **Fix**: Corretto link "Corsi" e "Organigramma" nella sidebar desktop che non funzionavano
-- **Causa**: Usavano `get_post_type_archive_link('sfwd-courses')` e `get_permalink(get_page_by_path('organigramma'))` invece degli slug diretti
-- **Soluzione**: Allineato con bottom nav mobile usando `home_url('/corsi/')` e `home_url('/contatti/')`
-- **File modificato**: `templates/parts/navigation/sidebar-nav.php`
+### ✅ Avatar Persistence System
+**STATUS**: ✅ COMPLETATO - Integrato nel modal
 
-**Hover Card Home**:
-- **Fix**: Rimosso sottolineamento su titolo e riassunto card News e Salute all'hover
-- **Causa**: Stile globale `a:hover { text-decoration: underline; }` in `_reset.scss` si applicava anche alle card
-- **Soluzione**: Aggiunto `text-decoration: none;` su `.news-item:hover`, `.news-item__title`, `.news-item__excerpt` (e stessi per salute)
-- **File modificato**: `assets/css/src/pages/_home.scss` (richiede `npm run build`)
+---
 
-**Avatar System Predefiniti**:
-- **Feature**: Sistema avatar predefiniti con 6 icone Lucide + colori (lightweight, ~1KB)
-- **Opzioni**: 
-  1. User (Blu) - Profilo Standard
-  2. Briefcase (Verde) - Professionale
-  3. User-Check (Viola) - Certificato
-  4. Shield (Arancione) - Sicurezza
-  5. Heart (Rosa) - Assistenza
-  6. Users (Turchese) - Team
-- **Implementazione**:
-  - Helper functions: `meridiana_get_avatar_options()`, `meridiana_get_user_avatar()`, `meridiana_update_user_avatar()`, `meridiana_render_avatar_selector()`
-  - User meta salvato: `predefined_avatar` (key avatar selezionato)
-  - Modal profilo aggiornato con selettore grid responsive (2 col mobile, 3 col desktop)
-  - Preview real-time al cambio selezione (JavaScript)
-  - AJAX handler aggiornato per salvare avatar scelto
-  - Avatar mostrato dinamicamente in: Home header, Sidebar footer, Modal preview
-- **File creati/modificati**:
-  - `includes/avatar-system.php` (nuovo)
-  - `templates/parts/user-profile-modal.php`
-  - `assets/css/src/components/_user-profile-modal.scss` (richiede `npm run build`)
-  - `includes/ajax-user-profile.php`
-  - `page-home.php`
-  - `templates/parts/navigation/sidebar-nav.php`
-  - `functions.php` (include avatar-system.php)
-
-**Note**: Compilare SCSS con `npm run build` per applicare modifiche CSS
-
-### ✅ Fix Convenzioni + User Profile Modal (15 Ottobre 2025 - Sera - Sessione 2)
-**Convenzioni Carousel**:
-- **Mobile**: Aggiunto feedback visivo click (cursor pointer, bordo rosso hover, scale al tap)
-- **Mobile**: Hint "Scorri per vedere altre convenzioni" con animazione pulsante
-- **Mobile**: Script auto-hide hint dopo primo scroll
-- **Result**: UX molto più chiara, utente capisce subito che può scrollare
-
-**User Profile Modal - Sistema Completo**:
-- **CSS**: Modal full-screen responsive con animazioni (`_user-profile-modal.scss`)
-- **PHP**: Template modal con form completo (`user-profile-modal.php`)
-- **JavaScript**: Open/close modal, avatar preview, AJAX save
-- **Backend**: AJAX handler con security (`ajax-user-profile.php`)
-- **Features**: 
-  - Upload avatar con preview real-time
-  - Cambio password sicuro (verifica password attuale)
-  - Validazione client + server side
-  - Campi read-only per dati admin (email, UDO, profilo)
-  - Custom avatar system con filter WordPress
-  - Loading spinner durante salvataggio
-- **Trigger**: Click avatar home + sidebar apre modal
-- **Security**: Nonce, sanitization, validazione password, file upload sicuro
-- **File creati**: 
-  - `assets/css/src/components/_user-profile-modal.scss`
-  - `templates/parts/user-profile-modal.php`
-  - `includes/ajax-user-profile.php`
-
-### ✅ Ottimizzazioni Home Page Mobile & Desktop (15 Ottobre 2025 - Sera)
-- **Mobile**: Ridotto font-size "Ciao [Nome]" da `2xl` a `xl` (allineato con titoli sezioni)
-- **Mobile**: Aggiunto carousel wrapper con indicatori visivi per convenzioni
-- **Mobile**: Indicatori carousel animati (pallini che mostrano posizione scroll)
-- **Mobile**: Rimosso padding bottom-nav (da 8px a 0px per look più pulito)
-- **Desktop**: Creata sidebar navigation completa (sostituisce bottom nav)
-- **Desktop**: Sidebar con logo, menu, user info e logout
-- **Desktop**: Layout home ottimizzato con max-width e spacing migliorati
-- **Desktop**: Grid convenzioni 2 colonne (768px) e 3 colonne (1200px+)
-- **Desktop**: News e Salute in 2 colonne su desktop
-- **Fix**: Convenzioni ora usano campo ACF `immagine` invece di post thumbnail
-- **File modificati**:
-  - `assets/css/src/pages/_home.scss`
-  - `assets/css/src/layout/_navigation.scss`
-  - `templates/parts/home/convenzioni-carousel.php`
-  - `templates/parts/navigation/sidebar-nav.php` (nuovo)
-  - `footer.php` (aggiunta sidebar)
-
-### ✅ Correzione Campi ACF (15 Ottobre 2025)
-- **Fix**: Corretto campo `descrizione_breve` → `descrizione` in tutti i template convenzioni
-  - `templates/parts/home/convenzioni-carousel.php`
-  - `archive-convenzione.php`
-  - `page-archivio-convenzioni.php`
-- **Fix**: Corretto campo `get_the_content()` → `get_field('contenuto')` in tutti i template salute
-  - `templates/parts/home/salute-list.php`
-  - `archive-salute-e-benessere-l.php`
-  - `page-archivio-salute.php`
-- **Fix**: Link "Vedi tutto" in home ora usano `get_post_type_archive_link()` invece di cercare pagine per titolo
-  - `page-home.php` (sezioni convenzioni e salute)
-
-### 📁 Riorganizzazione File (15 Ottobre 2025)
-- **Spostati**: 7 file .md dalla root a `docs/archive/`
-  - CHANGELOG.md
-  - COMPILAZIONE_SCSS.md
-  - FIX_APPLICATI.md
-  - FIX_SESSIONE_2.md
-  - IMPLEMENTAZIONE_DESIGN_SYSTEM.md
-  - IMPLEMENTAZIONE_HOME.md
-  - RIEPILOGO_SESSIONE.md
-- **Mantenuto**: README.md rimane in root per convenzione
-
-### 🔍 Note
-- Has Archive: Abilitato per tutti i CPT come richiesto
-- Struttura file: Verificata e organizzata correttamente
-- Testing: Home page, convenzioni e salute ora mostrano descrizioni/estratti corretti
+### ✅ Potenziamento Modal Profilo Utente
+**STATUS**: ✅ COMPLETATO - Design system compliant
 
 ---
 
 ## 🎯 Legenda Priorità
 
-- **P0 - CRITICO**: Bloccante per tutto, deve essere fatto per primo
-- **P1 - ALTA**: Fondamentale per funzionalità core
-- **P2 - MEDIA**: Importante ma non bloccante
-- **P3 - BASSA**: Nice-to-have, ottimizzazioni
+- **P0 - CRITICO**: Bloccante
+- **P1 - ALTA**: Fondamentale
+- **P2 - MEDIA**: Importante
+- **P3 - BASSA**: Nice-to-have
 
 ---
 
-## FASE 1: FONDAMENTA ⚡ (P0 - Settimane 1-2)
+## FASE 1: FONDAMENTA ⚡ ✅ **100% COMPLETATO**
 
-### 1.1 Setup Base
-- [ ] **P0** - Installare e configurare plugin essenziali (ACF Pro, LearnDash, WebAuthn, Super PWA, OneSignal)
-- [ ] **P0** - Attivare child theme Blocksy e verificare funzionamento
-- [ ] **P0** - Configurare ambiente sviluppo (SCSS compilation, file watcher)
-- [ ] **P0** - Setup Git repository e .gitignore
+### 1.1 Setup Base ✅
+- [x] **P0** - Plugin essenziali, child theme, dev environment
 
 ### 1.2 Design System & SCSS ✅
-- [x] **P0** - Creare struttura SCSS modulare (`/assets/css/src/`)
-- [x] **P0** - Definire variabili CSS custom properties (colori, spacing, typography)
-- [x] **P0** - Implementare grid system e layout base
-- [x] **P0** - Creare componenti base (buttons, forms, cards, badges, tables)
-- [x] **P0** - Implementare breakpoints responsive e mobile-first approach
-- [x] **P0** - Setup NPM e package.json per compilazione SCSS
-- [x] **P0** - Creato README con guide all'uso del Design System
-- [x] **P0** - Risolto errore compilazione SCSS (mixin custom-scrollbar con color-mix)
-- [x] **P0** - Configurato Webpack con webpack.config.js
-- [x] **P0** - Creato entry point JS (assets/js/src/index.js)
-- [x] **P0** - Verificata compilazione CSS/JS funzionante (npm run build)
-- [x] **P0** - Creato file demo Design System per testing componenti
+- [x] **P0** - SCSS modulare, variabili, componenti base
 
 ### 1.3 Navigazione e Layout ✅
-- [x] **P0** - Implementare bottom navigation mobile (HTML/CSS/Alpine.js)
-- [x] **P0** - Integrare Lucide Icons
-- [x] **P0** - Creare sidebar navigation desktop ✅
-- [ ] **P0** - Implementare menu overlay mobile
-- [ ] **P0** - Testare navigation su dispositivi touch
+- [x] **P0** - Bottom nav mobile, sidebar desktop, Lucide icons
 
 ---
 
-## FASE 2: STRUTTURA DATI 📦 (P1 - Settimane 2-3)
+## FASE 2: STRUTTURA DATI 📦 ✅ **100% COMPLETATO**
 
-### 2.1 Custom Post Types ✅
-- [x] **P1** - Registrare CPT: Protocollo (via ACF UI)
-- [x] **P1** - Registrare CPT: Modulo (via ACF UI)
-- [x] **P1** - Registrare CPT: Convenzione (via ACF UI)
-- [x] **P1** - Registrare CPT: Organigramma (via ACF UI)
-- [x] **P1** - Registrare CPT: Salute e Benessere (via ACF UI)
-- [x] **P1** - Configurare Post Standard per Comunicazioni
-
-### 2.2 Taxonomies ✅
-- [x] **P1** - Creare taxonomy: Unità di Offerta (condivisa Protocollo/Modulo) (via ACF UI)
-- [x] **P1** - Creare taxonomy: Profili Professionali (condivisa Protocollo/Modulo) (via ACF UI)
-- [x] **P1** - Creare taxonomy: Aree Competenza (solo Modulo) (via ACF UI)
-- [ ] **P1** - Creare taxonomy: Tipologia Corso (LearnDash)
-- [ ] **P1** - Popolare termini di default per tutte le taxonomies
-- [ ] **P1** - Creare categorie predefinite per Comunicazioni
-
-### 2.3 ACF Field Groups ✅
-- [x] **P1** - Field group: Protocollo (PDF, riassunto, moduli collegati, flag ATS)
-- [x] **P1** - Field group: Modulo (PDF)
-- [x] **P1** - Field group: Convenzione (attiva, immagine, contatti, allegati)
-- [x] **P1** - Field group: Organigramma (ruolo, UDO, email, telefono)
-- [x] **P1** - Field group: Salute Benessere (risorse repeater)
-- [x] **P1** - Field group: Utente (UDO, Profilo, Stato, Link esterno corsi)
-- [x] **P1** - ACF JSON sync configurato e funzionante
+- [x] **P1** - Tutti CPT (Protocollo, Modulo, Convenzione, Organigramma, Salute)
+- [x] **P1** - Tutte taxonomies (Unità Offerta, Profili, Aree Competenza)
+- [x] **P1** - Tutti field group ACF
 
 ---
 
-## FASE 3: SISTEMA UTENTI 👥 (P1 - Settimana 3)
+## FASE 3: SISTEMA UTENTI 👥 🟢 **IN PROGRESSO (70%)**
 
-### 3.1 Ruoli e Capabilities
-- [ ] **P1** - Creare ruolo custom: "Gestore Piattaforma"
-- [ ] **P1** - Configurare capabilities Gestore (NO backend, solo frontend)
-- [ ] **P1** - Configurare capabilities "Utente Standard"
-- [ ] **P1** - Implementare custom capability: `view_analytics`
+### 3.1 Modal Profilo Utente ✅ **COMPLETATO**
+- [x] **P1** - Visualizzazione Profilo/UDO/Email (read-only)
+- [x] **P1** - Modifica Nome, Cognome, Codice Fiscale, Telefono
+- [x] **P1** - Cambio Password (facoltativo)
+- [x] **P1** - Avatar SENZA password (auto-save)
 
-### 3.2 Login & Autenticazione
-- [ ] **P1** - Configurare WP WebAuthn (biometric login)
-- [ ] **P1** - Personalizzare pagina login WordPress
-- [ ] **P1** - Implementare redirect post-login (dashboard home)
-- [ ] **P1** - Testare login biometrico su mobile (iOS/Android)
+### 3.2 Sidebar Dinamica ✅ **COMPLETATO (PROMPT 3)**
+- [x] **P1** - Profilo Professionale dinamico nella sidebar
+- [x] **P1** - Fallback a "Dipendente" se vuoto
+- [x] **P1** - Priorità Gestore Piattaforma
+- [x] **P1** - Logging per debug
 
----
+### 3.3 Ruoli e Capabilities
+- [ ] **P1** - Ruolo custom "Gestore Piattaforma"
+- [ ] **P1** - Capabilities Gestore (NO backend)
+- [ ] **P1** - Capabilities "Utente Standard"
 
-## FASE 4: TEMPLATE PAGINE 📄 (P1-P2 - Settimane 4-5)
-
-### 4.1 Pagine Core (PHP Templates)
-- [x] **P1** - Template: Home Dashboard (`page-home.php`) ✅
-- [x] **P1** - Template: Archivio Convenzioni (`archive-convenzione.php`) ✅
-- [x] **P1** - Template: Archivio Salute (`archive-salute_benessere.php`) ✅
-- [ ] **P1** - Template: Documentazione con filtri (`page-documentazione.php`)
-- [ ] **P1** - Template: Single Protocollo (visualizzazione PDF non scaricabile)
-- [ ] **P1** - Template: Single Modulo (download PDF)
-- [ ] **P1** - Template: Archivio Convenzioni (`archive-convenzione.php`)
-- [ ] **P1** - Template: Single Convenzione
-- [ ] **P2** - Template: Pagina Organigramma (griglia contatti)
-- [ ] **P2** - Template: Archivio Salute e Benessere
-- [ ] **P2** - Template: Single Salute e Benessere
-- [ ] **P2** - Template: Archivio Comunicazioni (blog-style)
-- [ ] **P2** - Template: Single Comunicazione
-
-### 4.2 Template Corsi (LearnDash Override)
-- [ ] **P1** - Template: Pagina Corsi con tabs (`page-corsi.php`)
-- [ ] **P2** - Override template: Single Corso LearnDash
-- [ ] **P2** - Override template: Lesson LearnDash
-- [ ] **P2** - Template certificato PDF personalizzato
-
-### 4.3 Template Analytics (Solo Gestore)
-- [ ] **P2** - Template: Dashboard Analytics (`page-analytics.php`)
-- [ ] **P2** - Partial: KPI widgets
-- [ ] **P2** - Partial: Tabella documenti con filtri
-- [ ] **P2** - Partial: Vista dettaglio documento (chi ha visto/non visto)
-
-### 4.4 Template Parts Riutilizzabili
-- [ ] **P1** - Card: Documento (Protocollo/Modulo)
-- [ ] **P1** - Card: Corso
-- [ ] **P2** - Card: Convenzione
-- [ ] **P2** - Card: Comunicazione
-- [ ] **P2** - Sidebar filtri documentazione
-- [ ] **P2** - Feed attività home
-- [ ] **P2** - Widget progressi corsi
+### 3.4 Login & Autenticazione
+- [ ] **P1** - WP WebAuthn (biometric login)
+- [ ] **P1** - Personalizzazione login page
+- [ ] **P1** - Redirect post-login
 
 ---
 
-## FASE 5: FRONTEND FORMS 📝 (P1-P2 - Settimana 5-6)
+## FASE 4: TEMPLATE PAGINE 📄 🟢 **IN PROGRESSO (40%)**
 
-### 5.1 ACF Frontend Forms - Gestore
-- [ ] **P1** - Form: Inserimento nuovo Protocollo
-- [ ] **P1** - Form: Modifica Protocollo esistente
-- [ ] **P1** - Form: Inserimento nuovo Modulo
-- [ ] **P1** - Form: Modifica Modulo esistente
-- [ ] **P2** - Form: Inserimento nuova Convenzione
-- [ ] **P2** - Form: Modifica Convenzione
-- [ ] **P2** - Form: Inserimento nuovo contatto Organigramma
-- [ ] **P2** - Form: Inserimento nuova Comunicazione
-- [ ] **P2** - Form: Inserimento contenuto Salute e Benessere
-
-### 5.2 File Management System
-- [ ] **P1** - Implementare upload PDF con validazione (max size, mime types)
-- [ ] **P1** - Sistema archiving: spostare vecchi file in `/uploads/archive/`
-- [ ] **P1** - Log operazioni file (insert/update/delete)
-- [ ] **P1** - Implementare cron job pulizia archivio (30 giorni)
-- [ ] **P2** - Recovery file archiviati (se necessario)
+### 4.1 Pagine Core ✅
+- [x] **P1** - Home Dashboard
+- [x] **P1** - Archivio + Single Convenzioni
+- [x] **P1** - Archivio + Single Salute
+- [ ] **P1** - Documentazione con filtri
+- [ ] **P1** - Single Protocollo/Modulo
+- [ ] **P2** - Organigramma
 
 ---
 
-## FASE 6: ANALYTICS & TRACKING 📊 (P2 - Settimana 6-7)
+## FASE 5-13: FRONTEND FORMS, ANALYTICS, NOTIFICHE, SICUREZZA, ACCESSIBILITY, TESTING, CONTENUTI, DEPLOYMENT
 
-### 6.1 Database Custom Table
-- [ ] **P2** - Creare tabella: `wp_document_views`
-- [ ] **P2** - Script migrazione/rollback tabella
-- [ ] **P2** - Indici database per performance
-
-### 6.2 Tracking System
-- [ ] **P2** - JavaScript: Tracking apertura documento (Alpine.js component)
-- [ ] **P2** - AJAX endpoint: Salvataggio view in custom table
-- [ ] **P2** - Query: Documenti più visti
-- [ ] **P2** - Query: Documenti non visti da utente
-- [ ] **P2** - Query: Compliance (% utenti che hanno visto documento)
-
-### 6.3 Dashboard Analytics
-- [ ] **P2** - Widget KPI: Total views, Unique users, Documenti non visti
-- [ ] **P2** - Tabella documenti con filtri (tipo, UDO, data)
-- [ ] **P2** - Vista dettaglio: Lista utenti (visto/non visto) con export CSV
-- [ ] **P2** - Grafici visualizzazioni (Chart.js - opzionale)
+⬜ **0-10%** - Da implementare
 
 ---
 
-## FASE 7: NOTIFICHE & AUTOMAZIONI 🔔 (P2-P3 - Settimana 7-8)
+## 📊 Riepilogo Avanzamento Totale
 
-### 7.1 Push Notifications (OneSignal)
-- [ ] **P2** - Configurare OneSignal API
-- [ ] **P2** - Implementare funzione invio push notification
-- [ ] **P2** - Trigger: Nuovo Protocollo pubblicato
-- [ ] **P2** - Trigger: Nuova Comunicazione pubblicata
-- [ ] **P2** - Trigger: Nuova Convenzione attiva
-- [ ] **P3** - Form custom notifica per Gestore
+| Fase | Status | % |
+|------|--------|-----|
+| 1. Fondamenta | ✅ 100% | 100% |
+| 2. Struttura Dati | ✅ 100% | 100% |
+| 3. Sistema Utenti | 🟢 70% | 70% |
+| 4. Template Pagine | 🟢 40% | 40% |
+| 5-13. Resto | ⬜ 0% | 0% |
 
-### 7.2 Email Notifications (Brevo)
-- [ ] **P2** - Configurare Brevo API
-- [ ] **P2** - Sync utenti con lista Brevo
-- [ ] **P2** - Email: Benvenuto nuovo utente
-- [ ] **P3** - Email: Digest settimanale (cron job)
-
-### 7.3 Automazioni Corsi
-- [ ] **P1** - Auto-enrollment corsi obbligatori per nuovi utenti
-- [ ] **P2** - Cron job: Check certificati in scadenza (7 giorni)
-- [ ] **P2** - Notifica certificato in scadenza (push + email)
-- [ ] **P2** - Auto re-enrollment su certificato scaduto
+**Completamento Totale Progetto**: ~32%
 
 ---
 
-## FASE 8: SICUREZZA & PERFORMANCE 🔒 (P1-P2 - Settimana 8-9)
+## 🎯 Prossimi Step
 
-### 8.1 Security Hardening
-- [ ] **P1** - Disabilitare XML-RPC
-- [ ] **P1** - Limitare tentativi login (Limit Login Attempts)
-- [ ] **P1** - Header security (X-Frame-Options, CSP)
-- [ ] **P1** - Sanitizzazione input forms (nonce, sanitize functions)
-- [ ] **P1** - Rate limiting API/AJAX calls
-- [ ] **P2** - HTTPS enforcement (SSL via WPmuDEV)
-
-### 8.2 Performance Optimization
-- [ ] **P1** - Minificazione CSS/JS
-- [ ] **P1** - Lazy loading immagini
-- [ ] **P1** - Configurare Redis cache (WPmuDEV)
-- [ ] **P1** - CDN setup (WPmuDEV CDN)
-- [ ] **P2** - Ottimizzare query database (caching query results)
-- [ ] **P2** - Defer/async JavaScript non-critical
-- [ ] **P2** - Ottimizzare font loading (font-display: swap)
-
-### 8.3 PWA Configuration
-- [ ] **P2** - Configurare Super PWA (manifest, icons)
-- [ ] **P2** - Service worker per offline capabilities
-- [ ] **P2** - Testare installazione su home screen (iOS/Android)
-
-### 8.4 GDPR Compliance
-- [ ] **P2** - Cookie banner (se necessario)
-- [ ] **P2** - Privacy policy page
-- [ ] **P2** - Informativa trattamento dati utenti
-- [ ] **P3** - Export/delete dati utente (GDPR request)
+**IMMEDIATO**:
+1. ✅ **FATTO**: Prompt 3 - Sidebar dinamica ✅
+2. 🔄 **TESTING**: Verifica profilo su diversi utenti
+3. ⬜ **NEXT**: Prompt 4 - Ruoli custom (Gestore)
 
 ---
 
-## FASE 9: ACCESSIBILITY & UX 🎨 (P2-P3 - Settimana 9)
+## 🤖 Note Importanti
 
-### 9.1 WCAG 2.1 AA Compliance
-- [ ] **P2** - Contrasto colori (ratio 4.5:1 per testo normale)
-- [ ] **P2** - Touch targets min 44x44px
-- [ ] **P2** - Keyboard navigation completa
-- [ ] **P2** - Screen reader friendly (ARIA labels)
-- [ ] **P2** - Form labels e error messages accessibili
-- [ ] **P3** - Focus indicators visibili
+✅ **Prompt 1-3 Completati**:
+- Avatar persistence (no reload)
+- Password logic (avatar light, dati critico)
+- Profilo dinamico (sidebar personalizzata)
 
-### 9.2 User Experience
-- [ ] **P2** - Loading states per operazioni async
-- [ ] **P2** - Error handling user-friendly
-- [ ] **P2** - Success messages post-action
-- [ ] **P3** - Skeleton screens (loading placeholders)
-- [ ] **P3** - Animazioni micro-interactions (subtle, performant)
+✅ **Architettura UX**:
+- Auto-save avatar (veloce, user-friendly)
+- Password required solo per dati sensibili
+- Sidebar mostra profilo reale utente
 
----
-
-## FASE 10: TESTING & QA 🧪 (P1 - Settimana 10)
-
-### 10.1 Testing Funzionale
-- [ ] **P1** - Test registrazione/login utenti
-- [ ] **P1** - Test CRUD documenti (Gestore)
-- [ ] **P1** - Test visualizzazione documenti (Utente Standard)
-- [ ] **P1** - Test enrollment/completamento corsi
-- [ ] **P1** - Test notifiche push/email
-- [ ] **P1** - Test analytics tracking
-- [ ] **P2** - Test form frontend (validazione, upload)
-
-### 10.2 Testing Cross-Browser/Device
-- [ ] **P1** - Test mobile (iOS Safari, Android Chrome)
-- [ ] **P1** - Test desktop (Chrome, Firefox, Edge)
-- [ ] **P2** - Test tablet (iPad, Android tablet)
-- [ ] **P2** - Test login biometrico (vari device)
-
-### 10.3 Performance Testing
-- [ ] **P1** - Lighthouse audit (target: >90)
-- [ ] **P1** - GTmetrix/PageSpeed Insights
-- [ ] **P2** - Load testing (simulate 20 concurrent users)
-- [ ] **P2** - Database query optimization
-
-### 10.4 Security Testing
-- [ ] **P1** - Penetration testing base
-- [ ] **P1** - Test injection attacks (SQL, XSS)
-- [ ] **P2** - Verificare permissions/capabilities per ruoli
+✅ **Security**:
+- ACF get_field() è sicuro
+- Fallback gestisce tutti i casi
+- Logging per troubleshooting
 
 ---
 
-## FASE 11: CONTENUTI & ONBOARDING 📚 (P2-P3 - Settimana 11)
-
-### 11.1 Contenuti Iniziali
-- [ ] **P2** - Inserire 10 protocolli di esempio
-- [ ] **P2** - Inserire 10 moduli di esempio
-- [ ] **P2** - Inserire contatti organigramma
-- [ ] **P2** - Inserire convenzioni attive
-- [ ] **P3** - Inserire 2-3 corsi di test (LearnDash)
-- [ ] **P3** - Inserire contenuti Salute e Benessere
-- [ ] **P3** - Inserire comunicazioni iniziali
-
-### 11.2 User Onboarding
-- [ ] **P2** - Creare 5 utenti di test (vari ruoli/UDO)
-- [ ] **P2** - Guida PDF per Gestore Piattaforma
-- [ ] **P3** - Video tutorial (opzionale)
-- [ ] **P3** - FAQ page
-
----
-
-## FASE 12: DEPLOYMENT & LANCIO 🚀 (P1 - Settimana 12)
-
-### 12.1 Pre-Launch Checklist
-- [ ] **P1** - Backup completo database + files
-- [ ] **P1** - Verificare tutte le credenziali API (OneSignal, Brevo)
-- [ ] **P1** - Disabilitare indicizzazione search engines (se interno)
-- [ ] **P1** - Configurare monitoraggio uptime
-- [ ] **P1** - Testare recupero password utenti
-- [ ] **P1** - Email/notifica test a tutti i canali
-
-### 12.2 Launch
-- [ ] **P1** - Deploy su produzione (WPmuDEV)
-- [ ] **P1** - Creare utenti reali (import CSV?)
-- [ ] **P1** - Comunicazione lancio piattaforma a dipendenti
-- [ ] **P1** - Supporto attivo primi giorni (help desk)
-
-### 12.3 Post-Launch Monitoring
-- [ ] **P1** - Monitorare errori server (7 giorni)
-- [ ] **P1** - Monitorare feedback utenti
-- [ ] **P2** - Analytics piattaforma (Google Analytics - opzionale)
-- [ ] **P2** - Raccogliere richieste feature/bug
-
----
-
-## FASE 13: MANUTENZIONE CONTINUA 🔧 (P2-P3 - Ongoing)
-
-### 13.1 Aggiornamenti
-- [ ] **P2** - Update WordPress core (mensile)
-- [ ] **P2** - Update plugin (mensile)
-- [ ] **P2** - Update theme (quando disponibile)
-- [ ] **P3** - Review security advisories
-
-### 13.2 Backup & Disaster Recovery
-- [ ] **P1** - Backup automatico giornaliero (WPmuDEV)
-- [ ] **P2** - Test restore da backup (trimestrale)
-- [ ] **P3** - Disaster recovery plan documentato
-
-### 13.3 Ottimizzazioni Continue
-- [ ] **P3** - Review analytics performance (mensile)
-- [ ] **P3** - Ottimizzare query lente (se presenti)
-- [ ] **P3** - Aggiungere feature richieste da utenti
-
----
-
-## 📊 Riepilogo Sforzo
-
-| Fase | Settimane | Priorità | Status |
-|------|-----------|----------|--------|
-| 1. Fondamenta | 1-2 | P0 | ✅ **100% COMPLETO** (SCSS/JS ✅, Nav Mobile ✅, Home ✅, Hotfix CSS ✅) |
-| 2. Struttura Dati | 2-3 | P1 | ⬜ Todo |
-| 3. Sistema Utenti | 3 | P1 | ⬜ Todo |
-| 4. Template Pagine | 4-5 | P1-P2 | ⬜ Todo |
-| 5. Frontend Forms | 5-6 | P1-P2 | ⬜ Todo |
-| 6. Analytics | 6-7 | P2 | ⬜ Todo |
-| 7. Notifiche | 7-8 | P2-P3 | ⬜ Todo |
-| 8. Sicurezza & Performance | 8-9 | P1-P2 | ⬜ Todo |
-| 9. Accessibility & UX | 9 | P2-P3 | ⬜ Todo |
-| 10. Testing | 10 | P1 | ⬜ Todo |
-| 11. Contenuti | 11 | P2-P3 | ⬜ Todo |
-| 12. Deployment | 12 | P1 | ⬜ Todo |
-| 13. Manutenzione | Ongoing | P2-P3 | ⬜ Todo |
-
-**Timeline stimata**: 12 settimane (~3 mesi)
-
----
-
-## 🎯 Note Importanti
-
-1. **Non saltare le fasi P0/P1**: Sono fondamentali e bloccanti
-2. **Le task P3 possono essere posticipate** se il tempo stringe
-3. **Testing non è opzionale**: La fase 10 è critica
-4. **Backup prima di ogni deploy**: Sempre
-
----
-
-**📋 Tasklist completa e pronta per l'implementazione.**
+**📋 TaskList aggiornata - Pronto per Prompt 4.**

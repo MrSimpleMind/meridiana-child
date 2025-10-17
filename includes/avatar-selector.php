@@ -9,12 +9,19 @@ if (!defined('ABSPATH')) exit;
 
 /**
  * Mostra l'avatar HTML dell'utente (selezionato o predefinito)
+ * NOTA: Usa la versione persistente se disponibile (da avatar-persistence.php)
  * 
  * @param int $user_id ID dell'utente
  * @param string $size Classe di grandezza: small, medium, large
  * @return string HTML dell'avatar
  */
 function meridiana_display_user_avatar($user_id = null, $size = 'medium') {
+    // Se disponibile, usa la versione persistente con validazione robusta
+    if (function_exists('meridiana_display_user_avatar_persistent')) {
+        return meridiana_display_user_avatar_persistent($user_id, $size);
+    }
+    
+    // Fallback al metodo originale se avatar-persistence.php non è caricato
     if (!$user_id) {
         $user_id = get_current_user_id();
     }
@@ -25,11 +32,6 @@ function meridiana_display_user_avatar($user_id = null, $size = 'medium') {
     
     // Cerca l'avatar selezionato nel database
     $selected_avatar = get_user_meta($user_id, 'selected_avatar', true);
-    
-    // DEBUG: Log del valore recuperato
-    if (defined('WP_DEBUG') && WP_DEBUG) {
-        error_log('[Avatar Debug] User ' . $user_id . ': selected_avatar = ' . var_export($selected_avatar, true));
-    }
     
     if ($selected_avatar) {
         // Verifica che il file esista
@@ -42,15 +44,7 @@ function meridiana_display_user_avatar($user_id = null, $size = 'medium') {
             $avatar_url = MERIDIANA_CHILD_URI . '/assets/images/avatar/' . rawurlencode($selected_avatar);
             $size_class = $size === 'small' ? '40px' : ($size === 'large' ? '80px' : '56px');
             
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Avatar Debug] ✓ File trovato, URL: ' . $avatar_url);
-            }
-            
             return '<img src="' . esc_url($avatar_url) . '" alt="Avatar" class="user-avatar user-avatar--' . esc_attr($size) . '" style="width: ' . $size_class . '; height: ' . $size_class . '; object-fit: cover; border-radius: 50%; display: block;">';
-        } else {
-            if (defined('WP_DEBUG') && WP_DEBUG) {
-                error_log('[Avatar Debug] ✗ File non trovato: ' . $avatar_path);
-            }
         }
     }
     

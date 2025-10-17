@@ -23,7 +23,7 @@ get_header();
             
             <!-- Header con Torna Indietro -->
             <div class="archive-header">
-                <a href="<?php echo home_url('/'); ?>" class="back-link">
+                <a href="#" onclick="history.back(); return false;" class="back-link">
                     <i data-lucide="arrow-left"></i>
                     <span>Torna indietro</span>
                 </a>

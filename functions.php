@@ -78,6 +78,27 @@ function meridiana_enqueue_scripts() {
         true
     );
     
+    // Enqueue Avatar Persistence Script
+    if (is_user_logged_in()) {
+        wp_enqueue_script(
+            'meridiana-avatar-persistence',
+            MERIDIANA_CHILD_URI . '/assets/js/avatar-persistence.js',
+            array(),
+            MERIDIANA_CHILD_VERSION,
+            true
+        );
+        
+        // Localize Avatar Persistence
+        wp_localize_script(
+            'meridiana-avatar-persistence',
+            'meridianaAvatarData',
+            array(
+                'ajax_url' => admin_url('admin-ajax.php'),
+                'nonce' => wp_create_nonce('meridiana_avatar_save'),
+            )
+        );
+    }
+    
     // Localize script per REST API e variabili globali
     wp_localize_script('meridiana-child-scripts', 'meridiana', array(
         'ajaxurl' => admin_url('admin-ajax.php'),
@@ -138,6 +159,9 @@ require_once MERIDIANA_CHILD_DIR . '/includes/avatar-system.php';
 
 // Avatar Selector (avatar predefiniti da immagini)
 require_once MERIDIANA_CHILD_DIR . '/includes/avatar-selector.php';
+
+// Avatar Persistence System (salvataggio + visualizzazione persistente)
+require_once MERIDIANA_CHILD_DIR . '/includes/avatar-persistence.php';
 
 // Helper functions
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
