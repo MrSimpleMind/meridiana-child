@@ -2,9 +2,19 @@
 
 > **Contesto**: Definizione completa di tutti i Custom Post Types, taxonomies, custom fields e relazioni
 
+> ⚠️ **STATO IMPLEMENTAZIONE** (17 Ottobre 2025):  
+> - ✅ **CPT**: TUTTI REGISTRATI (Protocollo, Modulo, Convenzione, Organigramma, Salute)  
+> - ✅ **TAXONOMIES**: TUTTE REGISTRATE (Unità Offerta, Profili Professionali, Aree Competenza)  
+> - ✅ **TERMINI TAXONOMY**: TUTTI POPOLATI (32 termini verificati da WordPress admin)  
+> - ✅ **FIELD GROUPS**: TUTTI REGISTRATI (6 gruppi creati in ACF)  
+> - ✅ **TEMPLATES**: Convenzione e Salute completi, Protocollo/Modulo/Organigramma da creare  
+> - 📄 **DETTAGLI**: Vedi `STATO_REALE_CPT_TAXONOMIES.md` per verifica completa  
+> - 🎉 **FASE 2: 100% COMPLETATA!** (LearnDash posticipato a fase successiva)
+
 **Leggi anche**: 
 - `05_Gestione_Frontend_Forms.md` per form di inserimento/modifica
 - `06_Analytics_Tracking.md` per tracking visualizzazioni documenti
+- `STATO_REALE_CPT_TAXONOMIES.md` per stato verificato da filesystem
 
 ---
 

@@ -52,10 +52,10 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
 
         <!-- Wrapper per affiancare News e Salute su desktop -->
         <div class="home-sections-grid">
-            <!-- Sezione "Ultime notizie" -->
+            <!-- Sezione "Comunicazioni" -->
             <section class="home-section home-news">
             <div class="home-section__header">
-                <h2 class="home-section__title">Ultime notizie</h2>
+                <h2 class="home-section__title">Comunicazioni</h2>
                 <?php 
                 $blog_page = get_option('page_for_posts');
                 $blog_url = $blog_page ? get_permalink($blog_page) : home_url('/blog/');

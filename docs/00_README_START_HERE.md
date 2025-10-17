@@ -154,39 +154,57 @@ Roadmap sviluppo fase per fase, checklist pre-lancio, testing, manutenzione, sca
 ### ✅ Completato
 - [x] Analisi requisiti
 - [x] Scelta stack tecnologico
-- [x] Struttura documentazione
+- [x] Struttura documentazione completa
 - [x] Setup hosting e WordPress
 - [x] Configurazione Blocksy base
 - [x] Creazione child theme structure
 - [x] Functions.php con enqueue e includes
 - [x] Costanti tema (MERIDIANA_CHILD_DIR/URI)
 - [x] Filtri ACF JSON sync configurati
-- [x] User roles system implementato
-- [x] Helper functions base
-- [x] Security hardening base
-- [x] Tasklist priorità creata
+- [x] Helper functions base (includes/helpers.php)
+- [x] Security hardening base (includes/security.php)
+- [x] Tasklist priorità creata e aggiornata
 - [x] Design System SCSS completo (variabili, componenti, responsive)
 - [x] Setup compilazione SCSS/JS (npm, webpack, package.json)
 - [x] Risoluzione errori compilazione (mixin custom-scrollbar)
 - [x] File demo Design System per testing componenti
+- [x] **FIX CRITICO**: CSS compilation pipeline corretta (main.css)
+- [x] Bottom navigation mobile funzionante
+- [x] Sidebar navigation desktop funzionante
+- [x] Template Home Dashboard completo (page-home.php)
+- [x] Template Archivio Convenzioni (archive-convenzione.php)
+- [x] Template Single Convenzione (single-convenzione.php)
+- [x] Template Archivio Salute (archive-salute-e-benessere-l.php)
+- [x] Template Single Salute (single-salute-e-benessere-l.php)
+- [x] Sistema Avatar completo con 28 immagini predefinite
+- [x] Modal profilo utente con AJAX (upload avatar, cambio password)
+- [x] User Profile AJAX handler sicuro (nonce, sanitization)
+- [x] Debug system avatar con logging (`?meridiana_avatar_debug=1`)
+- [x] Carousel convenzioni con navigazione desktop
+- [x] Layout responsive mobile-first completo
+- [x] Fix hover card (no underline)
+- [x] Correzioni campi ACF (immagine, descrizione, contenuto)
+- [x] Riorganizzazione documentazione (docs/archive/)
 
 ### 🟡 In Corso
-- [ ] Verifica ACF JSON sync funzionante
-- [ ] Creazione Field Groups in ACF UI
-- [ ] Creazione CPT in ACF UI
-- [ ] Creazione Taxonomies in ACF UI
+- [ ] **PRIORITÀ**: Verificare CPT in ACF UI (Protocollo, Modulo, Organigramma)
+- [ ] Creazione Taxonomies (Unità Offerta, Profili, Aree Competenza)
+- [ ] Field Groups utente (UDO, Profilo, Stato)
+- [ ] Sistema Ruoli custom (Gestore Piattaforma)
+- [ ] Template Documentazione con filtri
 
 ### ⬜ Da Fare (Prossime 2 settimane)
-- [ ] Design system (SCSS)
-- [ ] Template pagine core
-- [ ] Form frontend ACF
-- [ ] Analytics system
-- [ ] Notifiche push/email
-- [ ] Testing cross-browser
-- [ ] Launch beta
+- [ ] Single Protocollo/Modulo (PDF viewer/download)
+- [ ] Pagina Corsi con tabs LearnDash
+- [ ] Frontend Forms ACF per Gestore
+- [ ] File Management System (archiving + recovery)
+- [ ] Login biometrico WP WebAuthn
+- [ ] Testing cross-browser device reali
+- [ ] Popolamento contenuti iniziali
 
-**Ultimo Aggiornamento**: 15 Ottobre 2025, 10:45  
-**Fase Corrente**: 1 - Fondamenta (Setup e Configurazione Base - SCSS/JS Completato)
+**Ultimo Aggiornamento**: 17 Ottobre 2025  
+**Fase Corrente**: Fase 1 ✅ COMPLETATA | Fase 2-4 🔄 In Corso (30-40%)  
+**Completamento Totale**: ~25% del progetto
 
 ---
 

@@ -1,13 +1,13 @@
 // =============================================================================
 // ARCHIVE PAGES - MOBILE FIRST
-// News, Comunicazioni
+// News, Comunicazioni, Salute e Benessere - Template Unificato
 // =============================================================================
 
 // -----------------------------------------------------------------------------
 // PAGE WRAPPER
 // -----------------------------------------------------------------------------
 
-.archive-news-page {
+.archive-page {
     min-height: 100vh;
     background-color: var(--color-bg-tertiary);
     padding-bottom: 100px; // Spazio per bottom nav
@@ -59,10 +59,10 @@
 }
 
 // -----------------------------------------------------------------------------
-// NEWS GRID
+// ARTICLES GRID - Unificato per News e Salute
 // -----------------------------------------------------------------------------
 
-.news-archive-grid {
+.articles-grid {
     display: grid;
     grid-template-columns: 1fr;
     gap: var(--space-4);
@@ -79,10 +79,10 @@
 }
 
 // -----------------------------------------------------------------------------
-// NEWS CARD
+// ARTICLE CARD - Componente Universale
 // -----------------------------------------------------------------------------
 
-.news-card {
+.article-card {
     background-color: var(--color-bg-primary);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
@@ -97,6 +97,12 @@
         box-shadow: var(--shadow-md);
         transform: translateY(-4px);
         border-color: var(--color-primary);
+        
+        // NO underline su hover
+        .article-card__title,
+        .article-card__excerpt {
+            text-decoration: none;
+        }
     }
     
     &:active {
@@ -147,6 +153,7 @@
         color: var(--color-text-primary);
         margin: 0 0 var(--space-3);
         line-height: var(--line-height-tight);
+        text-decoration: none;
         
         // Limita a 2 righe
         display: -webkit-box;
@@ -191,13 +198,15 @@
         color: var(--color-text-secondary);
         margin: 0;
         line-height: var(--line-height-normal);
+        text-decoration: none;
         
-        // Limita a 2 righe
+        // Limita a 1 SOLA riga - FORZATO
         display: -webkit-box;
-        -webkit-line-clamp: 2;
+        -webkit-line-clamp: 1;
         -webkit-box-orient: vertical;
         overflow: hidden;
         text-overflow: ellipsis;
+        white-space: normal;
     }
 }
 
@@ -265,4 +274,47 @@
     font-size: var(--font-size-base);
     background-color: var(--color-bg-primary);
     border-radius: var(--radius-lg);
+}
+
+// -----------------------------------------------------------------------------
+// RETROCOMPATIBILITÀ - Alias per vecchie classi
+// -----------------------------------------------------------------------------
+
+// Mantieni funzionanti i vecchi selettori se usati da qualche parte
+.news-archive-grid,
+.salute-archive-grid {
+    @extend .articles-grid;
+}
+
+.news-card,
+.salute-card {
+    @extend .article-card;
+}
+
+// -----------------------------------------------------------------------------
+// CONVENZIONI GRID - Stesso layout di Articles Grid
+// -----------------------------------------------------------------------------
+
+.convenzioni-grid {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4);
+    
+    @media (min-width: 768px) {
+        grid-template-columns: repeat(2, 1fr);
+        gap: var(--space-5);
+    }
+    
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(3, 1fr);
+        gap: var(--space-6);
+    }
+}
+
+// Card convenzione per archivio - reset dimensioni fisse
+.convenzioni-grid .convenzione-card {
+    flex: none;
+    max-width: none;
+    min-width: auto;
+    width: 100%;
 }
