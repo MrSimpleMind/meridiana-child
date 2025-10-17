@@ -276,6 +276,9 @@ function meridiana_theme_setup() {
     
     // Editor styles (se serve Gutenberg backend)
     // add_theme_support('editor-styles');
+    
+    // Disabilita Gutenberg - ritorna all'editor classico (TinyMCE)
+    add_filter('use_block_editor_for_post_type', '__return_false');
 }
 
 /**

@@ -11,21 +11,12 @@
 $current_user = wp_get_current_user();
 $user_name = $current_user->display_name;
 
-// **NUOVO**: Recupera il Profilo Professionale dell'utente
-$profilo_term_id = get_field('profilo_professionale', 'user_' . $current_user->ID);
+// **NUOVO**: Recupera il Profilo Professionale dell'utente (return_format: value)
+$profilo_value = get_field('profilo_professionale', 'user_' . $current_user->ID);
 
-if ($profilo_term_id) {
-    // Profilo professionale assegnato
-    $profilo_term = get_term($profilo_term_id);
-    if ($profilo_term && !is_wp_error($profilo_term)) {
-        $user_role = $profilo_term->name; // Es: "Infermiere", "Medico", "OSS"
-    } else {
-        $user_role = 'Dipendente'; // Fallback se il term non esiste
-    }
-} else {
-    // Nessun profilo assegnato - mostra default
-    $user_role = 'Dipendente';
-}
+// La CF ritorna il valore direttamente ("Medico", "Infermiere", ecc.)
+// Non è un term_id, quindi usarlo direttamente
+$user_role = !empty($profilo_value) ? $profilo_value : 'Dipendente';
 
 // Se l'utente è Gestore, mostra questo al posto del profilo
 if (current_user_can('view_analytics')) {

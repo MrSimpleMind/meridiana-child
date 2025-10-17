@@ -19,35 +19,34 @@ $args = array(
 $comunicazioni = new WP_Query($args);
 ?>
 
-<main class="site-main">
-    <div class="container">
-        
-        <!-- Intestazione -->
-        <header class="page-header">
-            <h1><?php single_post_title(); ?></h1>
-            <p class="page-subtitle">Tutte le comunicazioni aziendali</p>
-        </header>
-        
-        <!-- Breadcrumb (PROMPT 5) -->
-        <?php meridiana_breadcrumb(); ?>
-        
-        <!-- Filtro per Categoria (PROMPT 6) -->
-        <?php meridiana_comunicazioni_filter(array(
-            'placeholder' => 'Tutte le categorie',
-            'class' => 'mb-6',
-        )); ?>
-        
-        <!-- Lista Comunicazioni (iniziale) -->
-        <div id="comunicazioni-container">
-            <?php meridiana_comunicazioni_list($comunicazioni); ?>
+<div class="content-wrapper">
+    <?php 
+    // Include navigation (mobile + desktop)
+    get_template_part('templates/parts/navigation/mobile-bottom-nav');
+    get_template_part('templates/parts/navigation/desktop-sidebar');
+    ?>
+    
+    <main class="site-main">
+        <div class="archive-container">
             
-            <!-- Paginazione -->
-            <?php if ($comunicazioni->max_num_pages > 1): ?>
-                <?php meridiana_comunicazioni_pagination($comunicazioni); ?>
-            <?php endif; ?>
+            <!-- Filtro per Categoria (PROMPT 6) -->
+            <?php meridiana_comunicazioni_filter(array(
+                'placeholder' => 'Tutte le categorie',
+                'class' => 'mb-6',
+            )); ?>
+            
+            <!-- Lista Comunicazioni (iniziale) -->
+            <div id="comunicazioni-container">
+                <?php meridiana_comunicazioni_list($comunicazioni); ?>
+                
+                <!-- Paginazione -->
+                <?php if ($comunicazioni->max_num_pages > 1): ?>
+                    <?php meridiana_comunicazioni_pagination($comunicazioni); ?>
+                <?php endif; ?>
+            </div>
+            
         </div>
-        
-    </div>
-</main>
+    </main>
+</div>
 
 <?php get_footer();
