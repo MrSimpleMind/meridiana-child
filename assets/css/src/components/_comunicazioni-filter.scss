@@ -1,29 +1,81 @@
 /**
- * PROMPT 6: Filtro Comunicazioni per Categoria con AJAX
+ * Comunicazioni Filter - SCSS
+ * PROMPT 6: Filtro per Categoria AJAX
  * 
- * DESIGN SYSTEM COMPLIANT - Ottobre 2025
- * 
- * Componenti:
- * - Filtro dropdown categoria (responsive)
- * - Grid comunicazioni (mobile-first)
- * - Card comunicazione (16:9 image, design brand)
- * - Paginazione AJAX-ready (touch-friendly)
- * 
- * Mobile-first approach con breakpoints 768px e 1200px
+ * Design System Compliant - Mobile First
  */
 
 // ========================================
-// 1. FILTRO CATEGORIA DROPDOWN
+// 1. FILTRI SEZIONE
 // ========================================
 
-.comunicazioni-filter {
-    margin-bottom: var(--space-8);
+.comunicazioni-filters {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+    padding: var(--space-6);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    
+    @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: flex-end;
+        gap: var(--space-6);
+        padding: var(--space-8);
+    }
 }
 
-.comunicazioni-filter__label {
+// Search Box
+.search-box {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
+    
+    i {
+        width: 18px;
+        height: 18px;
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
+    }
+    
+    &:focus-within {
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-focus);
+    }
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
+    
+    &::placeholder {
+        color: var(--color-text-muted);
+    }
+    
+    &:focus {
+        outline: none;
+    }
+}
+
+// Filter Group
+.filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.filter-label {
     display: flex;
     align-items: center;
     gap: var(--space-2);
@@ -40,16 +92,15 @@
     }
 }
 
-.comunicazioni-filter__select {
+.filter-select {
     width: 100%;
-    max-width: 350px;
     padding: var(--space-3) var(--space-4);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-normal);
-    color: var(--color-text-primary);
-    background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border-input);
     border-radius: var(--radius-md);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-normal);
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23ab1120' d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -57,11 +108,6 @@
     padding-right: var(--space-10);
     cursor: pointer;
     transition: all 0.2s ease;
-    
-    option {
-        color: var(--color-text-primary);
-        background-color: var(--color-bg-primary);
-    }
     
     &:hover {
         border-color: var(--color-primary);
@@ -73,20 +119,10 @@
         border-color: var(--color-primary);
         box-shadow: var(--shadow-focus);
     }
-    
-    &:active {
-        background-color: var(--color-bg-primary);
-    }
-    
-    // Mobile responsive
-    @media (max-width: 576px) {
-        max-width: 100%;
-        padding-right: var(--space-8);
-    }
 }
 
 // ========================================
-// 2. GRID LISTA COMUNICAZIONI
+// 2. GRID COMUNICAZIONI
 // ========================================
 
 .comunicazioni-list {
@@ -95,13 +131,11 @@
     gap: var(--space-6);
     margin-bottom: var(--space-10);
     
-    // Tablet: 2 colonne
     @media (min-width: 768px) {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-8);
     }
     
-    // Desktop: 3 colonne
     @media (min-width: 1200px) {
         grid-template-columns: repeat(3, 1fr);
         gap: var(--space-8);
@@ -122,8 +156,9 @@
     overflow: hidden;
     box-shadow: var(--shadow-sm);
     transition: all 0.3s ease;
+    text-decoration: none;
+    color: inherit;
     
-    // Hover state desktop
     @media (hover: hover) {
         &:hover {
             border-color: var(--color-primary);
@@ -134,13 +169,12 @@
                 transform: scale(1.05);
             }
             
-            .comunicazione-card__link {
+            .comunicazione-card__title {
                 color: var(--color-primary);
             }
         }
     }
     
-    // Active state mobile
     @media (hover: none) {
         &:active {
             box-shadow: var(--shadow-md);
@@ -149,34 +183,36 @@
     }
 }
 
-// Image wrapper 16:9 aspect ratio
-.comunicazione-card__image-wrapper {
-    position: relative;
-    width: 100%;
-    padding-bottom: 56.25%; // 16:9 aspect ratio
-    overflow: hidden;
-    background-color: var(--color-bg-secondary);
-    flex-shrink: 0;
-}
-
+// Image 16:9
 .comunicazione-card__image {
-    position: absolute;
-    top: 0;
-    left: 0;
     width: 100%;
-    height: 100%;
-    object-fit: cover;
+    aspect-ratio: 16 / 9;
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
     transition: transform 0.3s ease;
-    display: block;
+    flex-shrink: 0;
+    background-color: var(--color-bg-secondary);
 }
 
-// Image placeholder (se manca featured image)
-.comunicazione-card__image-placeholder {
+.comunicazione-card__badge {
     position: absolute;
-    top: 0;
-    left: 0;
+    top: var(--space-3);
+    right: var(--space-3);
+    padding: var(--space-2) var(--space-3);
+    background-color: var(--color-primary);
+    color: white;
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    border-radius: var(--radius-full);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    z-index: 2;
+}
+
+.comunicazione-card__placeholder {
     width: 100%;
-    height: 100%;
+    aspect-ratio: 16 / 9;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -185,16 +221,16 @@
         var(--color-primary-bg-light) 0%,
         var(--color-bg-secondary) 100%
     );
+    
+    i {
+        width: 48px;
+        height: 48px;
+        color: var(--color-primary);
+        opacity: 0.3;
+    }
 }
 
-.comunicazione-card__placeholder-icon {
-    width: 48px;
-    height: 48px;
-    color: var(--color-primary);
-    opacity: 0.4;
-}
-
-// Content container con flex per allineamento
+// Content
 .comunicazione-card__content {
     flex: 1;
     display: flex;
@@ -207,62 +243,30 @@
     }
 }
 
-// Categories badges
-.comunicazione-card__categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--space-2);
-    margin-bottom: var(--space-1);
-    
-    .badge {
-        font-size: var(--font-size-xs);
-        padding: 4px 8px;
-    }
-}
-
-// Title styling
+// Title
 .comunicazione-card__title {
     margin: 0;
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     line-height: var(--line-height-tight);
     color: var(--color-text-primary);
+    transition: color 0.2s ease;
     
     @media (max-width: 768px) {
         font-size: var(--font-size-base);
     }
 }
 
-.comunicazione-card__link {
-    color: inherit;
-    text-decoration: none;
-    transition: color 0.2s ease;
-    
-    &:hover {
-        color: var(--color-primary);
-    }
-    
-    &:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
-        border-radius: 2px;
-    }
-}
-
-// Excerpt styling
+// Excerpt
 .comunicazione-card__excerpt {
-    flex: 1;
     margin: 0;
+    flex: 1;
     font-size: var(--font-size-sm);
     line-height: var(--line-height-normal);
     color: var(--color-text-secondary);
-    
-    @media (max-width: 768px) {
-        font-size: var(--font-size-sm);
-    }
 }
 
-// Meta information (date + author)
+// Meta
 .comunicazione-card__meta {
     display: flex;
     flex-wrap: wrap;
@@ -274,46 +278,56 @@
     
     @media (max-width: 576px) {
         gap: var(--space-2);
-        font-size: 12px;
     }
 }
 
 .comunicazione-card__date,
-.comunicazione-card__author {
+.comunicazione-card__category {
     display: flex;
     align-items: center;
     gap: var(--space-1);
-}
-
-.comunicazione-card__meta-icon {
-    width: 14px;
-    height: 14px;
-    flex-shrink: 0;
-    color: var(--color-primary);
-    opacity: 0.7;
-}
-
-// Read more button
-.comunicazione-card__read-more {
-    display: inline-flex;
-    align-items: center;
-    gap: var(--space-2);
-    margin-top: auto;
-    width: auto;
     
     i {
         width: 14px;
         height: 14px;
-    }
-    
-    &:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
+        flex-shrink: 0;
+        color: var(--color-primary);
+        opacity: 0.7;
     }
 }
 
 // ========================================
-// 4. PAGINAZIONE AJAX
+// 4. NO RESULTS
+// ========================================
+
+.no-results {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-12) var(--space-6);
+    text-align: center;
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+    
+    i {
+        width: 48px;
+        height: 48px;
+        margin-bottom: var(--space-4);
+        opacity: 0.3;
+    }
+    
+    p {
+        margin: 0;
+        font-size: var(--font-size-base);
+    }
+}
+
+// ========================================
+// 5. PAGINATION
 // ========================================
 
 .comunicazioni-pagination {
@@ -363,13 +377,11 @@
         height: 16px;
     }
     
-    // Hover state
     &:hover:not(.active) {
         background-color: var(--color-bg-tertiary);
         border-color: var(--color-primary);
     }
     
-    // Active state
     &.active {
         background-color: var(--color-primary);
         color: white;
@@ -377,18 +389,15 @@
         font-weight: var(--font-weight-bold);
     }
     
-    // Focus visible
     &:focus-visible {
         outline: none;
         box-shadow: var(--shadow-focus);
     }
     
-    // Active/pressed state
     &:active:not(.active) {
         transform: scale(0.95);
     }
     
-    // Mobile responsive
     @media (max-width: 576px) {
         min-width: 36px;
         min-height: 36px;
@@ -398,70 +407,34 @@
 }
 
 // ========================================
-// 5. STATI SPECIALI
+// 6. LOADING STATE
 // ========================================
 
-// Empty state (nessun risultato)
-.comunicazioni-empty {
-    grid-column: 1 / -1;
-    padding: var(--space-12) var(--space-6);
-    text-align: center;
-    color: var(--color-text-secondary);
-    background-color: var(--color-bg-secondary);
-    border-radius: var(--radius-lg);
-    border: 1px dashed var(--color-border);
-    
-    p {
-        margin: 0;
-        font-size: var(--font-size-base);
-    }
-    
-    i {
-        display: block;
-        width: 48px;
-        height: 48px;
-        margin: 0 auto var(--space-4);
-        opacity: 0.3;
-    }
-}
-
-// Loading state (opacity durante AJAX)
 .comunicazioni-list.loading {
     opacity: 0.6;
     pointer-events: none;
     transition: opacity 0.2s ease;
 }
 
-// Error state
-.comunicazioni-error {
-    grid-column: 1 / -1;
-    padding: var(--space-6);
-    background-color: #fef2f3;
-    border-left: 4px solid var(--color-error);
-    border-radius: var(--radius-md);
-    color: var(--color-error);
-    font-size: var(--font-size-sm);
-}
-
 // ========================================
-// 6. ANIMAZIONI E TRANSIZIONI
+// 7. ACCESSIBILITY & MOTION
 // ========================================
 
 @media (prefers-reduced-motion: reduce) {
     .comunicazione-card,
-    .pagination__link,
-    .comunicazioni-filter__select {
+    .filter-select,
+    .pagination__link {
         transition: none !important;
         animation: none !important;
     }
 }
 
 // ========================================
-// 7. PRINT STYLES
+// 8. PRINT
 // ========================================
 
 @media print {
-    .comunicazioni-filter,
+    .comunicazioni-filters,
     .comunicazioni-pagination {
         display: none;
     }

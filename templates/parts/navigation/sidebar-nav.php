@@ -16,10 +16,29 @@ $profilo_value = get_field('profilo_professionale', 'user_' . $current_user->ID)
 
 // La CF ritorna il valore direttamente ("Medico", "Infermiere", ecc.)
 // Non è un term_id, quindi usarlo direttamente
-$user_role = !empty($profilo_value) ? $profilo_value : 'Dipendente';
+// FIX: Se profilo_professionale è vuoto, non usare "Dipendente" di default
+// Invece, usa il ruolo WordPress effettivo dell'utente
+if (!empty($profilo_value)) {
+    $user_role = $profilo_value;
+} else {
+    // Recupera il ruolo WordPress dell'utente (es: "subscriber", "administrator")
+    $roles = $current_user->roles;
+    
+    // Traduci il ruolo in etichetta leggibile
+    if (in_array('administrator', $roles)) {
+        $user_role = 'Amministratore';
+    } elseif (in_array('editor', $roles)) {
+        $user_role = 'Editor';
+    } elseif (in_array('author', $roles)) {
+        $user_role = 'Autore';
+    } else {
+        // Fallback finale: "Utente" generico
+        $user_role = 'Utente';
+    }
+}
 
-// Se l'utente è Gestore, mostra questo al posto del profilo
-if (current_user_can('view_analytics')) {
+// Se l'utente è Gestore, mostra SEMPRE questo (priority massima)
+if (current_user_can('view_analytics') || current_user_can('gestore_piattaforma')) {
     $user_role = 'Gestore Piattaforma';
 }
 

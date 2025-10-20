@@ -5,7 +5,8 @@
  */
 
 // Pulsante "Torna indietro" intelligente
-.btn-back {
+.btn-back,
+.back-link {
     display: inline-flex;
     align-items: center;
     gap: var(--space-2);
@@ -24,7 +25,7 @@
     }
     
     &:hover {
-        color: var(--color-primary);
+        color: var(--color-text-primary);
         background-color: var(--color-bg-secondary);
         gap: var(--space-3); // Sposta freccia verso sinistra al hover
         

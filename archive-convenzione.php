@@ -17,13 +17,19 @@ get_header();
     <main class="archive-page archive-convenzioni-page">
         <div class="archive-container">
             
-            <!-- Header con Torna Indietro -->
-            <div class="archive-header">
-                <a href="#" onclick="history.back(); return false;" class="back-link">
+            <!-- Breadcrumb Navigation -->
+            <?php meridiana_render_breadcrumb(); ?>
+            
+            <!-- Back Navigation -->
+            <div class="back-link-wrapper">
+                <a href="<?php echo esc_url(meridiana_get_parent_url()); ?>" class="back-link">
                     <i data-lucide="arrow-left"></i>
-                    <span>Torna indietro</span>
+                    <span><?php echo esc_html(meridiana_get_back_label()); ?></span>
                 </a>
             </div>
+            
+            <!-- Page Title -->
+            <h1 class="archive-page__title">Convenzioni</h1>
             
             <?php
             $convenzioni = new WP_Query(array(

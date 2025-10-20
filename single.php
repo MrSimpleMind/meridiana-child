@@ -1,6 +1,6 @@
 <?php
 /**
- * Template: Single Post (News/Comunicazioni)
+ * Template: Single Comunicazioni/News
  * Visualizza dettaglio completo di una notizia o comunicazione
  * 
  * @package Meridiana Child
@@ -18,64 +18,72 @@ get_header();
     get_template_part('templates/parts/navigation/desktop-sidebar');
     ?>
     
-    <main class="single-news-page">
-        <?php while (have_posts()): the_post(); ?>
+    <main class="single-comunicazioni-page">
+        <?php while (have_posts()): the_post(); 
+            // Get fields
+            $immagine_id = get_post_thumbnail_id();
+            $immagine_url = $immagine_id ? wp_get_attachment_image_url($immagine_id, 'large') : '';
+            $excerpt = get_the_excerpt();
+            $categories = get_the_category();
+        ?>
         
         <div class="single-container">
-            <!-- Header con Torna Indietro -->
-            <div class="single-header">
+            <!-- Back Navigation -->
+            <div class="back-link-wrapper">
                 <a href="#" onclick="history.back(); return false;" class="back-link">
                     <i data-lucide="arrow-left"></i>
                     <span>Torna indietro</span>
                 </a>
             </div>
             
-            <!-- Content -->
-            <article class="single-content">
-                
-                <!-- Titolo -->
-                <h1 class="single-title"><?php the_title(); ?></h1>
+            <!-- Header -->
+            <header class="single-comunicazioni__header">
+                <h1 class="single-comunicazioni__title"><?php the_title(); ?></h1>
                 
                 <!-- Meta Info -->
-                <div class="news-meta">
-                    <span class="news-meta__item">
+                <div class="single-comunicazioni__meta">
+                    <span class="meta-item">
                         <i data-lucide="calendar"></i>
-                        <?php echo get_the_date('d/m/Y'); ?>
+                        <span><?php echo get_the_date('j F Y'); ?></span>
                     </span>
                     
-                    <?php 
-                    $categories = get_the_category();
-                    if ($categories): ?>
-                    <span class="news-meta__item">
+                    <?php if ($categories): ?>
+                    <span class="meta-item">
                         <i data-lucide="tag"></i>
-                        <?php 
-                        $cat_names = array_map(function($cat) {
-                            return $cat->name;
-                        }, $categories);
-                        echo esc_html(implode(', ', $cat_names));
-                        ?>
+                        <span>
+                            <?php 
+                            $cat_names = array_map(function($cat) {
+                                return $cat->name;
+                            }, $categories);
+                            echo esc_html(implode(', ', $cat_names));
+                            ?>
+                        </span>
                     </span>
                     <?php endif; ?>
                 </div>
+            </header>
+            
+            <!-- Featured Image -->
+            <?php if ($immagine_url): ?>
+            <div class="single-comunicazioni__featured-image">
+                <img src="<?php echo esc_url($immagine_url); ?>" alt="<?php the_title_attribute(); ?>" class="single-comunicazioni__image">
+            </div>
+            <?php endif; ?>
+            
+            <!-- Main Content -->
+            <article class="single-comunicazioni__content">
                 
-                <!-- Contenuto -->
-                <div class="single-body wysiwyg-content">
-                    <?php the_content(); ?>
-                </div>
-                
-                <!-- Call to Action (opzionale con custom field ACF) -->
-                <?php 
-                $cta_text = get_field('cta_text');
-                $cta_url = get_field('cta_url');
-                
-                if ($cta_text && $cta_url): ?>
-                <div class="cta-box">
-                    <a href="<?php echo esc_url($cta_url); ?>" class="btn btn--primary btn--large" target="_blank" rel="noopener">
-                        <?php echo esc_html($cta_text); ?>
-                        <i data-lucide="arrow-right"></i>
-                    </a>
+                <!-- Excerpt if available -->
+                <?php if ($excerpt): ?>
+                <div class="single-comunicazioni__excerpt">
+                    <?php echo wp_kses_post($excerpt); ?>
                 </div>
                 <?php endif; ?>
+                
+                <!-- Full Content -->
+                <div class="single-comunicazioni__body wysiwyg-content">
+                    <?php the_content(); ?>
+                </div>
                 
             </article>
         </div>
