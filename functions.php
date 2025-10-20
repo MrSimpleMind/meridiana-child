@@ -39,12 +39,7 @@ function meridiana_enqueue_styles() {
         $css_version
     );
     
-    wp_enqueue_style(
-        'meridiana-comunicazioni-style',
-        MERIDIANA_CHILD_URI . '/assets/css/comunicazioni-inline.css',
-        array('meridiana-child-style'),
-        MERIDIANA_CHILD_VERSION
-    );
+    // CSS comunicazioni integrato in main.css via SCSS
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
 
