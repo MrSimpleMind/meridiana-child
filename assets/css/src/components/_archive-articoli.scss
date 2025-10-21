@@ -20,11 +20,14 @@
     color: inherit;
     transition: all 0.2s ease;
     cursor: pointer;
-    min-height: 100px;
+    min-height: auto;
     
-    // Desktop: 4 colonne
-    grid-template-columns: 80px 1fr 24px auto;
-    align-items: end; // meta allineato in basso
+    // Desktop: 3 colonne + 2 righe (stesso layout del mobile)
+    grid-template-columns: 80px 1fr 24px;
+    grid-template-areas:
+        "image content arrow"
+        "meta meta meta";
+    align-items: start;
     
     &:hover {
         border-color: var(--color-primary);
@@ -46,11 +49,6 @@
         grid-template-columns: 65px 1fr 24px;
         gap: var(--space-2);
         padding: var(--space-2);
-        min-height: auto;
-        align-items: stretch;
-        grid-template-areas:
-            "image content arrow"
-            "meta meta meta";
     }
 }
 
@@ -63,6 +61,7 @@
     overflow: hidden;
     border-radius: var(--radius-md);
     background-color: var(--color-bg-secondary);
+    grid-area: image;
     
     img {
         width: 100%;
@@ -75,8 +74,6 @@
     @media (max-width: 480px) {
         width: 65px;
         height: 65px;
-        grid-area: image;
-        flex-shrink: auto; // reset flex per grid
     }
 }
 
@@ -88,10 +85,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    grid-area: content;
     
     @media (max-width: 480px) {
-        grid-area: content;
-        flex: none; // reset flex per grid
+        flex: none;
         min-width: auto;
     }
 }
@@ -136,9 +133,9 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    grid-area: meta;
     
     @media (max-width: 480px) {
-        grid-area: meta;
         margin-top: 0;
         white-space: normal;
         overflow: visible;
@@ -188,6 +185,7 @@
     height: 24px;
     color: var(--color-primary);
     transition: transform 0.2s ease;
+    grid-area: arrow;
     
     i {
         width: 20px;
@@ -195,7 +193,6 @@
     }
     
     @media (max-width: 480px) {
-        grid-area: arrow;
         align-self: flex-start;
     }
 }
