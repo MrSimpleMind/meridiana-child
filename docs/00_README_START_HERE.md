@@ -4,7 +4,81 @@
 
 ---
 
-## 📋 Overview Progetto
+## 📚 **GLOSSARIO E NOMENCLATURE - IMPORTANTE LEGGERLO**
+
+### Terminologia CPT e Contenuti
+
+Per evitare confusione nella comunicazione interna, usa SEMPRE questi termini:
+
+| Cosa Si Gestisce | Termine Corretto | Note |
+|------------------|------------------|-------|
+| Convenzioni aziendali | **CONVENZIONI** | CPT: `convenzione`. Es: archivio `/convenzione/`, single `$post_type = 'convenzione'` |
+| Notizie aziendali | **ARTICOLI** / Comunicazioni | CPT: `post` (standard WP) oppure custom `comunicazioni`. NOTA: Non chiamare mai "news" o confondersi con Salute |
+| Salute e Benessere | **SALUTE E BENESSERE** | CPT: `salute_benessere`. Contenuti wellness separati dalle comunicazioni |
+| Documenti operativi (parte 1) | **PROTOCOLLI** | CPT: `protocollo`. Con/senza flag ATS. Linee guida operative |
+| Documenti operativi (parte 2) | **MODULI** | CPT: `modulo`. Form, checklist, template operativi |
+| Tutti i documenti insieme | **DOCUMENTAZIONE** | Label generale. Quando parli di "sezione documentazione" intendi: Protocolli + Moduli |
+| Sezione formazione online | **CORSI** | Integrazione LearnDash. CPT generato da LearnDash stesso |
+| Struttura organizzativa | **ORGANIGRAMMA** | CPT: `organigramma`. DIVERSO dagli utenti WP (che sono nella wp_users table) |
+| Dipendenti del sistema | **UTENTI** / User Base | Standard `wp_users` di WordPress. DIVERSO da Organigramma |
+
+### Perché Questa Distinzione?
+
+**UTENTI vs ORGANIGRAMMA:**
+- **UTENTI** = Credenziali di accesso, ruoli WP, permessi, profilo login (nella `wp_users` table)
+- **ORGANIGRAMMA** = Struttura gerarchica aziendale, posizioni, reparti (CPT custom, con relazioni)
+
+Esempio: Un dipendente UTENTE può non essere nell'ORGANIGRAMMA (es. utente temporaneo), o inversamente, una posizione ORGANIGRAMMA potrebbe non avere UTENTE.
+
+**COMUNICAZIONI vs SALUTE E BENESSERE:**
+- **COMUNICAZIONI/ARTICOLI** = News generiche aziendali
+- **SALUTE E BENESSERE** = Articoli wellness specifici (benessere, salute mentale, prevenzione)
+
+Sono sezioni distinte nelle archive, sebbene possano usare lo stesso template di rendering.
+
+**DOCUMENTAZIONE = Protezioni + Moduli:**
+- **PROTOCOLLI** = Cosa fare (linee guida)
+- **MODULI** = Come farlo (form, checklist, template)
+- Insieme = **DOCUMENTAZIONE**
+
+### In Codice
+
+```php
+// ✅ CORRETTO - Quando query convenzioni:
+$convenzioni = new WP_Query(array(
+    'post_type' => 'convenzione',  // NOT 'convenzioni'
+    'posts_per_page' => -1,
+));
+
+// ✅ CORRETTO - Breadcrumb label:
+'convenzione' => 'Torna a Convenzioni',  // Titolo user-friendly
+
+// ✅ CORRETTO - URL archivio:
+home_url('/convenzione/')  // Slug singolare
+
+// ❌ SBAGLIATO - Non fare mai:
+'post_type' => 'convenzioni'  // Plurale - non esiste!
+home_url('/convenzioni/')     // Sbagliato, causa 404
+```
+
+### In Documentazione Interna
+
+Quando scrivi nei file `.md` della documentazione:
+
+- "Gestione CONVENZIONI" ✅
+- "CPT Convenzione" ✅
+- "Sezione ARTICOLI/Comunicazioni" ✅
+- "Archivio DOCUMENTAZIONE (Protocolli + Moduli)" ✅
+- "ORGANIGRAMMA aziendale" ✅
+- "Base UTENTI WordPress" ✅
+
+**Evita:**
+- "Convenzioni" vs "convenzioni" (usa capitale all'inizio)
+- "Notizie" quando intendi "Articoli"
+- Confondere "UTENTI" con "ORGANIGRAMMA"
+- "Docs" genericamente - specifica "Protocolli" o "Moduli"
+
+---
 
 Piattaforma interna di formazione e documentazione per **300 dipendenti** della Cooperativa La Meridiana (settore socio-sanitario). Sistema completo per gestione documenti operativi (protocolli, moduli), corsi formativi con certificazioni, organigramma, convenzioni aziendali e contenuti welfare.
 

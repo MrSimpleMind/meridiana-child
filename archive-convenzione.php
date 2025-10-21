@@ -28,8 +28,7 @@ get_header();
                 </a>
             </div>
             
-            <!-- Page Title -->
-            <h1 class="archive-page__title">Convenzioni</h1>
+            <!-- Page Title REMOVED (breadcrumb is enough) -->
             
             <?php
             $convenzioni = new WP_Query(array(

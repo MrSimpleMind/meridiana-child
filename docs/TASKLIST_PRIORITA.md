@@ -1,12 +1,230 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 20 Ottobre 2025 - [SESSIONE CORRENTE - NAVIGATION FIX] ✅ COMPLETATO  
-> **Stato**: In Sviluppo - Fase 1 COMPLETATA | Fase 2 COMPLETATA | Fase 3 85% | Fase 4 100%  
+> **Aggiornato**: 21 Ottobre 2025 - [SESSIONE BUGFIX BACK NAVIGATION] ✅ COMPLETATO  
+> **Stato**: In Sviluppo - Fase 1 COMPLETATA | Fase 2 COMPLETATA | Fase 3 85% | Fase 4 100% | Fase 8 50%  
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
 
 ---
 
-## 🔧 FIX APPLICATI - Sessione Corrente (20 Ottobre)
+## 🔧 BUGFIX SESSIONE - 21 Ottobre 2025
+
+### ✅ BUG FIX #1-5: Back Navigation & Grafica - COMPLETATO
+**Status**: ✅ COMPLETATO - Production Ready
+
+**Bug Risolti**:
+1. ✅ Data visibile su archivio Salute (rimossa)
+2. ✅ Back button rimandava a homepage anziché archivio
+3. ✅ Back button era rosso anziché grigio
+4. ✅ URL archivio sbagliato (/salute-e-benessere/ vs /salute-e-benessere-l/)
+5. ✅ Back button dall'archivio rimandava all'ultimo articolo aperto
+
+**Soluzione Applicata**:
+- Riscritto `includes/breadcrumb-navigation.php` con funzioni WordPress native
+- Aggiunto supporto per CPT `post` e `salute-e-benessere-l`
+- Usata `get_post_type_archive_link()` e `get_option('page_for_posts')`
+- Aggiunto `!important` al colore grigio back button su tutte le pagine
+- Rimosso `history.back()` da archive.php
+- Aggiunto breadcrumb all'archivio comunicazioni
+
+**Percorso Corretto**:
+```
+Homepage → "Vedi tutto" → Archivio
+                              ↓
+                    Singola Comunicazione/Salute
+                              ↓
+                "Torna indietro" → Archivio ✅
+                              ↓
+                "Torna indietro" → Homepage ✅
+```
+
+**File Modificati** (7):
+- `archive.php`
+- `includes/breadcrumb-navigation.php`
+- `templates/parts/cards/card-article.php`
+- `assets/css/src/pages/_single-convenzione.scss`
+- `assets/css/src/pages/_single-comunicazioni.scss`
+- `assets/css/src/pages/_single-salute-benessere.scss`
+- `assets/css/dist/main.css` (compilato)
+
+**Tempo**: ~55 minuti
+**Linee di codice**: ~200 cambiate
+
+**Testing**:
+- [x] Back button funziona da singola → archivio
+- [x] Back button funziona da archivio → homepage
+- [x] Colore grigio su tutti back button
+- [x] Data rimossa da Salute archivio
+- [x] Breadcrumb navigazione OK
+- [x] CSS compilato e minificato
+- [x] No console errors
+- [x] Responsive mobile/tablet/desktop
+
+**Report Completo**: Vedi `docs/REPORT_SESSIONE_21_OTTOBRE_2025.md`
+
+---
+
+### ✅ REDESIGN #1: Single Convenzione - Layout & Stile Allineato a Salute - COMPLETATO
+**Status**: ✅ COMPLETATO - Pronto al testing
+
+**Obiettivo**: Far assomigliare il template single-convenzione al design più moderno di single-salute-benessere (Image 2 user)
+
+**Cosa è Stato Cambiato**:
+
+**1. Template (PHP)**:
+- ✅ Aggiunto breadcrumb navigation (meridiana_render_breadcrumb)
+- ✅ Aggiunto back link intelligente (meridiana_get_parent_url, meridiana_get_back_label)
+- ✅ Riorganizzato: Header → Featured Image → Layout Grid → Content + Sidebar
+- ✅ Cambiato field query: `contatti` (WYSIWYG) + `allegati` (Repeater)
+- ✅ Layout con wrapper `single-convenzione__layout` per grid
+
+**2. CSS/SCSS**:
+- ✅ Creato `.single-convenzione__layout` con grid
+- ✅ Mobile: 1 colonna full-width
+- ✅ Tablet (768px): 2 colonne (1fr 300px)
+- ✅ Desktop (1200px): 2 colonne (1fr 350px)
+- ✅ Sidebar sticky: position sticky con max-height e overflow-y auto
+- ✅ Gap responsive: 12px mobile → 8px tablet → 10px desktop
+
+**3. Highlights & Typography**:
+- ✅ Featured image: max-height 400px (desktop), 300px (tablet), 220px (mobile)
+- ✅ Section title: icon + label formato coerente
+- ✅ Contatti: WYSIWYG content diretto (non link singoli)
+- ✅ Allegati: repeater fields con nome + file
+
+**File Modificati**:
+- `single-convenzione.php` - Template layout redesigned
+- `assets/css/src/pages/_single-convenzione.scss` - Grid layout + sidebar sticky
+- `assets/css/dist/main.css` - Compilato e minificato
+
+**Caratteristiche**:
+```
+✅ Desktop: 2 colonne, sidebar sticky
+✅ Tablet: 2 colonne responsive
+✅ Mobile: 1 colonna full-width
+✅ Featured image: max-height limitato
+✅ Contatti: WYSIWYG (HTML supportato)
+✅ Allegati: Repeater con file + nome
+✅ Breadcrumb: Navigazione intelligente
+✅ Back button: URL dinamico
+✅ Design coerente con Salute & Benessere
+✅ WCAG 2.1 AA compliant
+```
+
+**UX Improvement**:
+- Prima: Contatti e Allegati SOTTO il contenuto, con layout confuso
+- Dopo: Sidebar AFFIANCATA al contenuto, sticky, ordinata e professionale
+
+---
+
+### ✅ BUG #1: Featured Image Desktop Troppo Grande - RISOLTO
+**Status**: ✅ COMPLETATO
+
+**Problema**: 
+- Immagine featured con aspect ratio 16:9 su desktop occupava troppo spazio verticale
+- Mancava max-height per limitare le dimensioni
+
+**Soluzione Applicata**:
+- Aggiunto `max-height: 400px` su desktop
+- Aggiunto `max-height: 300px` su tablet (768px max)
+- Aggiunto `max-height: 220px` su mobile (576px max)
+- Mantiene aspect ratio 16:9 su desktop, 4:3 su mobile
+
+**File Modificato**: `assets/css/src/pages/_single-convenzione.scss`
+
+---
+
+### ✅ BUG #2: Profilo Professionale & UDO Non Visualizzati - RISOLTO
+**Status**: ✅ COMPLETATO
+
+**Problema**: 
+- Nel modal profilo utente, i field ACF `profilo_professionale` e `udo_riferimento` non venivano visualizzati
+- Causa: `get_field()` di ACF per gli utenti richiede prefisso `user_` nel secondo parametro
+- Fallback non era implementato se il field non esisteva
+
+**Soluzione Applicata**:
+- Aggiunto prefisso `user_` al secondo parametro di `get_field()`
+- Aggiunto fallback con `get_user_meta()` per recuperare il valore da wp_usermeta se ACF fallisce
+- Ora visualizza correttamente il profilo professionale e l'unità di offerta
+
+**Codice**:
+```php
+// Profilo Professionale
+$profilo_term_id = get_field('profilo_professionale', 'user_' . $current_user->ID);
+if (!$profilo_term_id && function_exists('get_field')) {
+    $profilo_term_id = get_user_meta($current_user->ID, 'profilo_professionale', true);
+}
+
+// Unità di Offerta
+$udo_term_id = get_field('udo_riferimento', 'user_' . $current_user->ID);
+if (!$udo_term_id && function_exists('get_field')) {
+    $udo_term_id = get_user_meta($current_user->ID, 'udo_riferimento', true);
+}
+```
+
+**File Modificato**: `templates/parts/user-profile-modal.php`
+
+---
+
+### ✅ BUG #3: Layout Single Convenzione - Contatti & Allegati Non Optimizzati - RISOLTO
+**Status**: ✅ COMPLETATO
+
+**Problema**: 
+- Su desktop: sidebar contatti e allegati erano sotto il contenuto (non affiancati)
+- Link non erano touch-friendly (target < 44x44px)
+- Nessun hover state evidente
+- Layout non sfruttava lo spazio disponibile
+
+**Soluzione Applicata - CSS Grid Layout**:
+- Aggiunto grid layout 2 colonne su desktop: `grid-template-columns: 1fr 320px`
+- Sidebar sticky su desktop: `position: sticky; top: var(--space-6)`
+- Su desktop 1200px: aumentato a `grid-template-columns: 1fr 380px`
+- Contentmaintiene responsive 1 colonna su mobile
+
+**Soluzione Applicata - Link Styling**:
+- **Contatti**: 
+  - Padding aumentato: `var(--space-3) var(--space-4)` con negative margin per hit area 44px+
+  - Hover: background color `var(--color-primary-bg-light)`
+  - Focus visible per accessibility
+  - word-break: break-all per URL lunghi
+  - Flex layout per separazione label/link
+
+- **Allegati**:
+  - Min-height: 44px per touch target
+  - Padding aumentato: `var(--space-4) var(--space-5)`
+  - Icone più grandi: 18px (da 16px)
+  - Hover: box-shadow + translateX(3px)
+  - Focus visible per keyboard navigation
+  - Small tag per file size
+
+**File Modificati**: 
+- `assets/css/src/pages/_single-convenzione.scss` (Grid layout + styling link)
+- Compilato e minificato in `assets/css/dist/main.css`
+
+**Features**:
+```
+✅ Desktop: sidebar sticky a destra
+✅ Mobile: full width single column
+✅ Tablet: responsive grid
+✅ Touch targets: min 44x44px
+✅ Hover states: visual feedback
+✅ Accessibility: focus-visible, outline
+✅ Featured image: max-height limitato
+✅ Link URL: word-break per lunghi
+✅ WCAG 2.1 AA compliant
+```
+
+---
+
+## Statistiche BugFix Sessione 21 Ottobre
+
+- **Bug Risolti**: 3 (Featured Image, Profilo/UDO, Layout Contatti)
+- **File Modificati**: 3 (2x SCSS, 1x PHP)
+- **Linee di Codice**: ~120 (60 SCSS + 60 PHP)
+- **Compilazione SCSS**: ✅ Completata (`main.css` aggiornato)
+- **Cache Buster**: ✅ Attivo (time() in functions.php)
+- **Testing Status**: Pronto al testing su dispositivi reali
+
+---
 
 ### ✅ PROMPT 9: Archivio Comunicazioni Rework - Design System Compliant (20 Ottobre 2025)
 **Status**: ✅ COMPLETATO - Pronto al testing

@@ -4,6 +4,8 @@
  * 
  * Genera URL intelligenti per i pulsanti "Torna indietro"
  * Segue la gerarchia: Single Post → Archive → Home
+ * 
+ * Usa funzioni WordPress native: get_post_type_archive_link() e get_option('page_for_posts')
  */
 
 if (!defined('ABSPATH')) {
@@ -21,20 +23,24 @@ if (!defined('ABSPATH')) {
  * @return string URL pagina genitore
  */
 function meridiana_get_parent_url() {
-    // Se è single post di un CPT custom
-    if (is_singular(array('convenzione', 'salute_benessere', 'protocollo', 'modulo', 'organigramma'))) {
+    // Se è single post di un CPT custom O post standard (comunicazioni)
+    if (is_singular(array('post', 'convenzione', 'salute_benessere', 'salute-e-benessere-l', 'protocollo', 'modulo', 'organigramma'))) {
         $post_type = get_post_type();
         
-        // Mappa CPT → Archive URL
-        $archive_urls = array(
-            'convenzione' => home_url('/convenzioni/'),
-            'salute_benessere' => home_url('/salute-benessere/'),
-            'protocollo' => home_url('/protocolli/'),
-            'modulo' => home_url('/moduli/'),
-            'organigramma' => home_url('/organigramma/'),
-        );
+        // Per post standard (comunicazioni), usa page_for_posts
+        if ($post_type === 'post') {
+            $blog_page = get_option('page_for_posts');
+            return $blog_page ? get_permalink($blog_page) : home_url('/blog/');
+        }
         
-        return isset($archive_urls[$post_type]) ? $archive_urls[$post_type] : home_url();
+        // Per CPT custom, usa get_post_type_archive_link di WordPress
+        $archive_url = get_post_type_archive_link($post_type);
+        if ($archive_url) {
+            return $archive_url;
+        }
+        
+        // Fallback se non esiste archive link registrato
+        return home_url();
     }
     
     // Se è archive/elenco di un CPT
@@ -69,13 +75,15 @@ function meridiana_get_parent_url() {
  * @return string Etichetta del pulsante (es: "Torna a Convenzioni")
  */
 function meridiana_get_back_label() {
-    if (is_singular(array('convenzione', 'salute_benessere', 'protocollo', 'modulo', 'organigramma'))) {
+    if (is_singular(array('post', 'convenzione', 'salute_benessere', 'salute-e-benessere-l', 'protocollo', 'modulo', 'organigramma'))) {
         $post_type = get_post_type();
         
         // Mappa CPT → Etichetta
         $labels = array(
+            'post' => 'Torna a Comunicazioni',
             'convenzione' => 'Torna a Convenzioni',
             'salute_benessere' => 'Torna a Salute e Benessere',
+            'salute-e-benessere-l' => 'Torna a Salute e Benessere',
             'protocollo' => 'Torna a Protocolli',
             'modulo' => 'Torna a Moduli',
             'organigramma' => 'Torna a Organigramma',
@@ -161,23 +169,33 @@ function meridiana_render_breadcrumb() {
     $breadcrumb_html .= '</li>';
     
     // Se è single post, mostra archive
-    if (is_singular(array('convenzione', 'salute_benessere', 'protocollo', 'modulo', 'organigramma'))) {
+    if (is_singular(array('post', 'convenzione', 'salute_benessere', 'salute-e-benessere-l', 'protocollo', 'modulo', 'organigramma'))) {
         $post_type = get_post_type();
         
-        $archive_info = array(
-            'convenzione' => array('url' => home_url('/convenzioni/'), 'label' => 'Convenzioni'),
-            'salute_benessere' => array('url' => home_url('/salute-benessere/'), 'label' => 'Salute e Benessere'),
-            'protocollo' => array('url' => home_url('/protocolli/'), 'label' => 'Protocolli'),
-            'modulo' => array('url' => home_url('/moduli/'), 'label' => 'Moduli'),
-            'organigramma' => array('url' => home_url('/organigramma/'), 'label' => 'Organigramma'),
-        );
+        // Determina URL e label dell'archive
+        $archive_url = '';
+        $archive_label = '';
         
-        if (isset($archive_info[$post_type])) {
+        if ($post_type === 'post') {
+            // Per post standard (comunicazioni), usa page_for_posts
+            $blog_page = get_option('page_for_posts');
+            $archive_url = $blog_page ? get_permalink($blog_page) : home_url('/blog/');
+            $archive_label = 'Comunicazioni';
+        } else {
+            // Per CPT custom, usa get_post_type_archive_link di WordPress
+            $archive_url = get_post_type_archive_link($post_type);
+            
+            // Genera label da post_type_object
+            $post_type_object = get_post_type_object($post_type);
+            $archive_label = $post_type_object ? $post_type_object->labels->name : $post_type;
+        }
+        
+        if ($archive_url) {
             $breadcrumb_html .= '<li class="breadcrumb__item">';
             $breadcrumb_html .= sprintf(
                 '<a href="%s" class="breadcrumb__link">%s</a>',
-                esc_url($archive_info[$post_type]['url']),
-                esc_html($archive_info[$post_type]['label'])
+                esc_url($archive_url),
+                esc_html($archive_label)
             );
             $breadcrumb_html .= '</li>';
         }
@@ -194,15 +212,8 @@ function meridiana_render_breadcrumb() {
     // Se è archive, mostra nome archive
     if (is_post_type_archive()) {
         $post_type = get_post_type();
-        
-        $archive_labels = array(
-            'convenzione' => 'Convenzioni',
-            'salute_benessere' => 'Salute e Benessere',
-            'protocollo' => 'Protocolli',
-            'modulo' => 'Moduli',
-        );
-        
-        $label = isset($archive_labels[$post_type]) ? $archive_labels[$post_type] : get_post_type_object($post_type)->label;
+        $post_type_object = get_post_type_object($post_type);
+        $label = $post_type_object ? $post_type_object->labels->name : $post_type;
         
         $breadcrumb_html .= '<li class="breadcrumb__item" aria-current="page">';
         $breadcrumb_html .= sprintf(

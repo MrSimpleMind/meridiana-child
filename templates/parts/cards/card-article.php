@@ -30,9 +30,5 @@ $excerpt = $contenuto ? wp_trim_words(strip_tags($contenuto), 30) : wp_trim_word
         <?php if ($excerpt): ?>
         <p class="salute-card__excerpt"><?php echo esc_html($excerpt); ?></p>
         <?php endif; ?>
-        
-        <div class="salute-card__meta">
-            <span class="salute-card__date"><?php echo get_the_date('d M Y'); ?></span>
-        </div>
     </div>
 </a>

@@ -124,15 +124,23 @@ if (window.innerWidth >= 768) {
         updateButtons();
     }
 } else {
-    // Mobile: nascondi hint dopo primo scroll
+    // Mobile: nascondi hint durante scroll, mostra quando smette
     const wrapper = document.querySelector('.convenzioni-carousel__wrapper');
     const scrollHint = document.querySelector('.convenzioni-carousel__scroll-hint');
+    let scrollTimeout;
     
     if (wrapper && scrollHint) {
         wrapper.addEventListener('scroll', function() {
-            if (wrapper.scrollLeft > 10) {
-                scrollHint.style.display = 'none';
-            }
+            // Nascondi hint durante lo scroll
+            scrollHint.style.display = 'none';
+            
+            // Cancella timeout precedente
+            clearTimeout(scrollTimeout);
+            
+            // Mostra hint di nuovo dopo 1 secondo dall'ultimo scroll
+            scrollTimeout = setTimeout(() => {
+                scrollHint.style.display = 'flex';
+            }, 1000);
         });
     }
 }

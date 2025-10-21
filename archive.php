@@ -19,16 +19,18 @@ get_header();
     <main class="archive-page archive-articoli-page">
         <div class="archive-container">
             
+            <!-- Breadcrumb Navigation -->
+            <?php meridiana_render_breadcrumb(); ?>
+            
             <!-- Back Button -->
             <div class="back-button-wrapper">
-                <a href="#" onclick="history.back(); return false;" class="back-button">
+                <a href="<?php echo esc_url(meridiana_get_parent_url()); ?>" class="back-button">
                     <i data-lucide="arrow-left"></i>
-                    <span>Torna indietro</span>
+                    <span><?php echo esc_html(meridiana_get_back_label()); ?></span>
                 </a>
             </div>
             
-            <!-- Page Title -->
-            <h1 class="page-title">Tutte le Notizie</h1>
+            <!-- Page Title REMOVED (breadcrumb is enough) -->
             
             <!-- Search Box -->
             <div class="search-wrapper">

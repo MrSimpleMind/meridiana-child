@@ -28,8 +28,7 @@ get_header();
                 </a>
             </div>
             
-            <!-- Page Title -->
-            <h1 class="archive-page__title">Salute e Benessere</h1>
+            <!-- Page Title REMOVED (breadcrumb is enough) -->
             
             <?php
             $salute = new WP_Query(array(

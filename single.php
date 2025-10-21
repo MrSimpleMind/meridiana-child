@@ -2,6 +2,7 @@
 /**
  * Template: Single Comunicazioni/News
  * Visualizza dettaglio completo di una notizia o comunicazione
+ * Stile coerente con Salute e Benessere e Convenzioni
  * 
  * @package Meridiana Child
  */
@@ -28,19 +29,38 @@ get_header();
         ?>
         
         <div class="single-container">
+            <!-- Breadcrumb Navigation -->
+            <?php meridiana_render_breadcrumb(); ?>
+            
             <!-- Back Navigation -->
             <div class="back-link-wrapper">
-                <a href="#" onclick="history.back(); return false;" class="back-link">
+                <a href="<?php echo esc_url(meridiana_get_parent_url()); ?>" class="back-link">
                     <i data-lucide="arrow-left"></i>
-                    <span>Torna indietro</span>
+                    <span><?php echo esc_html(meridiana_get_back_label()); ?></span>
                 </a>
             </div>
             
             <!-- Header -->
             <header class="single-comunicazioni__header">
                 <h1 class="single-comunicazioni__title"><?php the_title(); ?></h1>
-                
-                <!-- Meta Info -->
+            </header>
+            
+            <!-- Featured Image (16:9 aspect ratio) -->
+            <?php if ($immagine_url): ?>
+            <div class="single-comunicazioni__featured-image">
+                <img src="<?php echo esc_url($immagine_url); ?>" alt="<?php the_title_attribute(); ?>" class="single-comunicazioni__image" loading="lazy">
+            </div>
+            <?php endif; ?>
+            
+            <!-- Main Content (Descrizione) -->
+            <article class="single-comunicazioni__content">
+                <div class="single-comunicazioni__body wysiwyg-content">
+                    <?php the_content(); ?>
+                </div>
+            </article>
+            
+            <!-- Meta Info (Data + Categoria) -->
+            <div class="single-comunicazioni__meta-section">
                 <div class="single-comunicazioni__meta">
                     <span class="meta-item">
                         <i data-lucide="calendar"></i>
@@ -61,31 +81,7 @@ get_header();
                     </span>
                     <?php endif; ?>
                 </div>
-            </header>
-            
-            <!-- Featured Image -->
-            <?php if ($immagine_url): ?>
-            <div class="single-comunicazioni__featured-image">
-                <img src="<?php echo esc_url($immagine_url); ?>" alt="<?php the_title_attribute(); ?>" class="single-comunicazioni__image">
             </div>
-            <?php endif; ?>
-            
-            <!-- Main Content -->
-            <article class="single-comunicazioni__content">
-                
-                <!-- Excerpt if available -->
-                <?php if ($excerpt): ?>
-                <div class="single-comunicazioni__excerpt">
-                    <?php echo wp_kses_post($excerpt); ?>
-                </div>
-                <?php endif; ?>
-                
-                <!-- Full Content -->
-                <div class="single-comunicazioni__body wysiwyg-content">
-                    <?php the_content(); ?>
-                </div>
-                
-            </article>
         </div>
         
         <?php endwhile; ?>
