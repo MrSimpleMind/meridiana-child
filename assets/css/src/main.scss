@@ -44,7 +44,7 @@
 @import 'components/featured-image';  // PROMPT 4: Featured images
 @import 'components/breadcrumb';  // PROMPT 5: Back button & breadcrumb intelligenti
 @import 'components/comunicazioni-filter';  // PROMPT 6: Filtro comunicazioni AJAX
-@import 'components/archive-articoli';  // PROMPT 10: Archive articoli/comunicazioni NEW
+@import 'components/articoli-archive';  // Archive articoli verticale (desktop mobile-first)
 
 // ========================================
 // 5. LAYOUT
@@ -83,6 +83,16 @@ body {
 :root {
     --theme-palette-color-1: #{$color-primary};
     --theme-palette-color-1-hover: #{$color-primary-dark};
+}
+
+// ========================================
+// 7B. STYLE PAGE ARCHIVE ARTICOLI
+// ========================================
+
+.archive-articoli-page {
+    .articoli-list {
+        grid-template-columns: 1fr;
+    }
 }
 
 // ========================================

@@ -135,20 +135,20 @@ get_header();
         
         articoliList.innerHTML = articles.map(article => `
             <a href="${article.permalink}" class="articolo-item">
+                <!-- Image Top -->
                 ${article.image ? `
                     <div class="articolo-image">
                         <img src="${article.image}" alt="${article.title}" loading="lazy">
                     </div>
                 ` : ''}
                 
+                <!-- Content Middle -->
                 <div class="articolo-content">
                     <h3 class="articolo-title">${article.title}</h3>
                     <p class="articolo-excerpt">${article.excerpt}</p>
                 </div>
-                <div class="articolo-arrow">
-                    <i data-lucide="chevron-right"></i>
-                </div>
                 
+                <!-- Meta Bottom -->
                 <div class="articolo-meta">
                     <span class="articolo-date">
                         <i data-lucide="calendar"></i>

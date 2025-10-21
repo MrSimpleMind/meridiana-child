@@ -28,8 +28,7 @@ function meridiana_enqueue_styles() {
         wp_get_theme('blocksy')->get('Version')
     );
     
-    $css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
-    $css_version = file_exists($css_file) ? filemtime($css_file) : MERIDIANA_CHILD_VERSION;
+    // Force cache bust on CSS file
     $css_version = time();
     
     wp_enqueue_style(
