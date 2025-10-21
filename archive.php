@@ -144,19 +144,20 @@ get_header();
                 <div class="articolo-content">
                     <h3 class="articolo-title">${article.title}</h3>
                     <p class="articolo-excerpt">${article.excerpt}</p>
-                    <div class="articolo-meta">
-                        <span class="articolo-date">
-                            <i data-lucide="calendar"></i>
-                            ${article.date}
-                        </span>
-                        <span class="articolo-category">
-                            <i data-lucide="tag"></i>
-                            ${article.category}
-                        </span>
-                    </div>
                 </div>
                 <div class="articolo-arrow">
                     <i data-lucide="chevron-right"></i>
+                </div>
+                
+                <div class="articolo-meta">
+                    <span class="articolo-date">
+                        <i data-lucide="calendar"></i>
+                        ${article.date}
+                    </span>
+                    <span class="articolo-category">
+                        <i data-lucide="tag"></i>
+                        ${article.category}
+                    </span>
                 </div>
             </a>
         `).join('');
