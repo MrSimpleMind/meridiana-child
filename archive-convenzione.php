@@ -2,8 +2,8 @@
 /**
  * Archive Template: Convenzioni
  * 
- * Stesso layout di archive.php (articoli)
- * Con ricerca e filtri per Convenzioni
+ * Stesso layout di archive.php con ricerca e filtri
+ * Classes match SCSS: articles-grid, article-card
  * 
  * @package Meridiana Child Theme
  */
@@ -49,9 +49,9 @@ get_header();
                 <span id="resultsCountText">Caricamento...</span>
             </div>
             
-            <!-- Convenzioni List -->
-            <div class="articoli-list" id="convenzioniList">
-                <!-- Popolato via JavaScript -->
+            <!-- Convenzioni List - Grid Container -->
+            <div id="convenzioniList">
+                <!-- Popolato via JavaScript con articles-grid -->
             </div>
             
             <!-- No Results -->
@@ -116,18 +116,18 @@ get_header();
     
     // DOM Elements
     const searchInput = document.getElementById('searchConvenzioni');
-    const convenzioniList = document.getElementById('convenzioniList');
+    const convenzioniListContainer = document.getElementById('convenzioniList');
     const noResults = document.getElementById('noResults');
     const resultsCountText = document.getElementById('resultsCountText');
     
     let filteredConvenzioni = [...allConvenzioni];
     
     /**
-     * Render convenzioni
+     * Render convenzioni with correct SCSS classes
      */
     function renderConvenzioni(convenzioni) {
         if (convenzioni.length === 0) {
-            convenzioniList.innerHTML = '';
+            convenzioniListContainer.innerHTML = '';
             noResults.style.display = 'flex';
             resultsCountText.textContent = 'Nessun risultato';
             return;
@@ -136,34 +136,42 @@ get_header();
         noResults.style.display = 'none';
         resultsCountText.textContent = convenzioni.length === 1 ? '1 risultato' : `${convenzioni.length} risultati`;
         
-        convenzioniList.innerHTML = convenzioni.map(convenzione => `
-            <a href="${convenzione.permalink}" class="articolo-item">
-                ${convenzione.image ? `
-                    <div class="articolo-image">
-                        <img src="${convenzione.image}" alt="${convenzione.title}" loading="lazy">
-                    </div>
-                ` : ''}
-                
-                <div class="articolo-content">
-                    <h3 class="articolo-title">${convenzione.title}</h3>
-                    <p class="articolo-excerpt">${convenzione.excerpt}</p>
-                </div>
-                <div class="articolo-arrow">
-                    <i data-lucide="chevron-right"></i>
-                </div>
-                
-                <div class="articolo-meta">
-                    <span class="articolo-date">
-                        <i data-lucide="calendar"></i>
-                        ${convenzione.date}
-                    </span>
-                    <span class="articolo-category">
-                        <i data-lucide="tag"></i>
-                        ${convenzione.category}
-                    </span>
-                </div>
-            </a>
-        `).join('');
+        convenzioniListContainer.innerHTML = `
+            <div class="articles-grid">
+                ${convenzioni.map(convenzione => `
+                    <a href="${convenzione.permalink}" class="article-card">
+                        <!-- Image -->
+                        ${convenzione.image ? `
+                            <div class="article-card__image" style="background-image: url('${convenzione.image}');">
+                                <div class="article-card__overlay"></div>
+                            </div>
+                        ` : `
+                            <div class="article-card__placeholder">
+                                <i data-lucide="image"></i>
+                            </div>
+                        `}
+                        
+                        <!-- Content -->
+                        <div class="article-card__content">
+                            <h3 class="article-card__title">${convenzione.title}</h3>
+                            <p class="article-card__excerpt">${convenzione.excerpt}</p>
+                        </div>
+                        
+                        <!-- Meta -->
+                        <div class="article-card__meta">
+                            <span class="article-card__date">
+                                <i data-lucide="calendar"></i>
+                                ${convenzione.date}
+                            </span>
+                            <span class="article-card__category">
+                                <i data-lucide="tag"></i>
+                                ${convenzione.category}
+                            </span>
+                        </div>
+                    </a>
+                `).join('')}
+            </div>
+        `;
         
         // Re-init Lucide icons
         if (typeof lucide !== 'undefined') {

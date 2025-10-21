@@ -3,6 +3,7 @@
  * Archive Template: Comunicazioni / Articoli
  * 
  * Filtro semplice come organigramma - funzionante
+ * Classes match SCSS: articles-grid, article-card
  * 
  * @package Meridiana Child Theme
  */
@@ -50,9 +51,9 @@ get_header();
                 <span id="resultsCountText">Caricamento...</span>
             </div>
             
-            <!-- Articoli List -->
-            <div class="articoli-list" id="articoliList">
-                <!-- Popolato via JavaScript -->
+            <!-- Articoli List - Grid Container -->
+            <div id="articoliList">
+                <!-- Popolato via JavaScript con articles-grid -->
             </div>
             
             <!-- No Results -->
@@ -113,18 +114,18 @@ get_header();
     
     // DOM Elements
     const searchInput = document.getElementById('searchArticoli');
-    const articoliList = document.getElementById('articoliList');
+    const articoliListContainer = document.getElementById('articoliList');
     const noResults = document.getElementById('noResults');
     const resultsCountText = document.getElementById('resultsCountText');
     
     let filteredArticles = [...allArticles];
     
     /**
-     * Render articoli
+     * Render articoli with correct SCSS classes
      */
     function renderArticles(articles) {
         if (articles.length === 0) {
-            articoliList.innerHTML = '';
+            articoliListContainer.innerHTML = '';
             noResults.style.display = 'flex';
             resultsCountText.textContent = 'Nessun risultato';
             return;
@@ -133,34 +134,42 @@ get_header();
         noResults.style.display = 'none';
         resultsCountText.textContent = articles.length === 1 ? '1 risultato' : `${articles.length} risultati`;
         
-        articoliList.innerHTML = articles.map(article => `
-            <a href="${article.permalink}" class="articolo-item">
-                <!-- Image Top -->
-                ${article.image ? `
-                    <div class="articolo-image">
-                        <img src="${article.image}" alt="${article.title}" loading="lazy">
-                    </div>
-                ` : ''}
-                
-                <!-- Content Middle -->
-                <div class="articolo-content">
-                    <h3 class="articolo-title">${article.title}</h3>
-                    <p class="articolo-excerpt">${article.excerpt}</p>
-                </div>
-                
-                <!-- Meta Bottom -->
-                <div class="articolo-meta">
-                    <span class="articolo-date">
-                        <i data-lucide="calendar"></i>
-                        ${article.date}
-                    </span>
-                    <span class="articolo-category">
-                        <i data-lucide="tag"></i>
-                        ${article.category}
-                    </span>
-                </div>
-            </a>
-        `).join('');
+        articoliListContainer.innerHTML = `
+            <div class="articles-grid">
+                ${articles.map(article => `
+                    <a href="${article.permalink}" class="article-card">
+                        <!-- Image -->
+                        ${article.image ? `
+                            <div class="article-card__image" style="background-image: url('${article.image}');">
+                                <div class="article-card__overlay"></div>
+                            </div>
+                        ` : `
+                            <div class="article-card__placeholder">
+                                <i data-lucide="image"></i>
+                            </div>
+                        `}
+                        
+                        <!-- Content -->
+                        <div class="article-card__content">
+                            <h3 class="article-card__title">${article.title}</h3>
+                            <p class="article-card__excerpt">${article.excerpt}</p>
+                        </div>
+                        
+                        <!-- Meta -->
+                        <div class="article-card__meta">
+                            <span class="article-card__date">
+                                <i data-lucide="calendar"></i>
+                                ${article.date}
+                            </span>
+                            <span class="article-card__category">
+                                <i data-lucide="tag"></i>
+                                ${article.category}
+                            </span>
+                        </div>
+                    </a>
+                `).join('')}
+            </div>
+        `;
         
         // Re-init Lucide icons
         if (typeof lucide !== 'undefined') {

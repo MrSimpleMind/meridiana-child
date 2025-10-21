@@ -437,6 +437,25 @@ require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/security.php';
 
 /**
+ * TEMPLATE ROUTING - Modulo & Protocollo → single-documento.php
+ * 
+ * Reindirizza i CPT 'modulo' e 'protocollo' al template unificato
+ * perché WordPress non riconosce 'single-documento.php' nella gerarchia standard
+ */
+add_filter('template_include', function($template) {
+    $post_type = get_post_type();
+    
+    if (($post_type === 'modulo' || $post_type === 'protocollo') && is_singular()) {
+        $single_documento = MERIDIANA_CHILD_DIR . '/single-documento.php';
+        if (file_exists($single_documento)) {
+            return $single_documento;
+        }
+    }
+    
+    return $template;
+}, 99);
+
+/**
  * THEME SETUP
  */
 
