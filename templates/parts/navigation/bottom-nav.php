@@ -18,9 +18,9 @@
         <span>Home</span>
     </a>
     
-    <!-- DOCUMENTI - Archive CPT 'protocollo' -->
-    <a href="<?php echo get_post_type_archive_link('protocollo'); ?>" 
-       class="bottom-nav__item <?php echo (is_post_type_archive('protocollo') || is_post_type_archive('modulo') || is_singular('protocollo') || is_singular('modulo')) ? 'active' : ''; ?>">
+    <!-- DOCUMENTI - Pagina /docs/ -->
+    <a href="<?php echo home_url('/docs/'); ?>" 
+       class="bottom-nav__item <?php echo is_page('docs') ? 'active' : ''; ?>">
         <i data-lucide="file-text"></i>
         <span>Documenti</span>
     </a>

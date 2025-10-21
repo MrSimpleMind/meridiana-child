@@ -68,8 +68,8 @@ error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_r
             <span>Home</span>
         </a>
         
-        <a href="<?php echo get_post_type_archive_link('protocollo'); ?>" 
-           class="sidebar-nav__item <?php echo (is_post_type_archive('protocollo') || is_post_type_archive('modulo')) ? 'active' : ''; ?>">
+        <a href="<?php echo home_url('/docs/'); ?>" 
+           class="sidebar-nav__item <?php echo is_page('docs') ? 'active' : ''; ?>">
             <i data-lucide="file-text"></i>
             <span>Documentazione</span>
         </a>
