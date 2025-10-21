@@ -1,10 +1,18 @@
-# AGGIORNAMENTO TASKLIST_PRIORITA - 20 OTTOBRE 2025
+# AGGIORNAMENTO TASKLIST_PRIORITA - 21 OTTOBRE 2025
 
-## STATUS PROGETTO: FASE 2 COMPLETATA 70%
+## STATUS PROGETTO: FASE 2 COMPLETATA 75%
 
 ---
 
 ## ✅ COMPLETATO QUESTA SESSIONE
+
+### Modale Profilo Utente
+- [x] Fix visualizzazione campi ACF "Profilo Professionale" e "Unità di Offerta"
+- [x] Entrambi i campi ora in sola lettura (user-profile-modal.php)
+- [x] Corretto handling ACF return_format="label" (valori string, non term IDs)
+- [x] Aggiunto fallback get_user_meta se ACF non ritorna valore
+- [x] Icone + formatting mantenute
+- [x] Tested rendering in sola lettura
 
 ### Pulizia Progetto
 - [x] Pulizia `/public` - Rimossi 5 file obsoleti

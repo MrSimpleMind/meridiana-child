@@ -70,17 +70,15 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                 
                 <!-- Profilo Professionale (read-only) -->
                 <?php 
-                $profilo_term_id = get_field('profilo_professionale', 'user_' . $current_user->ID);
-                if (!$profilo_term_id && function_exists('get_field')) {
-                    // Fallback se ACF non restituisce valore - prova get_user_meta
-                    $profilo_term_id = get_user_meta($current_user->ID, 'profilo_professionale', true);
+                // ACF ritorna direttamente la label (stringa), non l'ID term
+                $profilo_nome = get_field('profilo_professionale', 'user_' . $current_user->ID);
+                if (!$profilo_nome) {
+                    // Fallback - prova get_user_meta
+                    $profilo_nome = get_user_meta($current_user->ID, 'profilo_professionale', true);
                 }
-                if ($profilo_term_id): 
-                    $profilo_term = get_term($profilo_term_id);
-                    $profilo_nome = $profilo_term ? $profilo_term->name : 'N/A';
-                else:
+                if (!$profilo_nome) {
                     $profilo_nome = 'Non assegnato';
-                endif;
+                }
                 ?>
                 <div class="profile-form-group">
                     <div class="profile-form-label" style="cursor: default;">
@@ -94,17 +92,15 @@ $selected_avatar = meridiana_get_user_selected_avatar($current_user->ID);
                 
                 <!-- Unità di Offerta (read-only) -->
                 <?php 
-                $udo_term_id = get_field('udo_riferimento', 'user_' . $current_user->ID);
-                if (!$udo_term_id && function_exists('get_field')) {
-                    // Fallback se ACF non restituisce valore - prova get_user_meta
-                    $udo_term_id = get_user_meta($current_user->ID, 'udo_riferimento', true);
+                // ACF ritorna direttamente la label (stringa), non l'ID term
+                $udo_nome = get_field('udo_riferimento', 'user_' . $current_user->ID);
+                if (!$udo_nome) {
+                    // Fallback - prova get_user_meta
+                    $udo_nome = get_user_meta($current_user->ID, 'udo_riferimento', true);
                 }
-                if ($udo_term_id): 
-                    $udo_term = get_term($udo_term_id);
-                    $udo_nome = $udo_term ? $udo_term->name : 'N/A';
-                else:
+                if (!$udo_nome) {
                     $udo_nome = 'Non assegnata';
-                endif;
+                }
                 ?>
                 <div class="profile-form-group">
                     <div class="profile-form-label" style="cursor: default;">
