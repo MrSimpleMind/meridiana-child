@@ -2,38 +2,16 @@
 // Dashboard Gestore - Styling
 // ========================================
 
-// Header
-.dashboard-header {
-    background: linear-gradient(135deg, var(--color-primary) 0%, #c41d2a 100%);
-    color: white;
-    padding: var(--space-10) 0;
-    margin-bottom: var(--space-12);
-
-    &__title {
-        font-size: 32px;
-        font-weight: 700;
-        margin: 0 0 var(--space-2) 0;
-
-        @media (max-width: 768px) {
-            font-size: 24px;
-        }
-    }
-
-    &__subtitle {
-        font-size: 16px;
-        opacity: 0.9;
-        margin: 0;
-    }
-}
+// Header - REMOVED (merged with tabs)
 
 // Tab Navigation
 .dashboard-tabs-container {
-    background-color: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
+    background-color: #2D3748;
+    border-bottom: 1px solid #1F2937;
     position: sticky;
     top: 0;
     z-index: 100;
-    margin-bottom: var(--space-8);
+    margin-bottom: 0;
 }
 
 .dashboard-tabs {
@@ -57,7 +35,7 @@
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
-    color: #6B7280;
+    color: #A0AEC0;
     font-size: 14px;
     font-weight: 500;
     cursor: pointer;
@@ -71,12 +49,12 @@
     }
 
     &:hover {
-        color: #374151;
-        background-color: #F9FAFB;
+        color: #E2E8F0;
+        background-color: rgba(255, 255, 255, 0.05);
     }
 
     &.active {
-        color: var(--color-primary);
+        color: #FFFFFF;
         border-bottom-color: var(--color-primary);
     }
 
@@ -93,10 +71,11 @@
 // Content Container
 .dashboard-content-container {
     background-color: #FFFFFF;
-    border-radius: 8px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+    border-radius: 0;
+    box-shadow: none;
     padding: var(--space-8);
     min-height: 400px;
+    margin-top: var(--space-8);
 
     @media (max-width: 768px) {
         padding: var(--space-6);
@@ -277,6 +256,45 @@
     padding: var(--space-6);
 }
 
+.dashboard-modal__footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-4);
+    padding: var(--space-6);
+    border-top: 1px solid #E5E7EB;
+    background-color: #F9FAFB;
+}
+
+.dashboard-modal__footer .btn {
+    margin: 0;
+}
+
+.loading-spinner {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    color: var(--color-primary);
+    font-weight: 500;
+    animation: spin 1s linear infinite;
+}
+
+.loading-spinner i,
+.loading-spinner svg {
+    width: 18px;
+    height: 18px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 // Badges
 .badge-success {
     background-color: #D1FAE5;
@@ -296,6 +314,80 @@
 .badge-green {
     background-color: #D1E7DD;
     color: #0F5132;
+}
+
+// Notifications
+.notification {
+    position: fixed;
+    top: var(--space-6);
+    right: var(--space-6);
+    left: auto;
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-4) var(--space-6);
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 2000;
+    animation: slideInRight 0.3s ease;
+    cursor: pointer;
+    max-width: 400px;
+
+    i, svg {
+        width: 20px;
+        height: 20px;
+        flex-shrink: 0;
+    }
+
+    span {
+        flex: 1;
+        font-size: 14px;
+        font-weight: 500;
+    }
+
+    @media (max-width: 640px) {
+        left: var(--space-4);
+        right: var(--space-4);
+        max-width: none;
+    }
+}
+
+.notification-success {
+    border-left: 4px solid #10b981;
+    background-color: #f0fdf4;
+
+    i, svg {
+        color: #10b981;
+    }
+
+    span {
+        color: #065f46;
+    }
+}
+
+.notification-error {
+    border-left: 4px solid #ef4444;
+    background-color: #fef2f2;
+
+    i, svg {
+        color: #ef4444;
+    }
+
+    span {
+        color: #7f1d1d;
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        transform: translateX(400px);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
 }
 
 // Alpine.js loading state

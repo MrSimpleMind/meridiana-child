@@ -46,12 +46,14 @@ function meridiana_enqueue_scripts() {
     wp_enqueue_script(
         'alpinejs',
         'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-        array(),
+        array('meridiana-gestore-dashboard'), // Dipende da gestore-dashboard.js (carica DOPO)
         '3.13.0',
         true
     );
     
     add_filter('script_loader_tag', 'meridiana_defer_alpinejs', 10, 2);
+    
+    // Alpine inizializza DOPO che gestore-dashboard.js è caricato
     
     $js_file = MERIDIANA_CHILD_DIR . '/assets/js/dist/main.min.js';
     $js_version = file_exists($js_file) ? filemtime($js_file) : MERIDIANA_CHILD_VERSION;
@@ -60,7 +62,7 @@ function meridiana_enqueue_scripts() {
     wp_enqueue_script(
         'meridiana-child-scripts',
         MERIDIANA_CHILD_URI . '/assets/js/dist/main.min.js',
-        array('alpinejs'),
+        array('alpinejs'), // Carica DOPO Alpine
         $js_version,
         true
     );
@@ -113,7 +115,9 @@ add_action('wp_enqueue_scripts', 'meridiana_enqueue_scripts');
 
 function meridiana_defer_alpinejs($tag, $handle) {
     if ('alpinejs' === $handle) {
-        return str_replace(' src', ' defer src', $tag);
+        // NON usare defer su Alpine perché deve attendere gestore-dashboard.js
+        // Lascia il loading syncronous
+        return $tag;
     }
     return $tag;
 }
@@ -438,6 +442,8 @@ require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/security.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-enqueue.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/auto-create-pages.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/ajax-gestore-handlers.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
 
 /**
  * TEMPLATE ROUTING

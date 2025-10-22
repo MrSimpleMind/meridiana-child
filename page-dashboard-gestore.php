@@ -13,14 +13,18 @@ get_header();
 ?>
 
 <div class="content-wrapper">
-<div class="gestore-dashboard" x-data="gestoreDashboard()">
-    <div class="dashboard-header">
-        <div class="container">
-            <h1 class="dashboard-header__title">Dashboard Gestione Contenuti</h1>
-            <p class="dashboard-header__subtitle">Gestisci documentazione, comunicazioni, utenti e contenuti della piattaforma</p>
-        </div>
+<div class="gestore-dashboard" x-data="gestoreDashboard()" x-cloak>
+    <!-- Success Message -->
+    <div class="notification notification-success" x-show="successMessage" @click.away="successMessage = ''">
+        <i data-lucide="check-circle"></i>
+        <span x-text="successMessage"></span>
     </div>
-    
+
+    <!-- Error Message -->
+    <div class="notification notification-error" x-show="errorMessage" @click.away="errorMessage = ''">
+        <i data-lucide="alert-circle"></i>
+        <span x-text="errorMessage"></span>
+    </div>
     <div class="dashboard-tabs-container">
         <div class="container">
             <div class="dashboard-tabs">
@@ -65,16 +69,56 @@ get_header();
         </div>
     </div>
     
+    <!-- Modal -->
     <div class="dashboard-modal" x-show="modalOpen" x-cloak @keydown.escape="closeModal()">
         <div class="dashboard-modal__overlay" @click="closeModal()"></div>
         <div class="dashboard-modal__body">
-            <div class="dashboard-modal__header">
-                <h2 x-text="getModalTitle()"></h2>
-                <button type="button" class="dashboard-modal__close" @click="closeModal()">
-                    <i data-lucide="x"></i>
-                </button>
-            </div>
-            <div class="dashboard-modal__content"><!-- Form ACF via AJAX --></div>
+            <!-- STEP 1: Scelta Tipo Documento -->
+            <template x-if="modalStep === 'choose'">
+                <div>
+                    <div class="dashboard-modal__header">
+                        <h2>Nuovo Documento</h2>
+                        <button type="button" class="dashboard-modal__close" @click="closeModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div class="dashboard-modal__content">
+                        <p style="margin-bottom: 24px; text-align: center; color: #666;">Seleziona il tipo di documento da creare:</p>
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                            <button type="button" class="btn btn-primary" @click="selectCPT('protocollo')" :disabled="isLoading">
+                                <i data-lucide="file-text" style="margin-right: 8px;"></i>
+                                Protocollo
+                            </button>
+                            <button type="button" class="btn btn-primary" @click="selectCPT('modulo')" :disabled="isLoading">
+                                <i data-lucide="file" style="margin-right: 8px;"></i>
+                                Modulo
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+            <!-- STEP 2: Form -->
+            <template x-if="modalStep === 'form'">
+                <div>
+                    <div class="dashboard-modal__header">
+                        <h2 x-text="getModalTitle()"></h2>
+                        <button type="button" class="dashboard-modal__close" @click="closeModal()">
+                            <i data-lucide="x"></i>
+                        </button>
+                    </div>
+                    <div class="dashboard-modal__content" x-html="modalContent"></div>
+                    <div class="dashboard-modal__footer" x-show="modalContent">
+                        <button type="button" class="btn btn-secondary" @click="closeModal()" :disabled="isLoading">
+                            Annulla
+                        </button>
+                        <button type="button" class="btn btn-primary" @click="submitForm()" :disabled="isLoading" x-show="!isLoading">
+                            <i data-lucide="save"></i> Salva
+                        </button>
+                        <span x-show="isLoading" class="loading-spinner"><i data-lucide="loader"></i> Salvataggio...</span>
+                    </div>
+                </div>
+            </template>
         </div>
     </div>
 </div>
