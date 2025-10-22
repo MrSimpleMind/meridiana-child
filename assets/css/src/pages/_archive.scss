@@ -1,6 +1,10 @@
 // =============================================================================
-// ARCHIVE PAGES - MOBILE FIRST
-// News, Comunicazioni, Salute e Benessere - Template Unificato
+// ARCHIVE PAGES - LAYOUT LISTA RESPONSIVO
+// Comunicazioni, Convenzioni, Salute e Benessere - Template Unificato
+// 
+// ⚠️ IMPORTANTE - CLASSI CSS UNIVOCHE:
+// Queste sono le UNICHE classi per gli archive. Importate da archive.php via JavaScript.
+// NON duplicare questi selettori altrove nel tema.
 // =============================================================================
 
 // -----------------------------------------------------------------------------
@@ -10,7 +14,7 @@
 .archive-page {
     min-height: 100vh;
     background-color: var(--color-bg-tertiary);
-    padding-bottom: 100px; // Spazio per bottom nav
+    padding-bottom: 100px; // Spazio per bottom nav mobile
     
     @media (min-width: 768px) {
         padding-bottom: var(--space-8);
@@ -18,19 +22,24 @@
 }
 
 .archive-container {
-    // Padding unificato definito in layout/_containers.scss
-    // Non ridefinire qui per evitare inconsistenze
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: var(--space-4);
+    
+    @media (min-width: 768px) {
+        padding: var(--space-6);
+    }
+    
+    @media (min-width: 1200px) {
+        padding: var(--space-8);
+    }
 }
 
 // -----------------------------------------------------------------------------
-// HEADER
+// SEARCH & RESULTS COUNT
 // -----------------------------------------------------------------------------
 
-.archive-header {
-    margin-bottom: var(--space-4);
-}
-
-.archive-title-section {
+.search-wrapper {
     margin-bottom: var(--space-6);
     
     @media (min-width: 768px) {
@@ -38,350 +47,340 @@
     }
 }
 
-.archive-title {
-    font-size: var(--font-size-2xl);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
-    margin: 0;
-    
-    @media (min-width: 768px) {
-        font-size: var(--font-size-3xl);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// ARTICLES GRID - Unificato per News e Salute
-// -----------------------------------------------------------------------------
-
-.articles-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: var(--space-4);
-    
-    @media (min-width: 768px) {
-        grid-template-columns: repeat(2, 1fr);
-        gap: var(--space-5);
-    }
-    
-    @media (min-width: 1200px) {
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--space-6);
-    }
-}
-
-// -----------------------------------------------------------------------------
-// ARTICLE CARD - Componente Universale
-// -----------------------------------------------------------------------------
-
-.article-card {
-    background-color: var(--color-bg-primary);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
-    display: flex;
-    flex-direction: column;
-    
-    &:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-4px);
-        border-color: var(--color-primary);
-        
-        // NO underline su hover
-        .article-card__title,
-        .article-card__excerpt {
-            text-decoration: none;
-        }
-    }
-    
-    &:active {
-        transform: translateY(-2px);
-    }
-    
-    // Immagine
-    &__image {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        background-size: cover;
-        background-position: center;
-        position: relative;
-    }
-    
-    &__overlay {
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
-    }
-    
-    &__placeholder {
-        width: 100%;
-        aspect-ratio: 16 / 9;
-        background-color: var(--color-bg-secondary);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        
-        i, svg {
-            width: 48px;
-            height: 48px;
-            color: var(--color-text-muted);
-        }
-    }
-    
-    // Content
-    &__content {
-        padding: var(--space-4);
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-    
-    &__title {
-        font-size: var(--font-size-lg);
-        font-weight: var(--font-weight-semibold);
-        color: var(--color-text-primary);
-        margin: 0 0 var(--space-3);
-        line-height: var(--line-height-tight);
-        text-decoration: none;
-        
-        // Limita a 2 righe
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-    
-    // Meta Info
-    &__meta {
-        display: flex;
-        flex-wrap: wrap;
-        gap: var(--space-3);
-        margin-bottom: var(--space-3);
-        padding-bottom: var(--space-2);
-        border-bottom: 1px solid var(--color-border-light);
-    }
-    
-    &__date,
-    &__category {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        font-size: var(--font-size-xs);
-        color: var(--color-text-secondary);
-        
-        i, svg {
-            width: 14px;
-            height: 14px;
-        }
-    }
-    
-    &__category {
-        padding: 2px var(--space-2);
-        background-color: var(--color-bg-secondary);
-        border-radius: var(--radius-sm);
-    }
-    
-    &__excerpt {
-        font-size: var(--font-size-sm);
-        color: var(--color-text-secondary);
-        margin: 0;
-        line-height: var(--line-height-normal);
-        text-decoration: none;
-        
-        // Limita a 1 SOLA riga - FORZATO
-        display: -webkit-box;
-        -webkit-line-clamp: 1;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: normal;
-    }
-}
-
-// -----------------------------------------------------------------------------
-// PAGINATION
-// -----------------------------------------------------------------------------
-
-.archive-pagination {
+.search-field {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: var(--space-2);
-    margin-top: var(--space-8);
-    padding-top: var(--space-6);
-    border-top: 1px solid var(--color-border-light);
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    transition: all 0.2s ease;
     
-    a, span {
-        display: inline-flex;
-        align-items: center;
-        gap: var(--space-1);
-        padding: var(--space-2) var(--space-3);
-        background-color: var(--color-bg-primary);
-        border: 2px solid var(--color-border);
-        border-radius: var(--radius-md);
-        color: var(--color-text-primary);
-        font-size: var(--font-size-sm);
-        font-weight: var(--font-weight-medium);
-        text-decoration: none;
-        transition: all 0.2s ease;
-        
-        i, svg {
-            width: 16px;
-            height: 16px;
-        }
+    i, svg {
+        width: 18px;
+        height: 18px;
+        color: var(--color-text-secondary);
+        flex-shrink: 0;
     }
     
-    a:hover {
-        background-color: var(--color-primary);
+    &:focus-within {
         border-color: var(--color-primary);
-        color: white;
+        box-shadow: var(--shadow-focus);
     }
+}
+
+.search-input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    color: var(--color-text-primary);
+    font-size: var(--font-size-base);
     
-    .current {
-        background-color: var(--color-primary);
-        border-color: var(--color-primary);
-        color: white;
-        font-weight: var(--font-weight-semibold);
-    }
-    
-    .dots {
-        border: none;
-        background: none;
+    &::placeholder {
         color: var(--color-text-muted);
     }
+    
+    &:focus {
+        outline: none;
+    }
 }
 
-// -----------------------------------------------------------------------------
-// NO CONTENT
-// -----------------------------------------------------------------------------
-
-.no-content {
-    padding: var(--space-12) var(--space-4);
-    text-align: center;
+.results-count {
+    font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    font-size: var(--font-size-base);
-    background-color: var(--color-bg-primary);
-    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+    min-height: 20px;
+    font-weight: var(--font-weight-medium);
 }
 
 // -----------------------------------------------------------------------------
-// RETROCOMPATIBILITÀ - Alias per vecchie classi
-// -----------------------------------------------------------------------------
+// ARCHIVE LIST - Container
+// =============================================================================
 
-// Mantieni funzionanti i vecchi selettori se usati da qualche parte
-.news-archive-grid,
-.salute-archive-grid {
-    @extend .articles-grid;
-}
-
-.news-card,
-.salute-card {
-    @extend .article-card;
-}
-
-// -----------------------------------------------------------------------------
-// CONVENZIONI GRID - Stesso layout di Articles Grid
-// -----------------------------------------------------------------------------
-
-.convenzioni-grid {
-    display: grid;
-    grid-template-columns: 1fr;
+.archive-list {
+    display: flex;
+    flex-direction: column;
     gap: var(--space-4);
+    margin-bottom: var(--space-8);
     
     @media (min-width: 768px) {
-        grid-template-columns: repeat(2, 1fr);
         gap: var(--space-5);
     }
     
     @media (min-width: 1200px) {
-        grid-template-columns: repeat(3, 1fr);
         gap: var(--space-6);
     }
 }
 
-// Card convenzione per archivio - reset dimensioni fisse
-.convenzioni-grid .convenzione-card {
-    flex: none;
-    max-width: none;
-    min-width: auto;
-    width: 100%;
-}
+// =============================================================================
+// ARCHIVE ITEM - Singolo item lista (RESPONSIVE)
+// Layout: Mobile stack verticale, Desktop lista orizzontale
+// =============================================================================
 
-// Descrizione convenzione - limitata a 2 righe come screenshot
-.convenzione-card__title {
-    font-size: var(--font-size-lg);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    margin: 0 0 var(--space-2);
-    line-height: var(--line-height-tight);
-    text-decoration: none;
-    
-    // Limita a 2 righe
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
+.archive-item {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
     overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.convenzione-card__description {
-    font-size: var(--font-size-sm);
-    color: var(--color-text-secondary);
-    margin: 0;
-    line-height: var(--line-height-normal);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
     text-decoration: none;
+    color: inherit;
     
-    // Limita a 2 righe
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: normal;
+    // ─────────────────────────────────────
+    // DESKTOP: Flex row (immagine sinistra)
+    // ─────────────────────────────────────
+    @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: stretch;
+        min-height: 200px;
+    }
+    
+    @media (hover: hover) and (min-width: 768px) {
+        &:hover {
+            border-color: var(--color-primary);
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+            
+            .archive-item__image {
+                transform: scale(1.05);
+            }
+        }
+    }
+    
+    @media (hover: none) {
+        &:active {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-2px);
+        }
+    }
 }
 
-.convenzione-card__image {
+// ─────────────────────────────────────────────────────────────────────────
+// ARCHIVE ITEM - IMAGE (Immagine)
+// ─────────────────────────────────────────────────────────────────────────
+
+.archive-item__image {
     width: 100%;
     aspect-ratio: 16 / 9;
     background-size: cover;
     background-position: center;
-    position: relative;
+    background-repeat: no-repeat;
+    transition: transform 0.3s ease;
+    flex-shrink: 0;
+    background-color: var(--color-bg-secondary);
+    
+    // DESKTOP: Fixed width sinistra
+    @media (min-width: 768px) {
+        width: 200px;
+        aspect-ratio: auto;
+        height: 100%;
+        min-height: 200px;
+    }
+    
+    @media (min-width: 1200px) {
+        width: 220px;
+    }
 }
 
-.convenzione-card__overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.3) 100%);
+.archive-item__placeholder {
+    width: 100%;
+    aspect-ratio: 16 / 9;
+    background-color: var(--color-bg-secondary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    i, svg {
+        width: 48px;
+        height: 48px;
+        color: var(--color-text-muted);
+    }
+    
+    @media (min-width: 768px) {
+        width: 200px;
+        aspect-ratio: auto;
+        height: 100%;
+        min-height: 200px;
+    }
+    
+    @media (min-width: 1200px) {
+        width: 220px;
+    }
 }
 
-.convenzione-card {
-    background-color: var(--color-bg-primary);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-sm);
-    overflow: hidden;
-    text-decoration: none;
-    transition: all 0.3s ease;
-    border: 2px solid transparent;
+// ─────────────────────────────────────────────────────────────────────────
+// ARCHIVE ITEM - BODY (Content wrapper)
+// ─────────────────────────────────────────────────────────────────────────
+
+.archive-item__body {
     display: flex;
     flex-direction: column;
+    flex: 1;
     
-    &:hover {
-        box-shadow: var(--shadow-md);
-        transform: translateY(-4px);
-        border-color: var(--color-primary);
-    }
-    
-    &:active {
-        transform: translateY(-2px);
+    // DESKTOP: Content + Meta layout
+    @media (min-width: 768px) {
+        justify-content: space-between;
     }
 }
 
-.convenzione-card__content {
-    padding: var(--space-4);
+// ─────────────────────────────────────────────────────────────────────────
+// ARCHIVE ITEM - CONTENT (Titolo + Excerpt)
+// ─────────────────────────────────────────────────────────────────────────
+
+.archive-item__content {
     flex: 1;
     display: flex;
     flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4);
+    
+    @media (max-width: 767px) {
+        padding: var(--space-3);
+        gap: var(--space-2);
+    }
+}
+
+.archive-item__title {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    color: var(--color-text-primary);
+    transition: color 0.2s ease;
+    
+    @media (max-width: 767px) {
+        font-size: var(--font-size-base);
+    }
+    
+    @media (hover: hover) and (min-width: 768px) {
+        .archive-item:hover & {
+            color: var(--color-primary);
+        }
+    }
+}
+
+.archive-item__excerpt {
+    margin: 0;
+    flex: 1;
+    font-size: var(--font-size-sm);
+    line-height: var(--line-height-normal);
+    color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    
+    @media (max-width: 767px) {
+        font-size: var(--font-size-xs);
+        -webkit-line-clamp: 2;
+    }
+}
+
+// ─────────────────────────────────────────────────────────────────────────
+// ARCHIVE ITEM - META (Data + Categoria)
+// ─────────────────────────────────────────────────────────────────────────
+
+.archive-item__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    border-top: 1px solid var(--color-border-light);
+    font-size: var(--font-size-xs);
+    color: var(--color-text-secondary);
+    background-color: var(--color-bg-secondary);
+    
+    @media (max-width: 767px) {
+        gap: var(--space-2);
+        padding: var(--space-2) var(--space-3);
+        font-size: var(--font-size-xs);
+    }
+}
+
+.archive-item__date,
+.archive-item__category {
+    display: flex;
+    align-items: center;
+    gap: var(--space-1);
+    white-space: nowrap;
+    
+    i, svg {
+        width: 14px;
+        height: 14px;
+        flex-shrink: 0;
+        color: var(--color-primary);
+        opacity: 0.7;
+    }
+}
+
+// =============================================================================
+// NO RESULTS
+// =============================================================================
+
+.no-results {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-4);
+    padding: var(--space-12) var(--space-6);
+    text-align: center;
+    background-color: var(--color-bg-secondary);
+    border-radius: var(--radius-lg);
+    border: 1px dashed var(--color-border);
+    color: var(--color-text-secondary);
+    
+    i, svg {
+        width: 48px;
+        height: 48px;
+        opacity: 0.3;
+    }
+    
+    p {
+        margin: 0;
+        font-size: var(--font-size-base);
+    }
+    
+    @media (max-width: 767px) {
+        padding: var(--space-8) var(--space-4);
+    }
+}
+
+// =============================================================================
+// ACCESSIBILITY & REDUCED MOTION
+// =============================================================================
+
+@media (prefers-reduced-motion: reduce) {
+    .archive-item,
+    .search-field {
+        transition: none !important;
+        animation: none !important;
+    }
+}
+
+// =============================================================================
+// PRINT STYLES
+// =============================================================================
+
+@media print {
+    .search-wrapper,
+    .results-count {
+        display: none;
+    }
+}
+
+// =============================================================================
+// DARK MODE SUPPORT
+// =============================================================================
+
+@media (prefers-color-scheme: dark) {
+    .archive-item {
+        background-color: var(--color-bg-primary);
+        border-color: var(--color-border);
+        color: var(--color-text-primary);
+    }
 }

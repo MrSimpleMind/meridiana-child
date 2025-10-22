@@ -437,18 +437,37 @@ require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/security.php';
 
 /**
- * TEMPLATE ROUTING - Modulo & Protocollo → single-documento.php
+ * TEMPLATE ROUTING
  * 
- * Reindirizza i CPT 'modulo' e 'protocollo' al template unificato
- * perché WordPress non riconosce 'single-documento.php' nella gerarchia standard
+ * 1. Single Modulo & Protocollo → single-documento.php
+ *    Reindirizza i CPT 'modulo' e 'protocollo' al template unificato
+ * 
+ * 2. Archive Unificato → archive.php
+ *    Reindirizza TUTTI gli archive (convenzione, salute-e-benessere-l, post)
+ *    al template unificato archive.php con condizionali get_post_type()
  */
 add_filter('template_include', function($template) {
-    $post_type = get_post_type();
+    // SINGLE: Modulo & Protocollo
+    if (is_singular()) {
+        $post_type = get_post_type();
+        if ($post_type === 'modulo' || $post_type === 'protocollo') {
+            $single_documento = MERIDIANA_CHILD_DIR . '/single-documento.php';
+            if (file_exists($single_documento)) {
+                return $single_documento;
+            }
+        }
+        return $template;
+    }
     
-    if (($post_type === 'modulo' || $post_type === 'protocollo') && is_singular()) {
-        $single_documento = MERIDIANA_CHILD_DIR . '/single-documento.php';
-        if (file_exists($single_documento)) {
-            return $single_documento;
+    // ARCHIVE: Tutti i CPT
+    if (is_archive()) {
+        $post_type = get_post_type();
+        
+        // Reindirizza TUTTI gli archive a archive.php
+        // (convenzione, salute-e-benessere-l, post, etc.)
+        $archive_template = MERIDIANA_CHILD_DIR . '/archive.php';
+        if (file_exists($archive_template)) {
+            return $archive_template;
         }
     }
     

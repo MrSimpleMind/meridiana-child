@@ -1094,6 +1094,106 @@ includes/design-system-demo.php
 
 ---
 
+## 🎯 Naming Convention CSS - Archive Grid (✨ Aggiornato Ottobre 2025)
+
+### BEM Naming Standard per Archive/Grid
+
+Tutti gli archivi (Convenzioni, Protocolli, Moduli, Salute) usano lo stesso pattern di naming:
+
+```scss
+// Layout grid principale
+.{cpt}-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: var(--space-6);
+    
+    @media (min-width: 1200px) {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+// Card singola
+.{cpt}-card {
+    display: flex;
+    flex-direction: column;
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+    transition: all 0.3s ease;
+    overflow: hidden;
+    
+    &:hover {
+        transform: translateY(-4px);
+        box-shadow: var(--shadow-md);
+    }
+}
+
+// Immagine card (con background-image)
+.{cpt}-card__image {
+    width: 100%;
+    height: 200px;
+    background-size: cover;
+    background-position: center;
+    position: relative;
+    overflow: hidden;
+}
+
+// Overlay su hover
+.{cpt}-card__overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.{cpt}-card:hover .{cpt}-card__overlay {
+    opacity: 1;
+}
+
+// Contenuto card
+.{cpt}-card__content {
+    flex: 1;
+    padding: var(--space-4);
+    display: flex;
+    flex-direction: column;
+}
+
+// Titolo card
+.{cpt}-card__title {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    margin: 0 0 var(--space-2) 0;
+    line-height: var(--line-height-tight);
+}
+
+// Descrizione card
+.{cpt}-card__description {
+    font-size: var(--font-size-sm);
+    color: var(--color-text-secondary);
+    margin: 0;
+    flex-grow: 1;
+}
+```
+
+### Applicazione nei Template
+
+Struttura HTML standard:
+```html
+<div class="article-card">
+    <div class="article-card__image" style="background-image: url(...);">
+        <div class="article-card__overlay"></div>
+    </div>
+    
+    <div class="article-card__content">
+        <h3 class="article-card__title">Titolo</h3>
+        <p class="article-card__description">Descrizione...</p>
+    </div>
+</div>
+```
+
+---
+
 ## 🤖 Checklist per IA
 
 Quando lavori su design/UI:

@@ -478,110 +478,70 @@ $tel = get_field('telefono_aziendale');
 
 ---
 
-## 💚 CPT: SALUTE E BENESSERE
+## 💚 CPT: SALUTE E BENESSERE LAVORATORI
 
 ### Descrizione
 Contenuti welfare per il benessere dei dipendenti.
 
-### Registrazione CPT
+**⚠️ ATTENZIONE**: CPT registrato come `salute-e-benessere-l` (con hyphen, non underscore)
 
-```php
-function registra_cpt_salute_benessere() {
-    $labels = array(
-        'name' => 'Salute e Benessere',
-        'singular_name' => 'Articolo Benessere',
-        'add_new' => 'Aggiungi Articolo',
-    );
-    
-    $args = array(
-        'labels' => $labels,
-        'public' => true,
-        'has_archive' => true,
-        'menu_icon' => 'dashicons-heart',
-        'supports' => array('title', 'editor', 'thumbnail'),
-        'show_in_rest' => true,
-        'rewrite' => array('slug' => 'salute-benessere'),
-    );
-    
-    register_post_type('salute_benessere', $args);
-}
-add_action('init', 'registra_cpt_salute_benessere');
+### Configurazione Reale (da ACF JSON - Ottobre 2025)
+
+```
+Post Type Slug: salute-e-benessere-l
+Menu Icon: dashicons-heart
+Has Archive: true
+Archive URL: /salute-e-benessere-l/
+Supports: title, thumbnail, custom-fields
+Show in REST: true
+Taxonomies: category
 ```
 
-### Custom Fields (ACF)
+### Custom Fields Reali (2 campi)
+
+**1. Contenuto** (campo WYSIWYG - OBBLIGATORIO)
+- `name`: `contenuto`
+- `type`: wysiwyg
+- `required`: sì
+- Toolbar: full (bold, italic, link, media, elenchi)
+- Istruzioni: "Contenuto principale dell'articolo"
+
+**2. Risorse** (repeater)
+- `name`: `risorse`
+- `type`: repeater
+- `layout`: table
+- `button_label`: "Aggiungi Risorsa"
+- Ogni risorsa ha:
+  - **Tipo Risorsa** (select - obbligatorio): "link" o "file"
+  - **Titolo** (text - obbligatorio)
+  - **URL** (url - condizionato: solo se tipo="link")
+  - **File** (file - condizionato: solo se tipo="file", return_format: array)
+
+### Query Example
 
 ```php
-acf_add_local_field_group(array(
-    'key' => 'group_salute_benessere',
-    'title' => 'Risorse Aggiuntive',
-    'fields' => array(
-        array(
-            'key' => 'field_risorse',
-            'label' => 'Risorse',
-            'name' => 'risorse',
-            'type' => 'repeater',
-            'layout' => 'table',
-            'button_label' => 'Aggiungi Risorsa',
-            'sub_fields' => array(
-                array(
-                    'key' => 'field_risorsa_tipo',
-                    'label' => 'Tipo',
-                    'name' => 'tipo',
-                    'type' => 'select',
-                    'choices' => array(
-                        'link' => 'Link Esterno',
-                        'file' => 'File Scaricabile',
-                    ),
-                ),
-                array(
-                    'key' => 'field_risorsa_titolo',
-                    'label' => 'Titolo',
-                    'name' => 'titolo',
-                    'type' => 'text',
-                ),
-                array(
-                    'key' => 'field_risorsa_url',
-                    'label' => 'URL',
-                    'name' => 'url',
-                    'type' => 'url',
-                    'conditional_logic' => array(
-                        array(
-                            array(
-                                'field' => 'field_risorsa_tipo',
-                                'operator' => '==',
-                                'value' => 'link',
-                            ),
-                        ),
-                    ),
-                ),
-                array(
-                    'key' => 'field_risorsa_file',
-                    'label' => 'File',
-                    'name' => 'file',
-                    'type' => 'file',
-                    'conditional_logic' => array(
-                        array(
-                            array(
-                                'field' => 'field_risorsa_tipo',
-                                'operator' => '==',
-                                'value' => 'file',
-                            ),
-                        ),
-                    ),
-                ),
-            ),
-        ),
-    ),
-    'location' => array(
-        array(
-            array(
-                'param' => 'post_type',
-                'operator' => '==',
-                'value' => 'salute_benessere',
-            ),
-        ),
-    ),
-));
+// Query articoli salute
+$args = array(
+    'post_type' => 'salute-e-benessere-l',
+    'posts_per_page' => 10,
+    'orderby' => 'date',
+    'order' => 'DESC'
+);
+$salute = new WP_Query($args);
+
+while($salute->have_posts()): $salute->the_post();
+    $contenuto = get_field('contenuto');
+    $risorse = get_field('risorse');
+    
+    // Risorse è array di repeater rows
+    if($risorse) {
+        foreach($risorse as $risorsa) {
+            if($risorsa['tipo'] == 'link') {
+                echo '<a href="' . $risorsa['url'] . '">' . $risorsa['titolo'] . '</a>';
+            }
+        }
+    }
+endwhile;
 ```
 
 ---

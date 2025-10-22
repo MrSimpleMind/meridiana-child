@@ -1,12 +1,94 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 21 Ottobre 2025 - [BUGFIX CSS CLASSES + SINGLE DOCUMENTO SCSS] ✅ COMPLETATO
+> **Aggiornato**: 22 Ottobre 2025 - [DOCUMENTAZIONE CONSOLIDATA + DATI REALI ACF JSON] ✅ COMPLETATO
 > **Stato**: In Sviluppo - Fase 1 COMPLETATA | Fase 2 COMPLETATA | Fase 3 85% | Fase 4 100% | Fase 8 50%
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
 
 ---
 
-## 🔧 BUGFIX SESSIONE - 21 Ottobre 2025 (Attuale)
+## 🔧 AGGIORNAMENTI DOCUMENTAZIONE - 22 Ottobre 2025 (Odierno)
+
+### ✅ AGGIORNATO: Documentazione CSS/SCSS e CPT - CONSOLIDATA
+**Status**: ✅ COMPLETATO - Documentazione allineata a realtà filesystem
+
+**Lavori Eseguiti**:
+
+**✅ 01_Design_System.md**:
+- ✅ Aggiunta sezione "Naming Convention CSS - Archive Grid"
+- ✅ BEM naming standard documentato per tutti gli archive (articles-grid, article-card, article-card__image, ecc)
+- ✅ Pattern standard HTML/CSS per card universali
+- ✅ Eccezioni specifiche per CPT (Convenzioni, Protocolli, Moduli, Salute)
+- ✅ Chiarezza su come usare classi CSS nei template
+
+**✅ 02_Struttura_Dati_CPT.md**:
+- ✅ **CORRETTO**: CPT Salute registrato come `salute-e-benessere-l` (hyphen, non underscore)
+- ✅ Dati CPT presi DIRETTAMENTE dal JSON della realtà
+- ✅ Custom fields documentati precisamente (2 campi: Contenuto WYSIWYG + Risorse repeater)
+- ✅ Configurazione Tassonomie corretta (taxonomy: "unita-offerta", "profilo-professionale", "area-competenza")
+- ✅ Query examples funzionanti con CPT reali
+- ✅ Distinzione chiara tra configurazione teorica vs reale
+
+**✅ Dati Reali Consolidati**:
+- Tutti i CPT verificati: Protocollo, Modulo, Convenzione, Organigramma, Salute-e-benessere-l
+- Tutte le Tassonomie verificate: unita-offerta (10 termini), profilo-professionale (14 termini), area-competenza (8 termini)
+- Tutti i Field Groups verificati: 6 gruppi ACF (Protocollo, Modulo, Convenzione, Salute, Organigramma, User Fields)
+- User Fields completamente documentati (5 campi: Stato, Link Autologin, Codice Fiscale, Profilo Professionale, UDO Riferimento)
+
+**File Modificati**:
+- `docs/01_Design_System.md` (+100 linee)
+- `docs/02_Struttura_Dati_CPT.md` (+80 linee, -60 codice PHP)
+
+**Result**: Documentazione **100% allineata a realtà ACF JSON filesystem** ✅
+
+---
+
+## 🔧 BUGFIX SESSIONE - 22 Ottobre 2025 (Precedente)
+
+### ✅ BUG FIX #7: Archive Template Unificato + CSS Classes Univoche - COMPLETATO
+**Status**: ✅ COMPLETATO - Archive Unificato Production Ready
+
+**Problema Identificato**:
+- **Mismatch critico**: 3 template archive separati generavano HTML con classi non coerenti
+- **File SCSS duplicate**: 2 file obsoleti definivano classi diverse per lo stesso layout
+- **Inconsistenza classi**: `.articolo-item` vs `.article-card` vs `.archive-item`
+- **Risultato**: CSS non applicato correttamente, layout incoerente
+
+**Soluzione Implementata**:
+
+**✅ FASE 1: Pulizia**
+- ❌ Eliminato `_archive-articoli.scss`
+- ❌ Eliminato `_articoli-archive.scss`
+- ✅ Rimosso import da `main.scss`
+
+**✅ FASE 2: Template Unificato**
+- ✅ `archive.php` unico per tutti i CPT (post, convenzione, salute)
+- ✅ Condizionali `get_post_type()` per query dinamiche
+- ✅ Template routing in `functions.php`
+- ✅ JavaScript genera SEMPRE stesse classi CSS
+
+**✅ FASE 3: SCSS Univoco**
+- ✅ Rewrite `pages/_archive.scss` con 15 classi univoche:
+  - `.archive-list`, `.archive-item`, `.archive-item__*` (completamente)
+- ✅ Layout LISTA responsivo (matching screenshot):
+  - Mobile: Flex column (immagine 16:9 sopra)
+  - Desktop: Flex row (immagine 200-220px sinistra)
+- ✅ WCAG 2.1 AA, print styles, dark mode
+
+**✅ FASE 4: Verifica Univocità Globale**
+- ✅ Scansionati TUTTI i template PHP
+- ✅ NO duplicate di `.archive-item__*`
+- ✅ Una sola fonte di verità
+
+**File Modificati**: archive.php | pages/_archive.scss | functions.php | main.scss
+**File Eliminati**: _archive-articoli.scss | _articoli-archive.scss
+
+**Testing**: ✅ Mobile | ✅ Desktop | ✅ Search | ✅ Hover | ✅ Placeholder | ✅ Classes univoche
+
+**Result**: Archive unificato + CSS classes univoche **READY FOR BUILD** ✅
+
+---
+
+## 🔧 BUGFIX SESSIONE - 21 Ottobre 2025 (Precedente-Precedente)
 
 ### ✅ BUG FIX #6: CSS Classes Naming Mismatch nei Template Archive - COMPLETATO
 **Status**: ✅ COMPLETATO - Grid Layout Ripristinato
