@@ -54,8 +54,8 @@ error_log( 'Area: ' . count($area_competenza) );
         <!-- BACK BUTTON -->
         <?php meridiana_render_back_button(); ?>
 
-        <!-- SEARCH BAR + FILTRI TIPO -->
-        <div class="docs-search-filters">
+        <!-- SEARCH BAR + TOGGLE FILTRI -->
+        <div class="docs-search-container">
             <!-- Search -->
             <div class="docs-search-wrapper">
                 <div class="search-input-group">
@@ -67,79 +67,98 @@ error_log( 'Area: ' . count($area_competenza) );
                         placeholder="Barra di ricerca"
                         aria-label="Cerca documenti"
                     >
-                    <button id="docs-search-clear" class="docs-search-clear" style="display: none;" aria-label="Pulisci ricerca">
+                    <button id="docs-search-clear" class="docs-search-clear" aria-label="Pulisci ricerca">
                         <i data-lucide="x"></i>
                     </button>
                 </div>
             </div>
+
+            <!-- Toggle Filtri Button -->
+            <button 
+                id="docs-filter-toggle" 
+                class="docs-filter-toggle" 
+                aria-expanded="false"
+                aria-controls="docs-filters-panel"
+                aria-label="Mostra/nascondi filtri"
+            >
+                <i data-lucide="filter"></i>
+                <span class="docs-filter-toggle__text">Filtri</span>
+            </button>
         </div>
 
-        <!-- FILTRI TIPO DOCUMENTO -->
-        <div class="docs-type-filters">
-            <label class="docs-type-label">Tipo:</label>
-            <div class="docs-type-buttons">
-                <button class="docs-type-btn docs-type-btn--active" data-type="all" aria-label="Mostra tutti i documenti">
-                    Tutti
-                </button>
-                <button class="docs-type-btn" data-type="protocollo" aria-label="Mostra solo Protocolli">
-                    Protocolli
-                </button>
-                <button class="docs-type-btn" data-type="ats" aria-label="Mostra solo Piani ATS">
-                    ATS
-                </button>
-                <button class="docs-type-btn" data-type="modulo" aria-label="Mostra solo Moduli">
-                    Moduli
-                </button>
+        <!-- FILTRI COLLASSABILI PANEL -->
+        <div 
+            id="docs-filters-panel" 
+            class="docs-filters-panel" 
+            aria-hidden="true"
+        >
+            <!-- FILTRI TIPO DOCUMENTO -->
+            <div class="docs-type-filters">
+                <label class="docs-type-label">Tipo:</label>
+                <div class="docs-type-buttons">
+                    <button class="docs-type-btn docs-type-btn--active" data-type="all" aria-label="Mostra tutti i documenti">
+                        Tutti
+                    </button>
+                    <button class="docs-type-btn" data-type="protocollo" aria-label="Mostra solo Protocolli">
+                        Protocolli
+                    </button>
+                    <button class="docs-type-btn" data-type="ats" aria-label="Mostra solo Piani ATS">
+                        ATS
+                    </button>
+                    <button class="docs-type-btn" data-type="modulo" aria-label="Mostra solo Moduli">
+                        Moduli
+                    </button>
+                </div>
             </div>
+
+            <!-- FILTRI TASSONOMIE -->
+            <div class="docs-filters">
+                    <!-- Filter: Profilo Professionale -->
+                    <?php if (!empty($profili) && !is_wp_error($profili)): ?>
+                    <div class="filter-group">
+                        <label for="filter-profilo" class="filter-group__label">Profilo Professionale</label>
+                        <select id="filter-profilo" class="docs-filter-select">
+                            <option value="" selected>Tutti</option>
+                            <?php foreach ($profili as $term): ?>
+                            <option value="<?php echo esc_attr($term->term_id); ?>">
+                                <?php echo esc_html($term->name); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Filter: Unità d'Offerta -->
+                    <?php if (!empty($udo) && !is_wp_error($udo)): ?>
+                    <div class="filter-group">
+                        <label for="filter-udo" class="filter-group__label">Unità d'offerta</label>
+                        <select id="filter-udo" class="docs-filter-select">
+                            <option value="" selected>Tutte</option>
+                            <?php foreach ($udo as $term): ?>
+                            <option value="<?php echo esc_attr($term->term_id); ?>">
+                                <?php echo esc_html($term->name); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+
+                    <!-- Filter: Area di Competenza (solo Moduli) -->
+                    <?php if (!empty($area_competenza) && !is_wp_error($area_competenza)): ?>
+                    <div class="filter-group">
+                        <label for="filter-area-competenza" class="filter-group__label">Area di Competenza</label>
+                        <select id="filter-area-competenza" class="docs-filter-select">
+                            <option value="" selected>Tutte</option>
+                            <?php foreach ($area_competenza as $term): ?>
+                            <option value="<?php echo esc_attr($term->term_id); ?>">
+                                <?php echo esc_html($term->name); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                    </div>
+                    <?php endif; ?>
+                </div>
         </div>
-
-        <!-- FILTRI TASSONOMIE -->
-        <div class="docs-filters">
-                <!-- Filter: Profilo Professionale -->
-                <?php if (!empty($profili) && !is_wp_error($profili)): ?>
-                <div class="filter-group">
-                    <label for="filter-profilo" class="filter-group__label">Profilo Professionale</label>
-                    <select id="filter-profilo" class="docs-filter-select">
-                        <option value="" selected>Tutti</option>
-                        <?php foreach ($profili as $term): ?>
-                        <option value="<?php echo esc_attr($term->term_id); ?>">
-                            <?php echo esc_html($term->name); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
-
-                <!-- Filter: Unità d'Offerta -->
-                <?php if (!empty($udo) && !is_wp_error($udo)): ?>
-                <div class="filter-group">
-                    <label for="filter-udo" class="filter-group__label">Unità d'offerta</label>
-                    <select id="filter-udo" class="docs-filter-select">
-                        <option value="" selected>Tutte</option>
-                        <?php foreach ($udo as $term): ?>
-                        <option value="<?php echo esc_attr($term->term_id); ?>">
-                            <?php echo esc_html($term->name); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
-
-                <!-- Filter: Area di Competenza (solo Moduli) -->
-                <?php if (!empty($area_competenza) && !is_wp_error($area_competenza)): ?>
-                <div class="filter-group">
-                    <label for="filter-area-competenza" class="filter-group__label">Area di Competenza</label>
-                    <select id="filter-area-competenza" class="docs-filter-select">
-                        <option value="" selected>Tutte</option>
-                        <?php foreach ($area_competenza as $term): ?>
-                        <option value="<?php echo esc_attr($term->term_id); ?>">
-                            <?php echo esc_html($term->name); ?>
-                        </option>
-                        <?php endforeach; ?>
-                    </select>
-                </div>
-                <?php endif; ?>
-            </div>
 
         <!-- DOCUMENTS LIST -->
         <div id="docs-list" class="docs-list">
@@ -205,13 +224,13 @@ error_log( 'Area: ' . count($area_competenza) );
                             <div class="docs-item__meta">
                                 <?php if (!empty($profilo_terms) && !is_wp_error($profilo_terms)): ?>
                                     <span class="docs-meta-tag">
-                                        <strong>Profilo:</strong> <?php echo esc_html($profilo_terms[0]->name); ?>
+                                        <strong>Profilo:</strong> <?php echo esc_html(implode(', ', wp_list_pluck($profilo_terms, 'name'))); ?>
                                     </span>
                                 <?php endif; ?>
 
                                 <?php if (!empty($udo_terms) && !is_wp_error($udo_terms)): ?>
                                     <span class="docs-meta-tag">
-                                        <strong>UDO:</strong> <?php echo esc_html($udo_terms[0]->name); ?>
+                                        <strong>UDO:</strong> <?php echo esc_html(implode(', ', wp_list_pluck($udo_terms, 'name'))); ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
@@ -265,6 +284,29 @@ error_log( 'Area: ' . count($area_competenza) );
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // =================================================================
+    // TOGGLE FILTRI PANEL - Mostra/nascondi filtri collassabili
+    // =================================================================
+    const filterToggle = document.getElementById('docs-filter-toggle');
+    const filtersPanel = document.getElementById('docs-filters-panel');
+    
+    if (filterToggle && filtersPanel) {
+        filterToggle.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            // Toggle aria-expanded e aria-hidden attributes
+            const isExpanded = filterToggle.getAttribute('aria-expanded') === 'true';
+            filterToggle.setAttribute('aria-expanded', !isExpanded);
+            filtersPanel.setAttribute('aria-hidden', isExpanded);
+            
+            // Toggle class per CSS transitions
+            filtersPanel.classList.toggle('docs-filters-panel--open');
+        });
+    }
+
+    // =================================================================
+    // DOCUMENT FILTERS LOGIC
+    // =================================================================
     const searchInput = document.getElementById('docs-search');
     const searchClear = document.getElementById('docs-search-clear');
     const filterProfilo = document.getElementById('filter-profilo');

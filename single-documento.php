@@ -75,9 +75,9 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                 <!-- MAIN CONTENT -->
                 <main class="single-documento__content">
                     
-                    <!-- RIASSUNTO - SOLO PROTOCOLLO -->
+                    <!-- RIASSUNTO - SOLO PROTOCOLLO (NO PADDING, NO SHADOW) -->
                     <?php if ($is_protocollo && $riassunto): ?>
-                    <section class="single-documento__section">
+                    <section class="single-documento__section no-padding">
                         <h2 class="single-documento__section-title">
                             <i data-lucide="file-text"></i>
                             Riassunto
@@ -88,10 +88,10 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                     </section>
                     <?php endif; ?>
 
-                    <!-- PDF EMBED - ENTRAMBI -->
+                    <!-- PDF EMBED - ENTRAMBI (NO PADDING, NO SHADOW) -->
                     <?php if ($pdf_url): ?>
-                    <section class="single-documento__section">
-                        <div class="single-documento__pdf-embed">
+                    <section class="single-documento__section no-padding">
+                        <div class="single-documento__pdf-embed" id="modulo-pdf-embed">
                             <?php echo do_shortcode('[pdf-embedder url="' . esc_url($pdf_url) . '"]'); ?>
                         </div>
                     </section>
@@ -123,14 +123,14 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                             Azioni
                         </h3>
                         
-                        <!-- PDF Scarica Button -->
+                        <!-- PDF Scarica Button (PRIMARY BUTTON) -->
                         <a href="<?php echo esc_url($pdf_url); ?>" class="btn btn-primary btn-block" download>
                             <i data-lucide="download"></i>
                             Scarica
                         </a>
                         
-                        <!-- PDF Stampa Button -->
-                        <button class="btn btn-secondary btn-block" onclick="window.print()">
+                        <!-- Stampa Link (NOT A BUTTON - styled as link with padding) -->
+                        <button class="single-documento__stampa-link" id="btn-stampa-modulo" data-pdf-url="<?php echo esc_attr($pdf_url); ?>">
                             <i data-lucide="printer"></i>
                             Stampa
                         </button>
@@ -144,18 +144,22 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                             Informazioni
                         </h3>
                         
-                        <!-- Tipo -->
+                        <!-- Tipo (con colori differenziati) -->
                         <div class="single-documento__info-item">
                             <strong>Tipo:</strong>
-                            <span class="badge badge-<?php echo esc_attr($badge_color); ?>">
+                            <span class="badge-<?php echo esc_attr($badge_color); ?>">
                                 <?php echo esc_html($type_label); ?>
                             </span>
                         </div>
 
-                        <!-- Data Pubblicazione -->
+                        <!-- Data Pubblicazione (TAG STYLE) -->
                         <div class="single-documento__info-item">
                             <strong>Pubblicato:</strong>
-                            <span><?php echo get_the_date('d M Y'); ?></span>
+                            <div class="single-documento__info-tags">
+                                <span class="single-documento__info-tag">
+                                    <?php echo get_the_date('d M Y'); ?>
+                                </span>
+                            </div>
                         </div>
 
                         <!-- Profilo Professionale -->
@@ -200,11 +204,15 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                         </div>
                         <?php endif; ?>
 
-                        <!-- Pianificazione ATS - SOLO PROTOCOLLO -->
+                        <!-- Pianificazione ATS - SOLO PROTOCOLLO (TAG STYLE) -->
                         <?php if ($is_protocollo): ?>
                         <div class="single-documento__info-item">
                             <strong>Pianificazione ATS:</strong>
-                            <span><?php echo $pianificazione_ats ? 'Sì' : 'No'; ?></span>
+                            <div class="single-documento__info-tags">
+                                <span class="single-documento__info-tag">
+                                    <?php echo $pianificazione_ats ? 'Sì' : 'No'; ?>
+                                </span>
+                            </div>
                         </div>
                         <?php endif; ?>
                     </div>
@@ -248,6 +256,43 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
         </div>
     </div>
 </div>
+
+<!-- Script per stampare il modulo PDF -->
+<script>
+(function() {
+    'use strict';
+    
+    const btnStampa = document.getElementById('btn-stampa-modulo');
+    
+    if (btnStampa) {
+        btnStampa.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const pdfUrl = this.getAttribute('data-pdf-url');
+            
+            if (!pdfUrl) {
+                alert('Errore: URL del PDF non trovato');
+                return;
+            }
+            
+            // Crea una finestra pop-up con il PDF
+            const printWindow = window.open(pdfUrl, 'Stampa Modulo', 'height=600,width=800');
+            
+            if (printWindow) {
+                printWindow.addEventListener('load', function() {
+                    // Aspetta che il PDF carichi e apri il dialog di stampa
+                    setTimeout(function() {
+                        printWindow.print();
+                    }, 500);
+                });
+            } else {
+                // Se la pop-up è bloccata, mostra messaggio di errore
+                alert('Abilita le pop-up del browser per stampare il modulo');
+            }
+        });
+    }
+})();
+</script>
 
 <?php
 get_footer();

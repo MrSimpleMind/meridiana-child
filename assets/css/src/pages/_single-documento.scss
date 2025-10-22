@@ -96,9 +96,11 @@
 // =============================================================================
 
 .single-documento__header {
+    padding-top: var(--space-8);
     margin-bottom: var(--space-6);
     
     @media (min-width: 768px) {
+        padding-top: var(--space-10);
         margin-bottom: var(--space-8);
     }
 }
@@ -192,6 +194,18 @@
     &:hover {
         box-shadow: var(--shadow-md);
     }
+    
+    // Section senza padding e shadow (Riassunto Protocolli, PDF Embed)
+    &.no-padding {
+        padding: 0;
+        box-shadow: none;
+        background-color: transparent;
+        
+        @media (min-width: 768px) {
+            padding: 0;
+            box-shadow: none;
+        }
+    }
 }
 
 // Section Heading (con icona)
@@ -235,12 +249,15 @@
     }
 }
 
-// PDF Embed Container
+// PDF Embed Container (NO PADDING, NO SHADOW)
 .single-documento__pdf-embed {
     border-radius: var(--radius-md);
     overflow: hidden;
     background-color: var(--color-bg-secondary);
     min-height: 600px;
+    padding: 0 !important;
+    box-shadow: none !important;
+    margin: 0;
     
     // Assicura che PDF embedder si adatti
     & > * {
@@ -406,8 +423,34 @@
     }
 }
 
-// Widget Azioni (PDF Scarica/Stampa per Moduli)
+// Widget Azioni (PDF Scarica/Stampa per Moduli) - BUTTONS DIFFERENTIATION
 .single-documento__widget {
+    .btn {
+        // Assicura che i bottoni mantengano i loro stili
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .btn-primary {
+        background-color: var(--color-primary);
+        color: white;
+        
+        &:hover:not(:disabled) {
+            background-color: var(--color-primary-dark);
+        }
+    }
+    
+    .btn-secondary {
+        background-color: var(--color-warning);
+        color: var(--color-text-primary);
+        
+        &:hover:not(:disabled) {
+            background-color: #F59E0B;
+            opacity: 0.9;
+        }
+    }
+    
     .btn-block {
         width: 100%;
         margin-bottom: var(--space-3);
@@ -415,6 +458,40 @@
         &:last-of-type {
             margin-bottom: 0;
         }
+    }
+}
+
+// Stampa Link (Non Button - Solo Moduli)
+.single-documento__stampa-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-medium);
+    color: var(--color-text-primary);
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.2s ease;
+    border-radius: var(--radius-md);
+    margin-bottom: 0;
+    
+    i, svg {
+        width: 18px;
+        height: 18px;
+    }
+    
+    &:hover {
+        color: var(--color-primary);
+        background-color: var(--color-bg-secondary);
+    }
+    
+    &:active {
+        transform: scale(0.98);
     }
 }
 
@@ -439,9 +516,25 @@
     }
     
     > span {
-        display: block;
-        color: var(--color-text-secondary);
-        font-size: var(--font-size-sm);
+        display: inline-flex;
+        align-items: center;
+        padding: var(--space-2) var(--space-3);
+        border-radius: var(--radius-md);
+        font-size: var(--font-size-xs);
+        font-weight: var(--font-weight-semibold);
+        min-height: 28px;
+        text-align: center;
+        justify-content: center;
+        color: white;
+        
+        // Colori differenziati per tipo documento
+        &.badge-blue {
+            background-color: #06B6D4;
+        }
+        
+        &.badge-green {
+            background-color: var(--color-success);
+        }
     }
 }
 
@@ -539,6 +632,10 @@
     font-weight: var(--font-weight-bold);
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
 }
 
 .badge-green {
@@ -549,6 +646,10 @@
     font-weight: var(--font-weight-bold);
     padding: var(--space-1) var(--space-2);
     border-radius: var(--radius-full);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 24px;
 }
 
 // =============================================================================
