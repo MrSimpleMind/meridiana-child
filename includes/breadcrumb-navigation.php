@@ -13,12 +13,44 @@ if (!defined('ABSPATH')) {
 }
 
 /**
- * Ottieni URL genitore basato sulla pagina corrente
+ * Rileva se l'utente viene dalla homepage
+ * 
+ * Legge il referrer HTTP e verifica se corrisponde alla homepage
+ * Usato per determinare il corretto pulsante "Torna indietro"
+ * 
+ * @return bool True se viene dalla homepage, False altrimenti
+ */
+function meridiana_is_referred_from_home() {
+    // Recupera il referrer HTTP
+    $referrer = isset($_SERVER['HTTP_REFERER']) ? esc_url_raw($_SERVER['HTTP_REFERER']) : '';
+    
+    // Se non c'è referrer, non viene dalla homepage
+    if (empty($referrer)) {
+        return false;
+    }
+    
+    // Ottieni l'URL della homepage
+    $home = home_url();
+    
+    // Verifica se il referrer inizia con l'URL homepage
+    // Aggiungi "/" alla fine per evitare falsi positivi
+    $home_with_slash = trailingslashit($home);
+    $referrer_normalized = trailingslashit(parse_url($referrer, PHP_URL_SCHEME) . '://' . parse_url($referrer, PHP_URL_HOST) . parse_url($referrer, PHP_URL_PATH));
+    
+    // Confronto semplice: se il referrer è la homepage (con o senza query string)
+    return $referrer_normalized === $home_with_slash;
+}
+
+/**
+ * Ottieni URL genitore basato sulla pagina corrente e referrer
  * 
  * Determina a quale livello gerarchico tornare:
- * - Single Post → Archive dello stesso CPT
+ * - Single Post (da homepage) → Homepage
+ * - Single Post (da archive) → Archive dello stesso CPT
  * - Archive → Home
  * - Home → Home (rimane)
+ * 
+ * Usa HTTP_REFERER per tracciare il punto di partenza
  * 
  * @return string URL pagina genitore
  */
@@ -26,6 +58,11 @@ function meridiana_get_parent_url() {
     // Se è single post di un CPT custom O post standard (comunicazioni)
     if (is_singular(array('post', 'convenzione', 'salute_benessere', 'salute-e-benessere-l', 'protocollo', 'modulo', 'organigramma'))) {
         $post_type = get_post_type();
+        
+        // Se viene dalla homepage, torna alla homepage
+        if (meridiana_is_referred_from_home()) {
+            return home_url();
+        }
         
         // Per post standard (comunicazioni), usa page_for_posts
         if ($post_type === 'post') {
@@ -72,10 +109,19 @@ function meridiana_get_parent_url() {
 /**
  * Genera label intelligente per pulsante "Torna indietro"
  * 
- * @return string Etichetta del pulsante (es: "Torna a Convenzioni")
+ * Se viene dalla homepage → "Torna indietro"
+ * Se viene dall'archive → "Torna a {Nome Archivio}"
+ * 
+ * @return string Etichetta del pulsante
  */
 function meridiana_get_back_label() {
     if (is_singular(array('post', 'convenzione', 'salute_benessere', 'salute-e-benessere-l', 'protocollo', 'modulo', 'organigramma'))) {
+        // Se viene dalla homepage, etichetta generica
+        if (meridiana_is_referred_from_home()) {
+            return 'Torna indietro';
+        }
+        
+        // Altrimenti, specifica il tipo archivio
         $post_type = get_post_type();
         
         // Mappa CPT → Etichetta
@@ -126,11 +172,11 @@ function meridiana_render_back_button($args = array()) {
     $label = !empty($args['label']) ? $args['label'] : meridiana_get_back_label();
     $url = meridiana_get_parent_url();
     
-    // Costruisci HTML pulsante
+    // Costruisci HTML pulsante (niente style inline - gestito in CSS)
     $button_html = sprintf(
-        '<a href="%s" class="btn-back %s" title="%s">
-            <i data-lucide="%s" style="display: inline-block; width: 16px; height: 16px; margin-right: 6px; vertical-align: middle;"></i>
-            %s
+        '<a href="%s" class="back-link %s" title="%s">
+            <i data-lucide="%s" class="back-link__icon"></i>
+            <span>%s</span>
         </a>',
         esc_url($url),
         esc_attr($args['class']),
