@@ -436,6 +436,8 @@ require_once MERIDIANA_CHILD_DIR . '/includes/breadcrumb-navigation.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/comunicazioni-filter.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/helpers.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/security.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/gestore-enqueue.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/auto-create-pages.php';
 
 /**
  * TEMPLATE ROUTING

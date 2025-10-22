@@ -38,4 +38,13 @@
         <i data-lucide="users"></i>
         <span>Contatti</span>
     </a>
+    
+    <!-- GESTIONE (Gestore/Admin only) -->
+    <?php if (current_user_can('manage_platform') || current_user_can('manage_options')): ?>
+    <a href="<?php echo home_url('/dashboard-gestore/'); ?>" 
+       class="bottom-nav__item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
+        <i data-lucide="settings"></i>
+        <span>Gestione</span>
+    </a>
+    <?php endif; ?>
 </nav>

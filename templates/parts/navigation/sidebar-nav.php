@@ -127,6 +127,16 @@ error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_r
             <span>Analytics</span>
         </a>
         <?php endif; ?>
+        
+        <?php if (current_user_can('manage_platform') || current_user_can('manage_options')): ?>
+        <div class="sidebar-nav__divider"></div>
+        
+        <a href="<?php echo home_url('/dashboard-gestore/'); ?>" 
+           class="sidebar-nav__item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
+            <i data-lucide="settings"></i>
+            <span>Dashboard Gestore</span>
+        </a>
+        <?php endif; ?>
     </div>
     
     <!-- Footer con info utente -->
