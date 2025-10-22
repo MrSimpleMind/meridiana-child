@@ -138,7 +138,6 @@ if (!defined('ABSPATH')) {
  * puoi decommentare il codice qui sotto e personalizzarlo.
  */
 
-/*
 function meridiana_register_taxonomies() {
     
     // UNITÀ DI OFFERTA
@@ -226,7 +225,6 @@ function meridiana_register_taxonomies() {
     ));
 }
 add_action('init', 'meridiana_register_taxonomies');
-*/
 
 /**
  * Helper: Ottieni terms di una taxonomy in formato select options

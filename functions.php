@@ -424,6 +424,7 @@ add_action('wp_head', 'meridiana_add_inline_styles', 99);
  */
 
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-config.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/taxonomies.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/user-roles.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/membership.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/design-system-demo.php';

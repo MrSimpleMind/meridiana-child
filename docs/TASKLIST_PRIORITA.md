@@ -1,8 +1,58 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 22 Ottobre 2025 - [DOCUMENTAZIONE CONSOLIDATA + DATI REALI ACF JSON] ✅ COMPLETATO
+> **Aggiornato**: 22 Ottobre 2025 - [PAGINA DOCS CON FILTRI TASSONOMIE FUNZIONANTI] ✅ COMPLETATO
 > **Stato**: In Sviluppo - Fase 1 COMPLETATA | Fase 2 COMPLETATA | Fase 3 85% | Fase 4 100% | Fase 8 50%
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+
+---
+
+## 🔧 AGGIORNAMENTI SESSION - 22 Ottobre 2025 - PAGINA DOCS CON FILTRI
+
+### ✅ COMPLETATO: Pagina Documentazione (/docs/) - Filtri Tassonomie Funzionanti
+**Status**: ✅ COMPLETATO - Production Ready con Filtri Dinamici
+
+**Problema Identificato**:
+- Filtri SELECT per tassonomie non apparivano nella pagina `/docs/`
+- Causa root: **Nome tassonomie errato** nel codice PHP
+- ACF utilizza naming con TRATTINO (`profilo-professionale`, `unita-offerta`, `area-competenza`)
+- Codice PHP cercava nomi con UNDERSCORE (`profili_professionali`, `unita_offerta`, `aree_competenza`)
+- Mismatch totale tra naming ACF JSON vs codice PHP template
+
+**Soluzione Implementata**:
+1. ✅ Letto JSON ACF taxonomy da `acf-json/taxonomy_*.json`
+2. ✅ Identificati nomi REALI delle tassonomie (con trattino)
+3. ✅ Aggiornato `page-docs.php` con nomi corretti
+4. ✅ Aggiunti al caricamento iniziale del template:
+   - `$profili = get_terms(['taxonomy' => 'profilo-professionale'])`
+   - `$udo = get_terms(['taxonomy' => 'unita-offerta'])`
+   - `$area_competenza = get_terms(['taxonomy' => 'area-competenza'])`
+5. ✅ Aggiornati `get_the_terms()` nei loop documenti
+6. ✅ Hard refresh browser (Ctrl+Shift+R) → Filtri VISIBILI
+
+**File Modificati**:
+- `page-docs.php`: +30 righe (load taxonomies) + 3 correzioni nomi
+
+**Tassonomie Ora Attive**:
+- ✅ Profilo Professionale: 14 termini (Infermiere, Medico, ASA/OSS, etc.)
+- ✅ Unità d'Offerta: 10 termini (Ambulatori, RSA, Hospice, etc.)
+- ✅ Area di Competenza: 8 termini (HACCP, Sicurezza, Sanitaria, etc.)
+
+**Funzionalità Filtraggio**:
+- ✅ Filtri SELECT per Profilo, UDO, Area di Competenza
+- ✅ Filtri tipo documento (Tutti, Protocolli, ATS, Moduli)
+- ✅ Ricerca full-text con Fuse.js
+- ✅ Combinazione filtri (AND logic)
+- ✅ Risultati zero handling + "No results" message
+
+**Testing Eseguito**:
+- [x] Filtri visibili nella pagina ✅
+- [x] Dropdown caricano i termini ✅
+- [x] Selezione filtro → documenti si filtrano ✅
+- [x] Combinazione filtri funziona ✅
+- [x] Ricerca testo funziona ✅
+- [x] "No results" message appare se vuoto ✅
+
+**Result**: Pagina Docs **100% Funzionante con Filtri Dinamici** ✅🎉
 
 ---
 

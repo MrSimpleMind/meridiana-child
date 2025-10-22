@@ -118,17 +118,155 @@
 }
 
 // ============================================
-// FILTERS (Orizzontale, accanto search)
+// FILTERS TIPO DOCUMENTO (Bottoni - RESTYLED)
+// ============================================
+
+.docs-type-filters {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+    padding: var(--space-4);
+    background-color: transparent;
+    border-radius: var(--radius-md);
+    border: none;
+    margin-bottom: var(--space-6);
+    
+    @media (min-width: 768px) {
+        flex-direction: row;
+        align-items: center;
+        gap: var(--space-4);
+        padding: 0;
+    }
+}
+
+.docs-type-label {
+    font-weight: var(--font-weight-semibold);
+    font-size: var(--font-size-sm);
+    color: var(--color-text-primary);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    flex-shrink: 0;
+    
+    @media (min-width: 768px) {
+        font-size: var(--font-size-base);
+    }
+}
+
+.docs-type-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    
+    @media (min-width: 768px) {
+        gap: var(--space-3);
+    }
+}
+
+.docs-type-btn {
+    // Stili base bottone (da design system)
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: var(--line-height-tight);
+    border-radius: var(--radius-md);
+    border: 2px solid var(--color-border);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    min-height: 40px;
+    white-space: nowrap;
+    
+    // Stato di default (inattivo) - stile outline
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    
+    &:hover:not(:disabled):not(.docs-type-btn--active) {
+        border-color: var(--color-primary);
+        color: var(--color-primary);
+        background-color: var(--color-primary-bg-light);
+        box-shadow: var(--shadow-sm);
+        transform: translateY(-1px);
+    }
+    
+    &:focus-visible {
+        outline: none;
+        box-shadow: var(--shadow-focus);
+        border-color: var(--color-primary);
+    }
+    
+    &:active:not(:disabled):not(.docs-type-btn--active) {
+        transform: scale(0.98);
+    }
+    
+    // Stato attivo (selezionato) - stile primary (pieno)
+    &.docs-type-btn--active {
+        background-color: var(--color-primary);
+        color: #FFFFFF;
+        border-color: var(--color-primary);
+        box-shadow: var(--shadow-button-hover);
+        
+        &:hover:not(:disabled) {
+            background-color: var(--color-primary-dark);
+            border-color: var(--color-primary-dark);
+        }
+        
+        &:focus-visible {
+            outline: none;
+            box-shadow: var(--shadow-focus);
+        }
+        
+        &:active {
+            transform: scale(0.98);
+        }
+    }
+    
+    // Disabled state
+    &:disabled,
+    &[disabled],
+    &.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text-muted);
+        border-color: var(--color-border-disabled);
+    }
+    
+    // Mobile
+    @media (max-width: 767px) {
+        padding: var(--space-2) var(--space-5);
+        font-size: var(--font-size-sm);
+        min-height: 36px;
+    }
+    
+    // Desktop
+    @media (min-width: 1200px) {
+        padding: var(--space-3) var(--space-6);
+        font-size: var(--font-size-base);
+        min-height: 44px;
+    }
+}
+
+// ============================================
+// FILTERS (Orizzontale, sotto i bottoni tipo)
 // ============================================
 
 .docs-filters {
     display: flex;
     flex-direction: column;
     gap: var(--space-3);
+    margin-bottom: var(--space-6);
     
     @media (min-width: 768px) {
         flex-direction: row;
         gap: var(--space-4);
+        flex-wrap: wrap;
+    }
+    
+    @media (min-width: 1200px) {
+        margin-bottom: var(--space-8);
     }
 }
 
@@ -144,21 +282,37 @@
     }
 }
 
+.filter-group__label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin: 0;
+    display: block;
+    
+    @media (min-width: 768px) {
+        font-size: var(--font-size-sm);
+    }
+}
+
 .docs-filter-select {
-    padding: var(--space-3) var(--space-4);
+    width: 100%;
+    padding: var(--space-3) 28px var(--space-3) var(--space-4);
     border: 1px solid var(--color-border-input);
     border-radius: var(--radius-md);
     font-size: var(--font-size-base);
+    line-height: var(--line-height-normal);
     color: var(--color-text-primary);
     background-color: var(--color-bg-primary);
     appearance: none;
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ab1120' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
     background-repeat: no-repeat;
-    background-position: right 12px center;
-    padding-right: 36px;
+    background-position: right 8px center;
     cursor: pointer;
     transition: all 0.2s ease;
-    min-height: 40px;
+    min-height: 44px;
+    box-sizing: border-box;
     
     &:focus {
         outline: none;
@@ -172,7 +326,7 @@
 }
 
 // ============================================
-// DOCUMENTS LIST (Vertical, wireframe page 9)
+// DOCUMENTS LIST (Vertical, wireframe pagina 9)
 // ============================================
 
 .docs-list {
