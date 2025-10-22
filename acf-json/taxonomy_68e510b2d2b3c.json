@@ -57,20 +57,20 @@
     "rest_controller_class": "WP_REST_Terms_Controller",
     "show_tagcloud": 1,
     "show_in_quick_edit": 1,
-    "show_admin_column": 0,
+    "show_admin_column": 1,
     "rewrite": {
         "permalink_rewrite": "taxonomy_key",
         "with_front": "1",
-        "rewrite_hierarchical": "0"
+        "rewrite_hierarchical": "1"
     },
     "query_var": "post_type_key",
     "query_var_name": "",
     "default_term": {
         "default_term_enabled": "0"
     },
-    "sort": 0,
+    "sort": 1,
     "meta_box": "default",
     "meta_box_cb": "",
     "meta_box_sanitize_cb": "",
-    "modified": 1761128187
+    "modified": 1761134754
 }
