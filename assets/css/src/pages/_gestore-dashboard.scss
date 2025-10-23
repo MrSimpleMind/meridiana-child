@@ -508,3 +508,40 @@
     background-color: #F3F4F6;
     color: #374151;
 }
+
+.dashboard-modal__content .checkbox-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.dashboard-modal__content .checkbox-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    font-size: 14px;
+    color: #1F2937;
+}
+
+.dashboard-modal__content .checkbox-inline input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+}
+
+.acf-form-taxonomies {
+    display: grid;
+    gap: var(--space-4);
+    margin-top: var(--space-6);
+}
+
+.acf-form-taxonomies .taxonomy-select {
+    width: 100%;
+    min-height: 42px;
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-sm);
+}
+
+.acf-form-taxonomies .taxonomy-select[multiple] {
+    min-height: 220px;
+    overflow-y: auto;
+}

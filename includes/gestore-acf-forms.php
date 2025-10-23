@@ -109,276 +109,329 @@ function meridiana_render_documento_form($action = 'new', $post_id = null, $requ
 // ============================================
 
 
+
+
 function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action = 'new') {
+
     $is_protocollo = ($post_type === 'protocollo');
+
     $is_modulo = ($post_type === 'modulo');
 
+
+
     $pdf_field_key = $is_protocollo ? 'field_pdf_protocollo' : 'field_pdf_modulo';
+
     $pdf_placeholder = $is_protocollo
+
         ? __('Nessun file di protocollo selezionato', 'meridiana-child')
+
         : __('Nessun file di modulo selezionato', 'meridiana-child');
 
+
+
     $pdf_value = 0;
+
     if ($post_id) {
+
         $stored_pdf = get_field($pdf_field_key, $post_id);
+
         if ($stored_pdf) {
+
             $pdf_value = intval($stored_pdf);
+
         }
+
     }
+
     $pdf_info = meridiana_get_attachment_info($pdf_value);
+
     if (empty($pdf_info['name'])) {
+
         $pdf_info['name'] = $pdf_placeholder;
+
     }
+
+
 
     $riassunto_value = '';
+
     if ($is_protocollo && $post_id) {
+
         $riassunto_raw = get_field('riassunto', $post_id);
+
         if (is_string($riassunto_raw)) {
+
             $riassunto_value = $riassunto_raw;
+
         }
+
     }
+
+
 
     $ats_value = 0;
+
     if ($is_protocollo && $post_id) {
+
         $ats_raw = get_field('pianificazione_ats', $post_id);
+
         $ats_value = $ats_raw ? 1 : 0;
+
     }
+
+
 
     $moduli_allegati = [];
+
     if ($is_protocollo) {
+
         $stored_relationship = $post_id ? get_field('moduli_allegati', $post_id, false) : [];
+
         if (is_array($stored_relationship)) {
+
             $moduli_allegati = array_map('intval', array_filter($stored_relationship));
+
         }
+
     }
+
+
 
     $available_moduli = [];
+
     if ($is_protocollo) {
+
         $available_moduli = get_posts([
+
             'post_type'      => 'modulo',
+
             'post_status'    => ['publish', 'pending', 'draft'],
+
             'posts_per_page' => -1,
+
             'orderby'        => 'title',
+
             'order'          => 'ASC',
+
             'fields'         => 'ids',
+
         ]);
+
     }
 
-    $featured_image_id = 0;
-    $featured_image_info = meridiana_get_attachment_info(0);
-    $featured_placeholder = __('Nessuna immagine selezionata', 'meridiana-child');
-    if ($is_modulo && $post_id) {
-        $featured_image_id = intval(get_post_thumbnail_id($post_id));
-        if ($featured_image_id) {
-            $featured_image_info = meridiana_get_attachment_info($featured_image_id);
-        }
-    }
-    if (empty($featured_image_info['name'])) {
-        $featured_image_info['name'] = $featured_placeholder;
-    }
+
 
     ?>
+
     <div class="acf-form-fields">
+
         <div class="acf-field acf-field-file">
+
             <div class="acf-label">
+
                 <label>
+
                     <?php echo $is_protocollo ? 'PDF Protocollo' : 'PDF Modulo'; ?>
+
                     <span class="required">*</span>
+
                 </label>
+
                 <p class="description">
+
                     <?php echo $is_protocollo
+
                         ? __('Carica il file PDF del protocollo (visualizzabile online)', 'meridiana-child')
+
                         : __('Carica il file PDF del modulo (scaricabile dal personale)', 'meridiana-child'); ?>
+
                 </p>
+
             </div>
+
             <div class="acf-input">
+
                 <div
+
                     class="media-field"
+
                     data-media-field
+
                     data-media-type="pdf"
+
                     data-media-placeholder="<?php echo esc_attr($pdf_placeholder); ?>"
+
                     data-required="1"
+
                 >
+
                     <input type="hidden" name="acf[<?php echo esc_attr($pdf_field_key); ?>]" value="<?php echo esc_attr($pdf_info['id']); ?>" />
+
                     <button type="button" class="button media-picker"><?php esc_html_e('Seleziona PDF', 'meridiana-child'); ?></button>
+
                     <span class="media-file-name" data-media-file-name><?php echo esc_html($pdf_info['name']); ?></span>
+
                     <?php if (!empty($pdf_info['url'])): ?>
+
                         <a class="button button-secondary" href="<?php echo esc_url($pdf_info['url']); ?>" target="_blank" rel="noopener noreferrer"><?php esc_html_e('Apri file corrente', 'meridiana-child'); ?></a>
+
                     <?php endif; ?>
+
+                    <div class="media-preview" data-media-preview></div>
+
                 </div>
+
             </div>
+
         </div>
+
+
 
         <?php if ($is_protocollo): ?>
+
             <div class="acf-field acf-field-textarea">
+
                 <div class="acf-label">
+
                     <label for="riassunto"><?php esc_html_e('Riassunto', 'meridiana-child'); ?></label>
+
                     <p class="description"><?php esc_html_e('Breve descrizione del documento', 'meridiana-child'); ?></p>
+
                 </div>
+
                 <div class="acf-input">
+
                     <textarea
+
                         name="acf[field_riassunto_protocollo]"
+
                         id="riassunto"
+
                         rows="4"
+
                         style="width: 100%;"
+
                     ><?php echo esc_textarea($riassunto_value); ?></textarea>
+
                 </div>
+
             </div>
+
+
 
             <div class="acf-field acf-field-relationship">
+
                 <div class="acf-label">
+
                     <label for="moduli_allegati"><?php esc_html_e('Moduli Allegati', 'meridiana-child'); ?></label>
+
                     <p class="description"><?php esc_html_e('Associa uno o più moduli a questo protocollo', 'meridiana-child'); ?></p>
+
                 </div>
+
                 <div class="acf-input">
+
                     <?php if (!empty($available_moduli)): ?>
-                        <select id="moduli_allegati" name="acf[field_moduli_allegati][]" multiple size="6">
+
+                        <?php
+
+                        $moduli_count = count($available_moduli);
+
+                        $moduli_select_size = max(4, min(8, $moduli_count));
+
+                        ?>
+
+                        <select id="moduli_allegati" name="acf[field_moduli_allegati][]" multiple size="<?php echo esc_attr($moduli_select_size); ?>">
+
                             <?php foreach ($available_moduli as $modulo_id):
+
                                 $selected = in_array($modulo_id, $moduli_allegati, true) ? 'selected' : '';
+
                                 $label = get_the_title($modulo_id);
+
                                 if (empty($label)) {
+
                                     $label = sprintf(__('Modulo #%d', 'meridiana-child'), $modulo_id);
+
                                 }
+
                             ?>
+
                                 <option value="<?php echo esc_attr($modulo_id); ?>" <?php echo $selected; ?>>
+
                                     <?php echo esc_html($label); ?>
+
                                 </option>
+
                             <?php endforeach; ?>
+
                         </select>
+
                     <?php else: ?>
+
                         <p class="description"><?php esc_html_e('Non ci sono moduli disponibili da associare.', 'meridiana-child'); ?></p>
+
                     <?php endif; ?>
+
                 </div>
+
             </div>
+
+
 
             <div class="acf-field acf-field-true-false">
+
                 <div class="acf-label">
+
                     <label for="ats_flag"><?php esc_html_e('Pianificazione ATS', 'meridiana-child'); ?></label>
+
                     <p class="description"><?php esc_html_e('Flagga se questo protocollo è relativo alla pianificazione ATS', 'meridiana-child'); ?></p>
+
                 </div>
+
                 <div class="acf-input">
-                    <div class="media-switch">
+
+                    <div class="checkbox-field">
+
                         <input type="hidden" name="acf[field_pianificazione_ats]" value="0" />
-                        <input
-                            type="checkbox"
-                            id="ats_flag"
-                            name="acf[field_pianificazione_ats]"
-                            value="1"
-                            class="acf-switch"
-                            <?php checked($ats_value, 1); ?>
-                        />
-                        <span class="ats-toggle-label" data-ats-label>
-                            <?php echo $ats_value ? 'SÌ, pianificazione ATS' : 'NO, documento standard'; ?>
-                        </span>
+
+                        <label class="checkbox-inline">
+
+                            <input
+
+                                type="checkbox"
+
+                                id="ats_flag"
+
+                                name="acf[field_pianificazione_ats]"
+
+                                value="1"
+
+                                <?php checked($ats_value, 1); ?>
+
+                            />
+
+                            <span data-ats-label><?php echo $ats_value ? esc_html__('SÌ, pianificazione ATS', 'meridiana-child') : esc_html__('NO, documento standard', 'meridiana-child'); ?></span>
+
+                        </label>
+
                     </div>
+
                 </div>
+
             </div>
+
         <?php endif; ?>
 
-        <?php if ($is_modulo): ?>
-            <div class="acf-field acf-field-image">
-                <div class="acf-label">
-                    <label><?php esc_html_e('Immagine in evidenza', 'meridiana-child'); ?></label>
-                    <p class="description"><?php esc_html_e('Opzionale. Mostrata nelle anteprime dei moduli.', 'meridiana-child'); ?></p>
-                </div>
-                <div class="acf-input">
-                    <div
-                        class="media-field"
-                        data-media-field
-                        data-media-type="image"
-                        data-media-placeholder="<?php echo esc_attr($featured_placeholder); ?>"
-                    >
-                        <input type="hidden" name="featured_image_id" value="<?php echo esc_attr($featured_image_id); ?>" />
-                        <button type="button" class="button media-picker"><?php esc_html_e('Seleziona immagine', 'meridiana-child'); ?></button>
-                        <button type="button" class="button button-secondary media-clear" <?php echo $featured_image_id ? '' : 'hidden'; ?>><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
-                        <span class="media-file-name" data-media-file-name><?php echo esc_html($featured_image_info['name'] ?: $featured_placeholder); ?></span>
-                        <div class="media-preview" data-media-preview>
-                            <?php if (!empty($featured_image_info['thumbnail'])): ?>
-                                <img src="<?php echo esc_url($featured_image_info['thumbnail']); ?>" alt="" />
-                            <?php endif; ?>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        <?php endif; ?>
     </div>
+
     <?php
+
 }
-// ============================================
-// RENDER DOCUMENTO TAXONOMY FIELDS
-// ============================================
 
-function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 0) {
-    $taxonomies = [
-        'unita-offerta' => [
-            'label' => 'Unità di Offerta',
-            'description' => 'Seleziona una o più unità di offerta pertinenti.',
-            'multiple' => true,
-        ],
-        'profilo-professionale' => [
-            'label' => 'Profilo Professionale',
-            'description' => 'Indica i profili coinvolti.',
-            'multiple' => true,
-        ],
-    ];
 
-    if ($post_type === 'modulo') {
-        $taxonomies['area-competenza'] = [
-            'label' => 'Aree di Competenza',
-            'description' => 'Classifica il modulo per area tematica.',
-            'multiple' => true,
-        ];
-    }
 
-    echo '<div class="acf-form-taxonomies">';
 
-    foreach ($taxonomies as $taxonomy => $config) {
-        $terms = get_terms([
-            'taxonomy' => $taxonomy,
-            'hide_empty' => false,
-            'orderby' => 'name',
-            'order' => 'ASC',
-        ]);
-
-        if (is_wp_error($terms) || empty($terms)) {
-            continue;
-        }
-
-        $selected = [];
-        if ($post_id) {
-            $selected = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
-        }
-
-        $field_name_base = str_replace('-', '_', $taxonomy);
-        $field_name = 'tax_' . $field_name_base . ($config['multiple'] ? '[]' : '');
-        $multiple_attr = $config['multiple'] ? ' multiple="multiple"' : '';
-
-        ?>
-        <div class="acf-field acf-field-select acf-field-taxonomy">
-            <div class="acf-label">
-                <label><?php echo esc_html($config['label']); ?></label>
-                <?php if (!empty($config['description'])): ?>
-                    <p class="description"><?php echo esc_html($config['description']); ?></p>
-                <?php endif; ?>
-            </div>
-            <div class="acf-input">
-                <select name="<?php echo esc_attr($field_name); ?>" <?php echo $multiple_attr; ?>>
-                    <option value="">-- Seleziona --</option>
-                    <?php foreach ($terms as $term): 
-                        $is_selected = in_array($term->term_id, $selected, true) ? 'selected' : '';
-                    ?>
-                        <option value="<?php echo esc_attr($term->term_id); ?>" <?php echo $is_selected; ?>>
-                            <?php echo esc_html($term->name); ?>
-                        </option>
-                    <?php endforeach; ?>
-                </select>
-            </div>
-        </div>
-        <?php
-    }
-
-    echo '</div>';
-}
 
 // ============================================
 // RENDER USER FORM
@@ -626,61 +679,273 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
 }
 
 
+
+
+function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 0) {
+
+    $taxonomies = [
+
+        'unita-offerta' => [
+
+            'label' => __('Unità di Offerta', 'meridiana-child'),
+
+            'description' => __('Seleziona una o più unità di offerta pertinenti.', 'meridiana-child'),
+
+            'multiple' => true,
+
+        ],
+
+        'profilo-professionale' => [
+
+            'label' => __('Profilo Professionale', 'meridiana-child'),
+
+            'description' => __('Indica i profili coinvolti.', 'meridiana-child'),
+
+            'multiple' => true,
+
+        ],
+
+    ];
+
+
+
+    if ($post_type === 'modulo') {
+
+        $taxonomies['area-competenza'] = [
+
+            'label' => __('Aree di Competenza', 'meridiana-child'),
+
+            'description' => __('Classifica il modulo per area tematica.', 'meridiana-child'),
+
+            'multiple' => true,
+
+        ];
+
+    }
+
+
+
+    echo '<div class="acf-form-taxonomies">';
+
+
+
+    foreach ($taxonomies as $taxonomy => $config) {
+
+        $terms = get_terms([
+
+            'taxonomy' => $taxonomy,
+
+            'hide_empty' => false,
+
+            'orderby' => 'name',
+
+            'order' => 'ASC',
+
+        ]);
+
+
+
+        if (is_wp_error($terms) || empty($terms)) {
+
+            continue;
+
+        }
+
+
+
+        $selected = [];
+
+        if ($post_id) {
+
+            $selected = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
+
+        }
+
+
+
+        $field_name_base = str_replace('-', '_', $taxonomy);
+
+        $field_name = 'tax_' . $field_name_base . ($config['multiple'] ? '[]' : '');
+
+        $multiple_attr = $config['multiple'] ? ' multiple="multiple"' : '';
+
+        $select_attributes = $multiple_attr;
+
+
+
+        if ($config['multiple']) {
+
+            $options_count = count($terms);
+
+            $select_size = max(5, min(10, $options_count));
+
+            $select_attributes .= ' size="' . esc_attr($select_size) . '"';
+
+        }
+
+
+
+        ?>
+
+        <div class="acf-field acf-field-select acf-field-taxonomy">
+
+            <div class="acf-label">
+
+                <label><?php echo esc_html($config['label']); ?></label>
+
+                <?php if (!empty($config['description'])): ?>
+
+                    <p class="description"><?php echo esc_html($config['description']); ?></p>
+
+                <?php endif; ?>
+
+            </div>
+
+            <div class="acf-input">
+
+                <select class="taxonomy-select" name="<?php echo esc_attr($field_name); ?>" <?php echo $select_attributes; ?>>
+
+                    <option value="">-- Seleziona --</option>
+
+                    <?php foreach ($terms as $term):
+
+                        $is_selected = in_array($term->term_id, $selected, true) ? 'selected' : '';
+
+                    ?>
+
+                        <option value="<?php echo esc_attr($term->term_id); ?>" <?php echo $is_selected; ?>>
+
+                            <?php echo esc_html($term->name); ?>
+
+                        </option>
+
+                    <?php endforeach; ?>
+
+                </select>
+
+            </div>
+
+        </div>
+
+        <?php
+
+    }
+
+
+
+    echo '</div>';
+
+}
+
+
+
+
+
+
 // ============================================
 // SAVE DOCUMENTO FORM
 // ============================================
 
+
+
 function meridiana_ajax_save_documento() {
+
     $cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : 'protocollo';
+
     if (!in_array($cpt, ['protocollo', 'modulo'])) {
+
         $cpt = 'protocollo';
+
     }
 
+
+
     $title = isset($_POST['post_title']) ? sanitize_text_field($_POST['post_title']) : '';
+
     if (empty($title)) {
+
         wp_send_json_error(['message' => 'Titolo obbligatorio'], 400);
+
     }
+
+
 
     $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 
+
+
     if ($post_id === 0) {
+
         $post_data = [
-            'post_title' => $title,
-            'post_type' => $cpt,
-            'post_status' => 'publish',
+
+            'post_title'   => $title,
+
+            'post_type'    => $cpt,
+
+            'post_status'  => 'publish',
+
             'post_content' => '',
+
         ];
+
         $post_id = wp_insert_post($post_data);
+
         if (is_wp_error($post_id)) {
+
             wp_send_json_error(['message' => 'Errore creazione documento'], 500);
+
         }
+
     } else {
+
         wp_update_post([
-            'ID' => $post_id,
+
+            'ID'         => $post_id,
+
             'post_title' => $title,
+
         ]);
+
     }
 
-    // Save ACF Fields (file upload)
+
+
     meridiana_save_documento_acf_fields($post_id, $cpt);
 
-    // Save taxonomies
     meridiana_save_documento_taxonomies($post_id, $cpt);
 
-    if ($cpt === 'modulo') {
-        $thumbnail_id = isset($_POST['featured_image_id']) ? intval($_POST['featured_image_id']) : 0;
+
+
+    if ($cpt === 'modulo' && array_key_exists('featured_image_id', $_POST)) {
+
+        $thumbnail_id = intval($_POST['featured_image_id']);
+
         if ($thumbnail_id > 0) {
+
             set_post_thumbnail($post_id, $thumbnail_id);
+
         } else {
+
             delete_post_thumbnail($post_id);
+
         }
+
     }
 
+
+
     wp_send_json_success([
+
         'message' => 'Documento salvato con successo',
+
         'post_id' => $post_id,
+
     ]);
+
 }
+
+
+
 
 // ============================================
 // SAVE DOCUMENTO ACF FIELDS (File Upload + Others)
