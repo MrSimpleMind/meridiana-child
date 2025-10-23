@@ -3,7 +3,10 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
 ?>
 <div class="tab-header">
     <h2>Documentazione</h2>
-    <button class="btn btn-primary" @click="openDocumentoChoice()"><i data-lucide="plus"></i> Nuovo Documento</button>
+    <div style="display: flex; gap: 12px;">
+        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'modulo')" style="flex: 1;"><i data-lucide="plus"></i> Nuovo Modulo</button>
+        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'protocollo')" style="flex: 1;"><i data-lucide="plus"></i> Nuovo Protocollo</button>
+    </div>
 </div>
 <?php if ($documenti_query->have_posts()): ?>
 <div class="tab-table-wrapper">

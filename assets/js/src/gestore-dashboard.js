@@ -36,30 +36,48 @@ document.addEventListener('alpine:init', () => {
             this.isLoading = true;
             this.errorMessage = '';
             this.modalContent = '';
-            
-            // Per documenti, usa il CPT selezionato
-            if (postType === 'documenti' && !cpt) {
-                cpt = this.selectedCPT || 'protocollo';
+
+            let targetCPT = cpt;
+
+            if (postType === 'documenti') {
+                targetCPT = targetCPT || this.selectedCPT || 'protocollo';
+                this.selectedCPT = targetCPT;
             }
-            
+
+            this.modalOpen = true;
+
             try {
                 const formData = new FormData();
                 formData.append('action', 'gestore_load_form');
                 formData.append('post_type', postType);
                 formData.append('action_type', action);
                 formData.append('post_id', postId || 0);
-                formData.append('cpt', cpt || 'protocollo');
+                if (targetCPT) {
+                    formData.append('cpt', targetCPT);
+                }
                 formData.append('nonce', meridiana.nonce);
-                
+
                 const response = await fetch(meridiana.ajaxurl, {
                     method: 'POST',
                     body: formData,
                 });
-                
+
                 const data = await response.json();
                 if (data.success) {
                     this.modalContent = data.data.form_html;
+                    if (postType === 'documenti' && data.data?.document_cpt) {
+                        this.selectedCPT = data.data.document_cpt;
+                    }
                     this.modalStep = 'form';
+
+                    this.$nextTick(() => {
+                        if (window.acf && this.$refs.modalContent) {
+                            window.acf.doAction('append', this.$refs.modalContent);
+                        }
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    });
                 } else {
                     this.errorMessage = data.data?.message || 'Errore caricamento form';
                     console.error('Form load error:', data);
@@ -85,10 +103,10 @@ document.addEventListener('alpine:init', () => {
         async submitForm() {
             this.isLoading = true;
             this.errorMessage = '';
-            
+
             try {
-                // Cerca il form dentro modalContent
-                const formElement = document.querySelector('form[data-gestore-form]');
+                const container = this.$refs.modalContent || document;
+                const formElement = container.querySelector('form[data-gestore-form]');
                 if (!formElement) {
                     this.errorMessage = 'Form non trovato';
                     this.isLoading = false;
@@ -96,22 +114,24 @@ document.addEventListener('alpine:init', () => {
                 }
 
                 const formData = new FormData(formElement);
-                formData.append('action', 'gestore_save_form');
-                formData.append('post_type', this.selectedPostType);
-                formData.append('cpt', this.selectedCPT || 'protocollo');
-                formData.append('post_id', this.selectedPostId || 0);
-                formData.append('nonce', meridiana.nonce);
-                
+                formData.set('action', 'gestore_save_form');
+                formData.set('post_type', this.selectedPostType);
+                const targetCPT = this.selectedPostType === 'documenti' ? (this.selectedCPT || 'protocollo') : null;
+                if (targetCPT) {
+                    formData.set('cpt', targetCPT);
+                }
+                formData.set('post_id', this.selectedPostId || 0);
+                formData.set('nonce', meridiana.nonce);
+
                 const response = await fetch(meridiana.ajaxurl, {
                     method: 'POST',
                     body: formData,
                 });
-                
+
                 const result = await response.json();
                 if (result.success) {
                     this.successMessage = result.data?.message || 'Salvato con successo';
                     this.closeModal();
-                    // Ricarica tabella dopo 1 secondo
                     setTimeout(() => { location.reload(); }, 1000);
                 } else {
                     this.errorMessage = result.data?.message || 'Errore durante il salvataggio';

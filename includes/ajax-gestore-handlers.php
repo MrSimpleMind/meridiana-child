@@ -39,9 +39,13 @@ function meridiana_ajax_load_form() {
 
     // Render form
     $form_html = '';
-    
+    $document_cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : '';
+
     if ($post_type === 'documenti') {
-        $form_html = meridiana_render_documento_form($action_type, $post_id > 0 ? $post_id : null);
+        if (!in_array($document_cpt, ['protocollo', 'modulo'], true)) {
+            $document_cpt = 'protocollo';
+        }
+        $form_html = meridiana_render_documento_form($action_type, $post_id > 0 ? $post_id : null, $document_cpt);
     } elseif ($post_type === 'utenti') {
         $form_html = meridiana_render_user_form($action_type, $post_id > 0 ? $post_id : null);
     }
@@ -54,6 +58,7 @@ function meridiana_ajax_load_form() {
         'form_html' => $form_html,
         'post_type' => $post_type,
         'action_type' => $action_type,
+        'document_cpt' => $document_cpt,
     ]);
 }
 
@@ -235,3 +240,4 @@ function meridiana_ajax_reset_password() {
         'user_id' => $user_id,
     ]);
 }
+

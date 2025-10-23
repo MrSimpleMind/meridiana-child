@@ -1,10 +1,11 @@
-# 📝 Gestione Frontend e ACF Forms
+﻿# 📝 Gestione Frontend e ACF Forms
 
 > **Contesto**: Form frontend per inserimento/modifica contenuti, file upload system, gestione Gestore Piattaforma
 
 **Leggi anche**: 
 - `02_Struttura_Dati_CPT.md` per fields disponibili
 - `03_Sistema_Utenti_Roles.md` per permissions
+-  https://www.advancedcustomfields.com/resources/acf_form/ per documentazione su acf form
 
 ---
 
@@ -898,3 +899,4 @@ Quando lavori con form frontend:
 ---
 
 **📝 Sistema form completo, sicuro e user-friendly.**
+

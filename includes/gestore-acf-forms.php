@@ -36,8 +36,13 @@ function meridiana_ajax_fetch_form() {
     // Render form based on type
     $form_html = '';
     
+    $document_cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : '';
+    if (!in_array($document_cpt, ['protocollo', 'modulo'], true)) {
+        $document_cpt = 'protocollo';
+    }
+
     if ($type === 'documenti') {
-        $form_html = meridiana_render_documento_form($action, $post_id);
+        $form_html = meridiana_render_documento_form($action, $post_id, $document_cpt);
     } elseif ($type === 'utenti') {
         $form_html = meridiana_render_user_form($action, $user_id);
     }
@@ -57,27 +62,24 @@ function meridiana_ajax_fetch_form() {
 // RENDER DOCUMENTO FORM (Protocollo/Modulo)
 // ============================================
 
-function meridiana_render_documento_form($action = 'new', $post_id = null) {
+function meridiana_render_documento_form($action = 'new', $post_id = null, $requested_post_type = 'protocollo') {
     if (!function_exists('acf_form')) {
         return null;
     }
 
-    // Determine post type from context
-    // Se edit, leggi il type dal post esistente
-    // Se new, default a 'protocollo' (l'utente può cambiarla nel form)
-    $post_type = 'protocollo';
-    
+    $allowed_types = ['protocollo', 'modulo'];
+    $post_type = in_array($requested_post_type, $allowed_types, true) ? $requested_post_type : 'protocollo';
+
     if ($action === 'edit' && $post_id) {
-        $post_type = get_post_type($post_id);
-        if (!in_array($post_type, ['protocollo', 'modulo'])) {
+        $detected_type = get_post_type($post_id);
+        if (!in_array($detected_type, $allowed_types, true)) {
             return null;
         }
+        $post_type = $detected_type;
     }
 
-    // Determine field group based on post type
     $field_group = $post_type === 'protocollo' ? 'group_protocollo' : 'group_modulo';
 
-    // Build ACF form args
     $form_args = [
         'id' => 'gestore_form_' . $post_type,
         'post_id' => $action === 'new' ? 'new_post' : $post_id,
@@ -88,9 +90,20 @@ function meridiana_render_documento_form($action = 'new', $post_id = null) {
         'submit_value' => $action === 'new' ? 'Pubblica Documento' : 'Aggiorna Documento',
         'updated_message' => $action === 'new' ? 'Documento creato con successo' : 'Documento aggiornato con successo',
         'return' => add_query_arg(['action' => 'success'], $_SERVER['REQUEST_URI']),
+        'form_attributes' => [
+            'data-gestore-form' => '1',
+            'data-document-type' => $post_type,
+            'data-form-mode' => $action,
+        ],
+        'html_before_fields' => '<input type="hidden" name="gestore_document_cpt" value="' . esc_attr($post_type) . '">',
     ];
 
-    // Per new post, specifica il post type
+    $taxonomy_fields = meridiana_render_documento_taxonomy_fields_html($post_type, $post_id);
+
+    if ($taxonomy_fields) {
+        $form_args['html_after_fields'] = $taxonomy_fields;
+    }
+
     if ($action === 'new') {
         $form_args['new_post'] = [
             'post_type' => $post_type,
@@ -98,12 +111,85 @@ function meridiana_render_documento_form($action = 'new', $post_id = null) {
         ];
     }
 
-    // Render form
     ob_start();
     acf_form($form_args);
     $form_html = ob_get_clean();
 
     return $form_html;
+}
+
+function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = null) {
+    $taxonomies = [
+        'unita-offerta' => [
+            'label' => 'Unit� di Offerta',
+            'description' => 'Seleziona una o pi� unit� di offerta pertinenti.',
+            'multiple' => true,
+        ],
+        'profilo-professionale' => [
+            'label' => 'Profilo Professionale',
+            'description' => 'Indica i profili coinvolti.',
+            'multiple' => true,
+        ],
+    ];
+
+    if ($post_type === 'modulo') {
+        $taxonomies['area-competenza'] = [
+            'label' => 'Aree di Competenza',
+            'description' => 'Classifica il modulo per area tematica.',
+            'multiple' => true,
+        ];
+    }
+
+    $output = '';
+
+    foreach ($taxonomies as $taxonomy => $config) {
+        $terms = get_terms([
+            'taxonomy' => $taxonomy,
+            'hide_empty' => false,
+            'orderby' => 'name',
+            'order' => 'ASC',
+        ]);
+
+        if (is_wp_error($terms) || empty($terms)) {
+            $output .= '<div class="acf-field acf-field-taxonomy" data-taxonomy="' . esc_attr($taxonomy) . '"><div class="acf-label"><label>' . esc_html($config['label']) . '</label></div><div class="acf-input"><p class="acf-no-terms">Nessun termine disponibile.</p></div></div>';
+            continue;
+        }
+
+        $selected = [];
+        if ($post_id) {
+            $selected = wp_get_post_terms($post_id, $taxonomy, ['fields' => 'ids']);
+        }
+
+        $field_name = 'tax_' . $taxonomy . ($config['multiple'] ? '[]' : '');
+        $multiple_attr = $config['multiple'] ? ' multiple' : '';
+        $size_attr = $config['multiple'] ? ' size="5"' : '';
+
+        $field  = '<div class="acf-field acf-field-select acf-field-taxonomy" data-taxonomy="' . esc_attr($taxonomy) . '">';
+        $field .= '<div class="acf-label"><label>' . esc_html($config['label']) . '</label>';
+        if (!empty($config['description'])) {
+            $field .= '<p class="description">' . esc_html($config['description']) . '</p>';
+        }
+        $field .= '</div>';
+        $field .= '<div class="acf-input">';
+        $field .= '<select name="' . esc_attr($field_name) . '" class="acf-taxonomy-select"' . $multiple_attr . $size_attr . '>';
+
+        foreach ($terms as $term) {
+            $is_selected = in_array($term->term_id, $selected, true) ? ' selected' : '';
+            $field .= '<option value="' . esc_attr($term->term_id) . '"' . $is_selected . '>' . esc_html($term->name) . '</option>';
+        }
+
+        $field .= '</select>';
+        $field .= '</div>';
+        $field .= '</div>';
+
+        $output .= $field;
+    }
+
+    if (empty($output)) {
+        return '';
+    }
+
+    return '<div class="acf-form-taxonomies">' . $output . '</div>';
 }
 
 // ============================================
@@ -354,7 +440,7 @@ function meridiana_ajax_save_user() {
 
     // Security: Capability check
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => 'Solo admin può gestire utenti'], 403);
+        wp_send_json_error(['message' => 'Solo admin puÃ² gestire utenti'], 403);
     }
 
     // Validate: user_email
@@ -433,3 +519,8 @@ function meridiana_ajax_save_user() {
         'redirect' => add_query_arg(['action' => 'success'], $_SERVER['REQUEST_URI']),
     ]);
 }
+
+
+
+
+

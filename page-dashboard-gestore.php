@@ -9,6 +9,10 @@ if (!current_user_can('manage_platform') && !current_user_can('manage_options'))
     exit;
 }
 
+if (function_exists('acf_form_head')) {
+    acf_form_head();
+}
+
 get_header();
 ?>
 
@@ -107,7 +111,7 @@ get_header();
                             <i data-lucide="x"></i>
                         </button>
                     </div>
-                    <div class="dashboard-modal__content" x-html="modalContent"></div>
+                    <div class="dashboard-modal__content" x-ref="modalContent" x-html="modalContent"></div>
                     <div class="dashboard-modal__footer" x-show="modalContent">
                         <button type="button" class="btn btn-secondary" @click="closeModal()" :disabled="isLoading">
                             Annulla
@@ -125,3 +129,5 @@ get_header();
 </div>
 
 <?php get_footer(); ?>
+
+
