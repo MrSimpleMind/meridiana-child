@@ -1,4 +1,4 @@
-/**
+﻿/**
  * Alpine.js Component: gestoreDashboard
  * FIX: Aggiunto Step 1 scelta CPT, form rendering corretto, media picker fix
  */
@@ -199,13 +199,30 @@ document.addEventListener('alpine:init', () => {
             });
 
             this.initRichTextEditors(target);
+            this.initRepeaterControls(target);
+
+            const convenzioneToggle = target.querySelector('#convenzione_attiva');
+            if (convenzioneToggle) {
+                const labelElement = convenzioneToggle.closest('label');
+                const labelSpan = labelElement ? labelElement.querySelector('span') : null;
+                const updateConvenzioneLabel = () => {
+                    if (labelSpan) {
+                        labelSpan.textContent = convenzioneToggle.checked ? 'Attiva' : 'Scaduta';
+                    }
+                };
+                updateConvenzioneLabel();
+                if (!convenzioneToggle.dataset.bound) {
+                    convenzioneToggle.dataset.bound = '1';
+                    convenzioneToggle.addEventListener('change', updateConvenzioneLabel);
+                }
+            }
 
             const atsToggle = target.querySelector('#ats_flag');
             if (atsToggle) {
                 const label = target.querySelector('[data-ats-label]');
                 const updateLabel = () => {
                     if (label) {
-                        label.textContent = atsToggle.checked ? 'SÌ, pianificazione ATS' : 'NO, documento standard';
+                        label.textContent = atsToggle.checked ? 'SÃŒ, pianificazione ATS' : 'NO, documento standard';
                     }
                 };
 
@@ -274,6 +291,120 @@ document.addEventListener('alpine:init', () => {
             });
 
             this.activeEditors = [];
+        },
+
+        initRepeaterControls(target) {
+            if (!target) {
+                return;
+            }
+
+            const wrappers = target.querySelectorAll('[data-repeater]');
+            wrappers.forEach((wrapper) => {
+                const rowsContainer = wrapper.querySelector('[data-repeater-rows]');
+                if (!rowsContainer) {
+                    return;
+                }
+
+                const repeaterName = wrapper.getAttribute('data-repeater') || '';
+                const templateSelector = repeaterName ? `template[data-repeater-template="${repeaterName}"]` : 'template[data-repeater-template]';
+                let templateNode = wrapper.querySelector(templateSelector);
+                if (!templateNode) {
+                    templateNode = wrapper.querySelector('template');
+                }
+
+                const addSelector = repeaterName ? `[data-repeater-add="${repeaterName}"]` : '[data-repeater-add]';
+                const addButton = wrapper.querySelector(addSelector);
+
+                const reindexRows = () => {
+                    const rows = rowsContainer.querySelectorAll('[data-repeater-row]');
+                    rows.forEach((row, index) => {
+                        row.querySelectorAll('[name]').forEach((input) => {
+                            const currentName = input.getAttribute('name');
+                            if (!currentName) {
+                                return;
+                            }
+                            input.setAttribute('name', currentName.replace(/\[[0-9]+\]/, `[${index}]`));
+                        });
+                    });
+                };
+
+                const initialiseRow = (row) => {
+                    if (!row || row.dataset.repeaterInitialised === '1') {
+                        return;
+                    }
+                    row.dataset.repeaterInitialised = '1';
+                    this.initDocumentFormEnhancements(row);
+                    const risorsaRow = row.querySelector('[data-risorsa-row]');
+                    if (risorsaRow) {
+                        this.initResourceRow(risorsaRow);
+                    }
+                };
+
+                if (addButton && !addButton.dataset.bound) {
+                    addButton.dataset.bound = '1';
+                    addButton.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        if (!templateNode) {
+                            return;
+                        }
+                        const nextIndex = rowsContainer.querySelectorAll('[data-repeater-row]').length;
+                        const markup = templateNode.innerHTML.replace(/__index__/g, nextIndex);
+                        const fragmentWrapper = document.createElement('div');
+                        fragmentWrapper.innerHTML = markup.trim();
+                        const newRow = fragmentWrapper.firstElementChild;
+                        if (!newRow) {
+                            return;
+                        }
+                        rowsContainer.appendChild(newRow);
+                        initialiseRow(newRow);
+                        reindexRows();
+                        if (window.lucide) {
+                            window.lucide.createIcons();
+                        }
+                    });
+                }
+
+                if (!rowsContainer.dataset.repeaterBound) {
+                    rowsContainer.dataset.repeaterBound = '1';
+                    rowsContainer.addEventListener('click', (event) => {
+                        const trigger = event.target.closest('[data-repeater-remove]');
+                        if (!trigger) {
+                            return;
+                        }
+                        event.preventDefault();
+                        const row = trigger.closest('[data-repeater-row]');
+                        if (row) {
+                            row.remove();
+                            reindexRows();
+                        }
+                    });
+                }
+
+                rowsContainer.querySelectorAll('[data-repeater-row]').forEach((row) => initialiseRow(row));
+                reindexRows();
+            });
+        },
+
+        initResourceRow(row) {
+            if (!row || row.dataset.risorsaBound === '1') {
+                return;
+            }
+            const typeSelect = row.querySelector('[data-risorsa-type]');
+            if (!typeSelect) {
+                return;
+            }
+            const toggleFields = () => {
+                const current = typeSelect.value || 'link';
+                row.querySelectorAll('[data-risorsa-field]').forEach((field) => {
+                    if (!field) {
+                        return;
+                    }
+                    field.hidden = field.getAttribute('data-risorsa-field') !== current;
+                });
+            };
+            toggleFields();
+            typeSelect.addEventListener('change', toggleFields);
+            row.dataset.risorsaBound = '1';
         },
 
         syncEditors() {
@@ -504,6 +635,54 @@ this.$nextTick(() => {
             }
         },
 
+        async deleteConvenzione(postId) {
+            if (!confirm('Sei sicuro di voler eliminare questa convenzione?')) return;
+            this.isLoading = true;
+            try {
+                const response = await fetch(meridiana.ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'gestore_delete_convenzione', nonce: meridiana.nonce, post_id: postId }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.successMessage = data.data?.message || 'Convenzione eliminata';
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    this.errorMessage = data.data?.message || 'Errore';
+                }
+            } catch (error) {
+                console.error('Delete convenzione error:', error);
+                this.errorMessage = 'Errore di rete';
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async deleteSalute(postId) {
+            if (!confirm('Sei sicuro di voler eliminare questo contenuto?')) return;
+            this.isLoading = true;
+            try {
+                const response = await fetch(meridiana.ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'gestore_delete_salute', nonce: meridiana.nonce, post_id: postId }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.successMessage = data.data?.message || 'Contenuto eliminato';
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    this.errorMessage = data.data?.message || 'Errore';
+                }
+            } catch (error) {
+                console.error('Delete salute error:', error);
+                this.errorMessage = 'Errore di rete';
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
         async deleteUser(userId) {
             if (!confirm('Sei sicuro di voler eliminare questo utente?')) return;
             this.isLoading = true;
@@ -561,7 +740,7 @@ this.$nextTick(() => {
                 'utenti': 'Nuovo Utente'
             };
             const type = typeMap[this.selectedPostType] || 'Elemento';
-            return `${this.selectedPostId ? 'Modifica' : type.split(' ')[0]} ${type.replace(/^Nuovo\s|^Modifica\s/, '')}`;
+            return `${this.selectedPostId ? 'Modifica' : type.split(' ')[0]} ${type.replace(/^Nuov[oa]\s|^Modifica\s/, '')}`;
         },
 
         showNotification(message, type = 'success') {
@@ -575,3 +754,5 @@ this.$nextTick(() => {
         },
     }));
 });
+
+

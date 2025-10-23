@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 /**
  * Gestore ACF Forms - Dashboard Gestore
  * Rendering forms + handler di salvataggio
@@ -325,7 +325,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                     <label for="moduli_allegati"><?php esc_html_e('Moduli Allegati', 'meridiana-child'); ?></label>
 
-                    <p class="description"><?php esc_html_e('Associa uno o più moduli a questo protocollo', 'meridiana-child'); ?></p>
+                    <p class="description"><?php esc_html_e('Associa uno o piÃ¹ moduli a questo protocollo', 'meridiana-child'); ?></p>
 
                 </div>
 
@@ -385,7 +385,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                     <label for="ats_flag"><?php esc_html_e('Pianificazione ATS', 'meridiana-child'); ?></label>
 
-                    <p class="description"><?php esc_html_e('Flagga se questo protocollo è relativo alla pianificazione ATS', 'meridiana-child'); ?></p>
+                    <p class="description"><?php esc_html_e('Flagga se questo protocollo Ã¨ relativo alla pianificazione ATS', 'meridiana-child'); ?></p>
 
                 </div>
 
@@ -411,7 +411,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                             />
 
-                            <span data-ats-label><?php echo $ats_value ? esc_html__('SÌ, pianificazione ATS', 'meridiana-child') : esc_html__('NO, documento standard', 'meridiana-child'); ?></span>
+                            <span data-ats-label><?php echo $ats_value ? esc_html__('SÃŒ, pianificazione ATS', 'meridiana-child') : esc_html__('NO, documento standard', 'meridiana-child'); ?></span>
 
                         </label>
 
@@ -953,7 +953,7 @@ function meridiana_render_comunicazione_form($action = 'new', $post_id = null) {
 
                     <label for="post_categories"><?php esc_html_e('Categorie', 'meridiana-child'); ?></label>
 
-                    <p class="description"><?php esc_html_e('Seleziona una o pi� categorie per la comunicazione', 'meridiana-child'); ?></p>
+                    <p class="description"><?php esc_html_e('Seleziona una o più categorie per la comunicazione', 'meridiana-child'); ?></p>
 
                 </div>
 
@@ -1019,15 +1019,571 @@ function meridiana_render_comunicazione_form($action = 'new', $post_id = null) {
 
 
 
+
+function meridiana_render_category_multiselect($selected_ids = [], $label = '', $description = '') {
+    $categories = get_terms([
+        'taxonomy'   => 'category',
+        'hide_empty' => false,
+        'orderby'    => 'name',
+        'order'      => 'ASC',
+    ]);
+
+    if (!is_array($selected_ids)) {
+        $selected_ids = [];
+    }
+    $selected_ids = array_map('intval', $selected_ids);
+
+    $category_count = (!is_wp_error($categories) && is_array($categories)) ? count($categories) : 0;
+    $select_size = max(5, min(10, $category_count));
+
+    $label_text = $label !== '' ? $label : __('Categorie', 'meridiana-child');
+    $description_text = $description !== '' ? $description : __('Seleziona una o più categorie pertinenti', 'meridiana-child');
+
+    ob_start();
+    ?>
+    <div class="acf-form-taxonomies">
+        <div class="acf-field acf-field-select acf-field-taxonomy">
+            <div class="acf-label">
+                <label for="post_categories"><?php echo esc_html($label_text); ?></label>
+                <?php if (!empty($description_text)): ?>
+                    <p class="description"><?php echo esc_html($description_text); ?></p>
+                <?php endif; ?>
+            </div>
+            <div class="acf-input">
+                <?php if (!empty($categories) && !is_wp_error($categories)): ?>
+                    <select id="post_categories" class="taxonomy-select" name="post_categories[]" multiple size="<?php echo esc_attr($select_size); ?>">
+                        <?php foreach ($categories as $category): ?>
+                            <option value="<?php echo esc_attr($category->term_id); ?>" <?php selected(in_array($category->term_id, $selected_ids, true)); ?>>
+                                <?php echo esc_html($category->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else: ?>
+                    <p class="description"><?php esc_html_e('Nessuna categoria disponibile. Creane una dal backend di WordPress.', 'meridiana-child'); ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+    </div>
+    <?php
+    return ob_get_clean();
+}
+
+
+function meridiana_render_convenzione_form($action = 'new', $post_id = null) {
+    $post_data = null;
+
+    if ($action === 'edit' && $post_id) {
+        $post_data = get_post($post_id);
+        if (!$post_data || $post_data->post_type !== 'convenzione') {
+            return null;
+        }
+    }
+
+    $title = $post_data ? $post_data->post_title : '';
+    $status = $post_data ? $post_data->post_status : 'draft';
+
+    $allowed_status = [
+        'publish' => __('Pubblicato', 'meridiana-child'),
+        'draft'   => __('Bozza', 'meridiana-child'),
+    ];
+    if (!isset($allowed_status[$status])) {
+        $status = 'draft';
+    }
+
+    $is_active = $post_data ? (bool) get_field('convenzione_attiva', $post_id) : true;
+    $descrizione = $post_data ? (string) get_field('descrizione', $post_id) : '';
+    $contatti = $post_data ? (string) get_field('contatti', $post_id) : '';
+
+    $image_id = $post_data ? intval(get_field('immagine_evidenza', $post_id)) : 0;
+    $image_info = meridiana_get_attachment_info($image_id);
+    $image_placeholder = __('Nessuna immagine selezionata', 'meridiana-child');
+    if (empty($image_info['name'])) {
+        $image_info['name'] = $image_placeholder;
+    }
+
+    $selected_categories = $post_data ? wp_get_post_terms($post_id, 'category', ['fields' => 'ids']) : [];
+    if (!is_array($selected_categories)) {
+        $selected_categories = [];
+    }
+
+    $allegati_rows = [];
+    $existing_attachments = $post_data ? get_field('allegati', $post_id) : [];
+    if (!is_array($existing_attachments)) {
+        $existing_attachments = [];
+    }
+
+    foreach ($existing_attachments as $row) {
+        $file_value = $row['file'] ?? null;
+        $file_id = 0;
+        if (is_array($file_value)) {
+            $file_id = intval($file_value['ID'] ?? ($file_value['id'] ?? 0));
+        } else {
+            $file_id = intval($file_value);
+        }
+        $file_info = meridiana_get_attachment_info($file_id);
+        if (empty($file_info['name'])) {
+            $file_info['name'] = __('Nessun file selezionato', 'meridiana-child');
+        }
+        $allegati_rows[] = [
+            'file_id' => $file_id,
+            'file_info' => $file_info,
+            'description' => isset($row['descrizione']) ? sanitize_text_field($row['descrizione']) : '',
+        ];
+    }
+
+    $descr_editor_id = 'gestore_convenzione_descrizione_' . ($post_id ?: 'new');
+    $descr_editor_settings = [
+        'tinymce'      => true,
+        'quicktags'    => true,
+        'mediaButtons' => true,
+    ];
+    $descr_editor_attr = esc_attr(wp_json_encode($descr_editor_settings));
+
+    $contatti_editor_id = 'gestore_convenzione_contatti_' . ($post_id ?: 'new');
+    $contatti_editor_settings = [
+        'tinymce'      => true,
+        'quicktags'    => true,
+        'mediaButtons' => false,
+    ];
+    $contatti_editor_attr = esc_attr(wp_json_encode($contatti_editor_settings));
+
+    $allegato_placeholder = __('Nessun file selezionato', 'meridiana-child');
+    ob_start();
+    ?>
+    <form data-gestore-form="1" data-form-type="convenzioni" data-form-mode="<?php echo esc_attr($action); ?>" @submit.prevent="submitForm">
+        <div class="acf-form-fields">
+            <div class="acf-field acf-field-text">
+                <div class="acf-label">
+                    <label for="post_title"><?php esc_html_e('Titolo', 'meridiana-child'); ?> <span class="required">*</span></label>
+                </div>
+                <div class="acf-input">
+                    <input type="text" id="post_title" name="post_title" value="<?php echo esc_attr($title); ?>" required />
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-true-false">
+                <div class="acf-label">
+                    <label for="convenzione_attiva"><?php esc_html_e('Convenzione attiva', 'meridiana-child'); ?></label>
+                    <p class="description"><?php esc_html_e('Indica se la convenzione è attualmente attiva o scaduta.', 'meridiana-child'); ?></p>
+                </div>
+                <div class="acf-input checkbox-field">
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="convenzione_attiva" name="convenzione_attiva" value="1" <?php checked($is_active); ?> />
+                        <span><?php echo $is_active ? esc_html__('Attiva', 'meridiana-child') : esc_html__('Scaduta', 'meridiana-child'); ?></span>
+                    </label>
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-wysiwyg">
+                <div class="acf-label">
+                    <label for="<?php echo esc_attr($descr_editor_id); ?>"><?php esc_html_e('Descrizione', 'meridiana-child'); ?> <span class="required">*</span></label>
+                    <p class="description"><?php esc_html_e('Descrizione completa della convenzione.', 'meridiana-child'); ?></p>
+                </div>
+                <div class="acf-input">
+                    <textarea
+                        id="<?php echo esc_attr($descr_editor_id); ?>"
+                        name="convenzione_descrizione"
+                        class="wysiwyg-editor"
+                        data-wysiwyg="1"
+                        data-editor-settings="<?php echo $descr_editor_attr; ?>"
+                        rows="10"
+                    ><?php echo esc_textarea($descrizione); ?></textarea>
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-file">
+                <div class="acf-label">
+                    <label><?php esc_html_e('Immagine in evidenza', 'meridiana-child'); ?></label>
+                    <p class="description"><?php esc_html_e('Immagine principale della convenzione.', 'meridiana-child'); ?></p>
+                </div>
+                <div class="acf-input">
+                    <div
+                        class="media-field"
+                        data-media-field
+                        data-media-type="image"
+                        data-media-placeholder="<?php echo esc_attr($image_placeholder); ?>"
+                    >
+                        <input type="hidden" name="convenzione_featured_id" value="<?php echo esc_attr($image_info['id']); ?>" />
+                        <button type="button" class="button media-picker"><?php esc_html_e('Seleziona immagine', 'meridiana-child'); ?></button>
+                        <button type="button" class="button button-secondary media-clear" <?php echo $image_info['id'] ? '' : 'hidden'; ?>><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+                        <span class="media-file-name" data-media-file-name><?php echo esc_html($image_info['name']); ?></span>
+                        <div class="media-preview" data-media-preview>
+                            <?php if (!empty($image_info['thumbnail'])): ?>
+                                <img src="<?php echo esc_url($image_info['thumbnail']); ?>" alt="" />
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-wysiwyg">
+                <div class="acf-label">
+                    <label for="<?php echo esc_attr($contatti_editor_id); ?>"><?php esc_html_e('Contatti', 'meridiana-child'); ?></label>
+                    <p class="description"><?php esc_html_e('Informazioni di contatto per la convenzione.', 'meridiana-child'); ?></p>
+                </div>
+                <div class="acf-input">
+                    <textarea
+                        id="<?php echo esc_attr($contatti_editor_id); ?>"
+                        name="convenzione_contatti"
+                        class="wysiwyg-editor"
+                        data-wysiwyg="1"
+                        data-editor-settings="<?php echo $contatti_editor_attr; ?>"
+                        rows="6"
+                    ><?php echo esc_textarea($contatti); ?></textarea>
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-select">
+                <div class="acf-label">
+                    <label for="convenzione_status"><?php esc_html_e('Stato', 'meridiana-child'); ?></label>
+                </div>
+                <div class="acf-input">
+                    <select id="convenzione_status" name="post_status">
+                        <?php foreach ($allowed_status as $status_key => $label): ?>
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($status, $status_key); ?>>
+                                <?php echo esc_html($label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="acf-field acf-field-repeater" data-repeater="allegati">
+            <div class="acf-label">
+                <label><?php esc_html_e('Allegati', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Aggiungi eventuali file allegati alla convenzione.', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="repeater-rows" data-repeater-rows>
+                    <?php foreach ($allegati_rows as $index => $row): ?>
+                        <div class="repeater-row" data-repeater-row>
+                            <div class="repeater-row__body">
+                                <div
+                                    class="media-field"
+                                    data-media-field
+                                    data-media-type="file"
+                                    data-media-placeholder="<?php echo esc_attr($allegato_placeholder); ?>"
+                                >
+                                    <input type="hidden" name="allegati[<?php echo esc_attr($index); ?>][file_id]" value="<?php echo esc_attr($row['file_id']); ?>" />
+                                    <button type="button" class="button media-picker"><?php esc_html_e('Seleziona file', 'meridiana-child'); ?></button>
+                                    <button type="button" class="button button-secondary media-clear" <?php echo $row['file_id'] ? '' : 'hidden'; ?>><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+                                    <span class="media-file-name" data-media-file-name><?php echo esc_html($row['file_info']['name']); ?></span>
+                                </div>
+                                <div class="acf-field acf-field-text">
+                                    <div class="acf-label">
+                                        <label><?php esc_html_e('Descrizione', 'meridiana-child'); ?></label>
+                                    </div>
+                                    <div class="acf-input">
+                                        <input type="text" name="allegati[<?php echo esc_attr($index); ?>][descrizione]" value="<?php echo esc_attr($row['description']); ?>" placeholder="<?php esc_attr_e('Descrivi l\'allegato', 'meridiana-child'); ?>" />
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="repeater-row__footer">
+                                <button type="button" class="button button-secondary" data-repeater-remove><?php esc_html_e('Rimuovi allegato', 'meridiana-child'); ?></button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="button button-secondary" data-repeater-add="allegati"><?php esc_html_e('Aggiungi allegato', 'meridiana-child'); ?></button>
+                <template data-repeater-template="allegati">
+                    <div class="repeater-row" data-repeater-row>
+                        <div class="repeater-row__body">
+                            <div
+                                class="media-field"
+                                data-media-field
+                                data-media-type="file"
+                                data-media-placeholder="<?php echo esc_attr($allegato_placeholder); ?>"
+                            >
+                                <input type="hidden" name="allegati[__index__][file_id]" value="" />
+                                <button type="button" class="button media-picker"><?php esc_html_e('Seleziona file', 'meridiana-child'); ?></button>
+                                <button type="button" class="button button-secondary media-clear" hidden><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+                                <span class="media-file-name" data-media-file-name><?php echo esc_html($allegato_placeholder); ?></span>
+                            </div>
+                            <div class="acf-field acf-field-text">
+                                <div class="acf-label">
+                                    <label><?php esc_html_e('Descrizione', 'meridiana-child'); ?></label>
+                                </div>
+                                <div class="acf-input">
+                                    <input type="text" name="allegati[__index__][descrizione]" value="" placeholder="<?php esc_attr_e('Descrivi l\'allegato', 'meridiana-child'); ?>" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="repeater-row__footer">
+                            <button type="button" class="button button-secondary" data-repeater-remove><?php esc_html_e('Rimuovi allegato', 'meridiana-child'); ?></button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <?php echo meridiana_render_category_multiselect($selected_categories, __('Categorie', 'meridiana-child'), __('Seleziona una o più categorie per la convenzione.', 'meridiana-child')); ?>
+
+        <input type="hidden" name="post_type" value="convenzioni" />
+        <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
+
+        <button type="submit" class="button button-primary">
+            <?php echo $action === 'new' ? __('Pubblica convenzione', 'meridiana-child') : __('Aggiorna convenzione', 'meridiana-child'); ?>
+        </button>
+    </form>
+    <?php
+    return ob_get_clean();
+}
+
+
+function meridiana_render_salute_form($action = 'new', $post_id = null) {
+    $post_data = null;
+
+    if ($action === 'edit' && $post_id) {
+        $post_data = get_post($post_id);
+        if (!$post_data || $post_data->post_type !== 'salute-e-benessere-l') {
+            return null;
+        }
+    }
+
+    $title = $post_data ? $post_data->post_title : '';
+    $status = $post_data ? $post_data->post_status : 'draft';
+
+    $allowed_status = [
+        'publish' => __('Pubblicato', 'meridiana-child'),
+        'draft'   => __('Bozza', 'meridiana-child'),
+    ];
+    if (!isset($allowed_status[$status])) {
+        $status = 'draft';
+    }
+
+    $contenuto = $post_data ? (string) get_field('contenuto', $post_id) : '';
+    $selected_categories = $post_data ? wp_get_post_terms($post_id, 'category', ['fields' => 'ids']) : [];
+    if (!is_array($selected_categories)) {
+        $selected_categories = [];
+    }
+
+    $risorse_rows = [];
+    $existing_risorse = $post_data ? get_field('risorse', $post_id) : [];
+    if (!is_array($existing_risorse)) {
+        $existing_risorse = [];
+    }
+
+    foreach ($existing_risorse as $row) {
+        $file_value = $row['file'] ?? null;
+        $file_id = 0;
+        if (is_array($file_value)) {
+            $file_id = intval($file_value['ID'] ?? ($file_value['id'] ?? 0));
+        } else {
+            $file_id = intval($file_value);
+        }
+        $file_info = meridiana_get_attachment_info($file_id);
+        if (empty($file_info['name'])) {
+            $file_info['name'] = __('Nessun file selezionato', 'meridiana-child');
+        }
+        $risorse_rows[] = [
+            'tipo' => isset($row['tipo']) ? sanitize_text_field($row['tipo']) : 'link',
+            'titolo' => isset($row['titolo']) ? sanitize_text_field($row['titolo']) : '',
+            'url' => isset($row['url']) ? esc_url($row['url']) : '',
+            'file_id' => $file_id,
+            'file_info' => $file_info,
+        ];
+    }
+
+    $contenuto_editor_id = 'gestore_salute_contenuto_' . ($post_id ?: 'new');
+    $contenuto_editor_settings = [
+        'tinymce'      => true,
+        'quicktags'    => true,
+        'mediaButtons' => true,
+    ];
+    $contenuto_editor_attr = esc_attr(wp_json_encode($contenuto_editor_settings));
+
+    $risorsa_placeholder = __('Nessun file selezionato', 'meridiana-child');
+
+    ob_start();
+    ?>
+    <form data-gestore-form="1" data-form-type="salute" data-form-mode="<?php echo esc_attr($action); ?>" @submit.prevent="submitForm">
+        <div class="acf-form-fields">
+            <div class="acf-field acf-field-text">
+                <div class="acf-label">
+                    <label for="post_title"><?php esc_html_e('Titolo', 'meridiana-child'); ?> <span class="required">*</span></label>
+                </div>
+                <div class="acf-input">
+                    <input type="text" id="post_title" name="post_title" value="<?php echo esc_attr($title); ?>" required />
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-wysiwyg">
+                <div class="acf-label">
+                    <label for="<?php echo esc_attr($contenuto_editor_id); ?>"><?php esc_html_e('Contenuto', 'meridiana-child'); ?> <span class="required">*</span></label>
+                    <p class="description"><?php esc_html_e('Contenuto principale dell\'articolo.', 'meridiana-child'); ?></p>
+                </div>
+                <div class="acf-input">
+                    <textarea
+                        id="<?php echo esc_attr($contenuto_editor_id); ?>"
+                        name="salute_contenuto"
+                        class="wysiwyg-editor"
+                        data-wysiwyg="1"
+                        data-editor-settings="<?php echo $contenuto_editor_attr; ?>"
+                        rows="10"
+                    ><?php echo esc_textarea($contenuto); ?></textarea>
+                </div>
+            </div>
+
+            <div class="acf-field acf-field-select">
+                <div class="acf-label">
+                    <label for="salute_status"><?php esc_html_e('Stato', 'meridiana-child'); ?></label>
+                </div>
+                <div class="acf-input">
+                    <select id="salute_status" name="post_status">
+                        <?php foreach ($allowed_status as $status_key => $label): ?>
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($status, $status_key); ?>>
+                                <?php echo esc_html($label); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="acf-field acf-field-repeater" data-repeater="risorse">
+            <div class="acf-label">
+                <label><?php esc_html_e('Risorse correlate', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Aggiungi link o file utili di approfondimento.', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="repeater-rows" data-repeater-rows>
+                    <?php foreach ($risorse_rows as $index => $row): ?>
+                        <div class="repeater-row" data-repeater-row>
+                            <div class="repeater-row__body" data-risorsa-row>
+                                <div class="acf-field acf-field-select">
+                                    <div class="acf-label">
+                                        <label><?php esc_html_e('Tipo risorsa', 'meridiana-child'); ?></label>
+                                    </div>
+                                    <div class="acf-input">
+                                        <select name="risorse[<?php echo esc_attr($index); ?>][tipo]" data-risorsa-type>
+                                            <option value="link" <?php selected($row['tipo'], 'link'); ?>><?php esc_html_e('Link esterno', 'meridiana-child'); ?></option>
+                                            <option value="file" <?php selected($row['tipo'], 'file'); ?>><?php esc_html_e('File da scaricare', 'meridiana-child'); ?></option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="acf-field acf-field-text">
+                                    <div class="acf-label">
+                                        <label><?php esc_html_e('Titolo', 'meridiana-child'); ?> <span class="required">*</span></label>
+                                    </div>
+                                    <div class="acf-input">
+                                        <input type="text" name="risorse[<?php echo esc_attr($index); ?>][titolo]" value="<?php echo esc_attr($row['titolo']); ?>" required />
+                                    </div>
+                                </div>
+                                <div class="acf-field acf-field-url" data-risorsa-field="link" <?php echo $row['tipo'] === 'link' ? '' : 'hidden'; ?>>
+                                    <div class="acf-label">
+                                        <label><?php esc_html_e('URL', 'meridiana-child'); ?></label>
+                                    </div>
+                                    <div class="acf-input">
+                                        <input type="url" name="risorse[<?php echo esc_attr($index); ?>][url]" value="<?php echo esc_attr($row['url']); ?>" placeholder="https://" />
+                                    </div>
+                                </div>
+                                <div class="acf-field acf-field-file" data-risorsa-field="file" <?php echo $row['tipo'] === 'file' ? '' : 'hidden'; ?>>
+                                    <div class="acf-label">
+                                        <label><?php esc_html_e('File', 'meridiana-child'); ?></label>
+                                    </div>
+                                    <div class="acf-input">
+                                        <div
+                                            class="media-field"
+                                            data-media-field
+                                            data-media-type="file"
+                                            data-media-placeholder="<?php echo esc_attr($risorsa_placeholder); ?>"
+                                        >
+                                            <input type="hidden" name="risorse[<?php echo esc_attr($index); ?>][file_id]" value="<?php echo esc_attr($row['file_id']); ?>" />
+                                            <button type="button" class="button media-picker"><?php esc_html_e('Seleziona file', 'meridiana-child'); ?></button>
+                                            <button type="button" class="button button-secondary media-clear" <?php echo $row['file_id'] ? '' : 'hidden'; ?>><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+                                            <span class="media-file-name" data-media-file-name><?php echo esc_html($row['file_info']['name']); ?></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="repeater-row__footer">
+                                <button type="button" class="button button-secondary" data-repeater-remove><?php esc_html_e('Rimuovi risorsa', 'meridiana-child'); ?></button>
+                            </div>
+                        </div>
+                    <?php endforeach; ?>
+                </div>
+                <button type="button" class="button button-secondary" data-repeater-add="risorse"><?php esc_html_e('Aggiungi risorsa', 'meridiana-child'); ?></button>
+                <template data-repeater-template="risorse">
+                    <div class="repeater-row" data-repeater-row>
+                        <div class="repeater-row__body" data-risorsa-row>
+                            <div class="acf-field acf-field-select">
+                                <div class="acf-label">
+                                    <label><?php esc_html_e('Tipo risorsa', 'meridiana-child'); ?></label>
+                                </div>
+                                <div class="acf-input">
+                                    <select name="risorse[__index__][tipo]" data-risorsa-type>
+                                        <option value="link" selected><?php esc_html_e('Link esterno', 'meridiana-child'); ?></option>
+                                        <option value="file"><?php esc_html_e('File da scaricare', 'meridiana-child'); ?></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="acf-field acf-field-text">
+                                <div class="acf-label">
+                                    <label><?php esc_html_e('Titolo', 'meridiana-child'); ?> <span class="required">*</span></label>
+                                </div>
+                                <div class="acf-input">
+                                    <input type="text" name="risorse[__index__][titolo]" value="" required />
+                                </div>
+                            </div>
+                            <div class="acf-field acf-field-url" data-risorsa-field="link">
+                                <div class="acf-label">
+                                    <label><?php esc_html_e('URL', 'meridiana-child'); ?></label>
+                                </div>
+                                <div class="acf-input">
+                                    <input type="url" name="risorse[__index__][url]" value="" placeholder="https://" />
+                                </div>
+                            </div>
+                            <div class="acf-field acf-field-file" data-risorsa-field="file" hidden>
+                                <div class="acf-label">
+                                    <label><?php esc_html_e('File', 'meridiana-child'); ?></label>
+                                </div>
+                                <div class="acf-input">
+                                    <div
+                                        class="media-field"
+                                        data-media-field
+                                        data-media-type="file"
+                                        data-media-placeholder="<?php echo esc_attr($risorsa_placeholder); ?>"
+                                    >
+                                        <input type="hidden" name="risorse[__index__][file_id]" value="" />
+                                        <button type="button" class="button media-picker"><?php esc_html_e('Seleziona file', 'meridiana-child'); ?></button>
+                                        <button type="button" class="button button-secondary media-clear" hidden><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+                                        <span class="media-file-name" data-media-file-name><?php echo esc_html($risorsa_placeholder); ?></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="repeater-row__footer">
+                            <button type="button" class="button button-secondary" data-repeater-remove><?php esc_html_e('Rimuovi risorsa', 'meridiana-child'); ?></button>
+                        </div>
+                    </div>
+                </template>
+            </div>
+        </div>
+
+        <?php echo meridiana_render_category_multiselect($selected_categories, __('Categorie', 'meridiana-child'), __('Scegli le categorie associate al contenuto.', 'meridiana-child')); ?>
+
+        <input type="hidden" name="post_type" value="salute" />
+        <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
+
+        <button type="submit" class="button button-primary">
+            <?php echo $action === 'new' ? __('Pubblica contenuto', 'meridiana-child') : __('Aggiorna contenuto', 'meridiana-child'); ?>
+        </button>
+    </form>
+    <?php
+    return ob_get_clean();
+}
+
+
 function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 0) {
 
     $taxonomies = [
 
         'unita-offerta' => [
 
-            'label' => __('Unità di Offerta', 'meridiana-child'),
+            'label' => __('UnitÃ  di Offerta', 'meridiana-child'),
 
-            'description' => __('Seleziona una o più unità di offerta pertinenti.', 'meridiana-child'),
+            'description' => __('Seleziona una o piÃ¹ unitÃ  di offerta pertinenti.', 'meridiana-child'),
 
             'multiple' => true,
 
@@ -1317,6 +1873,251 @@ function meridiana_ajax_save_comunicazione() {
 
 
 
+function meridiana_ajax_save_convenzione() {
+    if (!current_user_can('manage_platform') && !current_user_can('edit_posts') && !current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
+    }
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $title = isset($_POST['post_title']) ? sanitize_text_field(wp_unslash($_POST['post_title'])) : '';
+
+    if ($title === '') {
+        wp_send_json_error(['message' => __('Titolo obbligatorio', 'meridiana-child')], 400);
+    }
+
+    $status = isset($_POST['post_status']) ? sanitize_text_field(wp_unslash($_POST['post_status'])) : 'draft';
+    $allowed_status = ['publish', 'draft'];
+    if (!in_array($status, $allowed_status, true)) {
+        $status = 'draft';
+    }
+
+    $descrizione_raw = isset($_POST['convenzione_descrizione']) ? wp_unslash($_POST['convenzione_descrizione']) : '';
+    $descrizione = wp_kses_post($descrizione_raw);
+    if (trim(wp_strip_all_tags($descrizione)) === '') {
+        wp_send_json_error(['message' => __('Inserisci una descrizione', 'meridiana-child')], 400);
+    }
+
+    $contatti_raw = isset($_POST['convenzione_contatti']) ? wp_unslash($_POST['convenzione_contatti']) : '';
+    $contatti = wp_kses_post($contatti_raw);
+
+    $is_active = isset($_POST['convenzione_attiva']) ? 1 : 0;
+    $image_id = isset($_POST['convenzione_featured_id']) ? intval($_POST['convenzione_featured_id']) : 0;
+
+    $post_args = [
+        'post_title'   => $title,
+        'post_status'  => $status,
+        'post_type'    => 'convenzione',
+        'post_content' => $descrizione,
+    ];
+
+    if ($post_id === 0) {
+        $post_id = wp_insert_post($post_args, true);
+        if (is_wp_error($post_id)) {
+            wp_send_json_error(['message' => __('Errore creazione convenzione', 'meridiana-child')], 500);
+        }
+    } else {
+        $existing = get_post($post_id);
+        if (!$existing || $existing->post_type !== 'convenzione') {
+            wp_send_json_error(['message' => __('Convenzione non trovata', 'meridiana-child')], 404);
+        }
+        $post_args['ID'] = $post_id;
+        $updated = wp_update_post($post_args, true);
+        if (is_wp_error($updated)) {
+            wp_send_json_error(['message' => __('Errore aggiornamento convenzione', 'meridiana-child')], 500);
+        }
+    }
+
+    $allegati_rows = [];
+    if (isset($_POST['allegati']) && is_array($_POST['allegati'])) {
+        foreach ($_POST['allegati'] as $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $file_id = isset($row['file_id']) ? intval($row['file_id']) : 0;
+            $description = isset($row['descrizione']) ? sanitize_text_field(wp_unslash($row['descrizione'])) : '';
+            if ($file_id <= 0) {
+                continue;
+            }
+            $allegati_rows[] = [
+                'field_allegato_file' => $file_id,
+                'field_allegato_descrizione' => $description,
+            ];
+        }
+    }
+
+    if (function_exists('update_field')) {
+        update_field('field_convenzione_attiva', $is_active ? 1 : 0, $post_id);
+        update_field('field_descrizione_convenzione', $descrizione, $post_id);
+        update_field('field_contatti_convenzione', $contatti, $post_id);
+
+        if ($image_id > 0) {
+            update_field('field_immagine_convenzione', $image_id, $post_id);
+        } elseif (function_exists('delete_field')) {
+            delete_field('field_immagine_convenzione', $post_id);
+        } else {
+            delete_post_meta($post_id, 'immagine_evidenza');
+        }
+
+        if (!empty($allegati_rows)) {
+            update_field('field_allegati_convenzione', $allegati_rows, $post_id);
+        } elseif (function_exists('delete_field')) {
+            delete_field('field_allegati_convenzione', $post_id);
+        } else {
+            delete_post_meta($post_id, 'allegati');
+        }
+    } else {
+        update_post_meta($post_id, 'convenzione_attiva', $is_active ? 1 : 0);
+        update_post_meta($post_id, 'descrizione', $descrizione);
+        update_post_meta($post_id, 'contatti', $contatti);
+        if ($image_id > 0) {
+            update_post_meta($post_id, 'immagine_evidenza', $image_id);
+        } else {
+            delete_post_meta($post_id, 'immagine_evidenza');
+        }
+        update_post_meta($post_id, 'allegati', $allegati_rows);
+    }
+
+    if ($image_id > 0) {
+        set_post_thumbnail($post_id, $image_id);
+    } else {
+        delete_post_thumbnail($post_id);
+    }
+
+    $categories_input = isset($_POST['post_categories']) ? (array) $_POST['post_categories'] : [];
+    $categories_clean = [];
+    foreach ($categories_input as $cat) {
+        $categories_clean[] = intval(wp_unslash($cat));
+    }
+    wp_set_post_terms($post_id, $categories_clean, 'category', false);
+
+    wp_send_json_success([
+        'message' => __('Convenzione salvata con successo', 'meridiana-child'),
+        'post_id' => $post_id,
+    ]);
+}
+
+
+function meridiana_ajax_save_salute() {
+    if (!current_user_can('manage_platform') && !current_user_can('edit_posts') && !current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
+    }
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $title = isset($_POST['post_title']) ? sanitize_text_field(wp_unslash($_POST['post_title'])) : '';
+
+    if ($title === '') {
+        wp_send_json_error(['message' => __('Titolo obbligatorio', 'meridiana-child')], 400);
+    }
+
+    $status = isset($_POST['post_status']) ? sanitize_text_field(wp_unslash($_POST['post_status'])) : 'draft';
+    $allowed_status = ['publish', 'draft'];
+    if (!in_array($status, $allowed_status, true)) {
+        $status = 'draft';
+    }
+
+    $contenuto_raw = isset($_POST['salute_contenuto']) ? wp_unslash($_POST['salute_contenuto']) : '';
+    $contenuto = wp_kses_post($contenuto_raw);
+    if (trim(wp_strip_all_tags($contenuto)) === '') {
+        wp_send_json_error(['message' => __('Inserisci il contenuto principale', 'meridiana-child')], 400);
+    }
+
+    $post_args = [
+        'post_title'   => $title,
+        'post_status'  => $status,
+        'post_type'    => 'salute-e-benessere-l',
+        'post_content' => $contenuto,
+    ];
+
+    if ($post_id === 0) {
+        $post_id = wp_insert_post($post_args, true);
+        if (is_wp_error($post_id)) {
+            wp_send_json_error(['message' => __('Errore creazione contenuto', 'meridiana-child')], 500);
+        }
+    } else {
+        $existing = get_post($post_id);
+        if (!$existing || $existing->post_type !== 'salute-e-benessere-l') {
+            wp_send_json_error(['message' => __('Contenuto non trovato', 'meridiana-child')], 404);
+        }
+        $post_args['ID'] = $post_id;
+        $updated = wp_update_post($post_args, true);
+        if (is_wp_error($updated)) {
+            wp_send_json_error(['message' => __('Errore aggiornamento contenuto', 'meridiana-child')], 500);
+        }
+    }
+
+    $risorse_rows = [];
+    if (isset($_POST['risorse']) && is_array($_POST['risorse'])) {
+        $allowed_types = ['link', 'file'];
+        foreach ($_POST['risorse'] as $row_index => $row) {
+            if (!is_array($row)) {
+                continue;
+            }
+            $tipo = isset($row['tipo']) ? sanitize_text_field(wp_unslash($row['tipo'])) : 'link';
+            if (!in_array($tipo, $allowed_types, true)) {
+                $tipo = 'link';
+            }
+
+            $titolo = isset($row['titolo']) ? sanitize_text_field(wp_unslash($row['titolo'])) : '';
+            if ($titolo === '') {
+                wp_send_json_error(['message' => sprintf(__('Il titolo della risorsa %d è obbligatorio', 'meridiana-child'), $row_index + 1)], 400);
+            }
+
+            $url_value = isset($row['url']) ? wp_unslash($row['url']) : '';
+            $url = $url_value !== '' ? esc_url_raw($url_value) : '';
+            $file_id = isset($row['file_id']) ? intval($row['file_id']) : 0;
+
+            if ($tipo === 'link') {
+                if ($url === '') {
+                    wp_send_json_error(['message' => sprintf(__('Inserisci un URL valido per la risorsa %d', 'meridiana-child'), $row_index + 1)], 400);
+                }
+                $risorse_rows[] = [
+                    'field_risorsa_tipo'   => 'link',
+                    'field_risorsa_titolo' => $titolo,
+                    'field_risorsa_url'    => $url,
+                    'field_risorsa_file'   => 0,
+                ];
+            } else {
+                if ($file_id <= 0) {
+                    wp_send_json_error(['message' => sprintf(__('Seleziona un file per la risorsa %d', 'meridiana-child'), $row_index + 1)], 400);
+                }
+                $risorse_rows[] = [
+                    'field_risorsa_tipo'   => 'file',
+                    'field_risorsa_titolo' => $titolo,
+                    'field_risorsa_url'    => '',
+                    'field_risorsa_file'   => $file_id,
+                ];
+            }
+        }
+    }
+
+    if (function_exists('update_field')) {
+        update_field('field_contenuto_salute', $contenuto, $post_id);
+        if (!empty($risorse_rows)) {
+            update_field('field_risorse_salute', $risorse_rows, $post_id);
+        } elseif (function_exists('delete_field')) {
+            delete_field('field_risorse_salute', $post_id);
+        } else {
+            delete_post_meta($post_id, 'risorse');
+        }
+    } else {
+        update_post_meta($post_id, 'contenuto', $contenuto);
+        update_post_meta($post_id, 'risorse', $risorse_rows);
+    }
+
+    $categories_input = isset($_POST['post_categories']) ? (array) $_POST['post_categories'] : [];
+    $categories_clean = [];
+    foreach ($categories_input as $cat) {
+        $categories_clean[] = intval(wp_unslash($cat));
+    }
+    wp_set_post_terms($post_id, $categories_clean, 'category', false);
+
+    wp_send_json_success([
+        'message' => __('Contenuto salvato con successo', 'meridiana-child'),
+        'post_id' => $post_id,
+    ]);
+}
+
+
 function meridiana_ajax_save_documento() {
 
     $cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : 'protocollo';
@@ -1529,13 +2330,13 @@ function meridiana_ajax_save_user() {
             wp_send_json_error(['message' => 'Username gia in uso'], 400);
         }
         if (email_exists($user_email)) {
-            wp_send_json_error(['message' => 'Email già presente nel database'], 400);
+            wp_send_json_error(['message' => 'Email giÃ  presente nel database'], 400);
         }
 
         $created_user_id = wp_create_user($user_login, $user_pass, $user_email);
         if (is_wp_error($created_user_id)) {
             if ($created_user_id->get_error_code() === 'existing_user_email') {
-                wp_send_json_error(['message' => 'Email già presente nel database'], 400);
+                wp_send_json_error(['message' => 'Email giÃ  presente nel database'], 400);
             }
             wp_send_json_error(['message' => 'Errore creazione utente'], 500);
         }
@@ -1551,7 +2352,7 @@ function meridiana_ajax_save_user() {
 
         $email_owner = email_exists($user_email);
         if ($email_owner && intval($email_owner) !== $user_id) {
-            wp_send_json_error(['message' => 'Email già presente nel database'], 400);
+            wp_send_json_error(['message' => 'Email giÃ  presente nel database'], 400);
         }
 
         wp_update_user([
@@ -1714,4 +2515,6 @@ function meridiana_ajax_save_user() {
         'user_id' => $user_id,
     ]);
 }
+
+
 

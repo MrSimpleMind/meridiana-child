@@ -1,4 +1,4 @@
-// ========================================
+﻿// ========================================
 // Dashboard Gestore - Styling
 // ========================================
 
@@ -533,6 +533,51 @@
     gap: var(--space-4);
     margin-top: var(--space-6);
 }
+.acf-field-repeater {
+    margin-top: var(--space-6);
+
+    .acf-input {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .repeater-rows {
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .repeater-row {
+        border: 1px solid var(--color-border);
+        border-radius: var(--radius-md);
+        padding: var(--space-4);
+        background-color: var(--color-bg-secondary);
+        display: flex;
+        flex-direction: column;
+        gap: var(--space-4);
+    }
+
+    .repeater-row__body {
+        display: grid;
+        gap: var(--space-4);
+    }
+
+    @media (min-width: 768px) {
+        .repeater-row__body {
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        }
+    }
+
+    .repeater-row__footer {
+        display: flex;
+        justify-content: flex-end;
+    }
+
+    [data-repeater-add] {
+        align-self: flex-start;
+    }
+}
 
 .acf-form-taxonomies .taxonomy-select {
     width: 100%;
@@ -545,3 +590,4 @@
     min-height: 220px;
     overflow-y: auto;
 }
+
