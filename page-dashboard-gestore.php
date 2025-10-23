@@ -120,14 +120,8 @@ get_header();
                         </button>
                     </div>
                     <div class="dashboard-modal__content" x-ref="modalContent" x-html="modalContent"></div>
-                    <div class="dashboard-modal__footer" x-show="modalContent">
-                        <button type="button" class="btn btn-secondary" @click="closeModal()" :disabled="isLoading">
-                            Annulla
-                        </button>
-                        <button type="button" class="btn btn-primary" @click="submitForm()" :disabled="isLoading" x-show="!isLoading">
-                            <i data-lucide="save"></i> Salva
-                        </button>
-                        <span x-show="isLoading" class="loading-spinner"><i data-lucide="loader"></i> Salvataggio...</span>
+                    <div class="dashboard-modal__footer" x-show="isLoading">
+                        <span class="loading-spinner"><i data-lucide="loader"></i> Salvataggio...</span>
                     </div>
                 </div>
             </template>

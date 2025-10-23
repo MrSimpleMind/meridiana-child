@@ -7,49 +7,69 @@
 // HELPER: Media Picker per File Field
 // ============================================
 
-window.meridiana_open_media_picker = function(button, inputField) {
+
+window.meridiana_open_media_picker = function(trigger) {
     if (typeof wp === 'undefined' || !wp.media) {
         console.error('WordPress media library not loaded');
         return;
     }
 
-    // Crea media frame se non esiste
-    if (!window.meridiana_file_frame) {
-        window.meridiana_file_frame = wp.media({
-            title: 'Seleziona File PDF',
-            button: { text: 'Seleziona' },
-            library: { type: 'application/pdf' },
-            multiple: false
-        });
-
-        // Quando un file viene selezionato
-        window.meridiana_file_frame.on('select', function() {
-            const attachment = window.meridiana_file_frame.state().get('selection').first().toJSON();
-            
-            // Trova l'input field hidden per il file ID
-            const hiddenInput = document.querySelector('input[name="acf[field_pdf_protocollo]"], input[name="acf[field_pdf_modulo]"]');
-            if (hiddenInput) {
-                hiddenInput.value = attachment.id;
-                
-                // Trigger change event per ACF
-                const event = new Event('change', { bubbles: true });
-                hiddenInput.dispatchEvent(event);
-                
-                // Update preview
-                const previewText = document.querySelector('.acf-file-uploader .description');
-                if (previewText) {
-                    previewText.textContent = '✓ File selezionato: ' + attachment.filename;
-                }
-                
-                console.log('[MediaPicker] File selezionato:', attachment.id, attachment.filename);
-            }
-        });
+    const field = trigger.closest('[data-media-field]');
+    if (!field) {
+        console.warn('Media field wrapper not found');
+        return;
     }
 
-    // Apri il media picker
-    window.meridiana_file_frame.open();
+    const mediaTypeAttr = field.dataset.mediaType;
+    const mediaType = mediaTypeAttr === 'image' ? 'image' : 'application/pdf';
+    const allowClear = field.dataset.required !== '1';
+    const hiddenInput = field.querySelector('input[type="hidden"]');
+    const fileNameElement = field.querySelector('[data-media-file-name]');
+    const previewElement = field.querySelector('[data-media-preview]');
+    const placeholder = field.dataset.mediaPlaceholder || '';
+
+    const frame = wp.media({
+        title: mediaType === 'image' ? 'Seleziona immagine' : 'Seleziona PDF',
+        button: { text: 'Usa questo file' },
+        library: { type: mediaType },
+        multiple: false,
+    });
+
+    frame.on('select', () => {
+        const attachment = frame.state().get('selection').first().toJSON();
+        if (hiddenInput) {
+            hiddenInput.value = attachment.id || '';
+            hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+
+        if (fileNameElement) {
+            fileNameElement.textContent = attachment.filename || attachment.title || attachment.name || 'File selezionato';
+        }
+
+        if (previewElement) {
+            if (mediaType === 'image') {
+                const previewUrl = (attachment.sizes && (attachment.sizes.medium?.url || attachment.sizes.thumbnail?.url)) || attachment.icon || attachment.url;
+                previewElement.innerHTML = previewUrl ? `<img src="${previewUrl}" alt="">` : '';
+            } else {
+                previewElement.textContent = attachment.filename || attachment.title || attachment.name || '';
+            }
+        }
+
+        const clearButton = field.querySelector('.media-clear');
+        if (clearButton && allowClear) {
+            clearButton.hidden = false;
+        }
+
+        if (!allowClear && !hiddenInput?.value && fileNameElement) {
+            fileNameElement.textContent = placeholder || fileNameElement.textContent;
+        }
+    });
+
+    frame.open();
 };
 
+// ============================================
+// ALPINE COMPONENT
 // ============================================
 // ALPINE COMPONENT
 // ============================================
@@ -66,6 +86,134 @@ document.addEventListener('alpine:init', () => {
         modalStep: 'choose', // 'choose' = scelta CPT, 'form' = carica form
         errorMessage: '',
         successMessage: '',
+        allowedTabs: ['documenti', 'comunicazioni', 'convenzioni', 'salute', 'utenti'],
+
+        init() {
+            const tabs = this.allowedTabs;
+
+            this.$watch('activeTab', (value) => {
+                if (!tabs.includes(value)) {
+                    return;
+                }
+                this.persistActiveTab(value);
+            });
+
+            let initialTab = null;
+            const hash = (typeof window !== 'undefined' && window.location && window.location.hash)
+                ? window.location.hash.replace('#', '')
+                : '';
+
+            if (tabs.includes(hash)) {
+                initialTab = hash;
+            } else {
+                try {
+                    const stored = (typeof window !== 'undefined' && window.localStorage)
+                        ? window.localStorage.getItem('gestoreDashboardActiveTab')
+                        : null;
+                    if (stored && tabs.includes(stored)) {
+                        initialTab = stored;
+                    }
+                } catch (error) {
+                    // storage unavailable
+                }
+            }
+
+            if (initialTab && initialTab !== this.activeTab) {
+                this.activeTab = initialTab;
+            } else if (!initialTab) {
+                this.persistActiveTab(this.activeTab);
+            }
+        },
+
+        persistActiveTab(tab) {
+            if (!this.allowedTabs.includes(tab)) {
+                return;
+            }
+            try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                    window.localStorage.setItem('gestoreDashboardActiveTab', tab);
+                }
+            } catch (error) {
+                // storage unavailable
+            }
+        },
+
+        initDocumentFormEnhancements(container = null) {
+            const target = container || this.$refs.modalContent;
+            if (!target) {
+                return;
+            }
+
+            target.querySelectorAll('[data-media-field]').forEach((field) => {
+                const hiddenInput = field.querySelector('input[type="hidden"]');
+                const pickButton = field.querySelector('.media-picker');
+                const clearButton = field.querySelector('.media-clear');
+                const fileName = field.querySelector('[data-media-file-name]');
+                const placeholder = field.dataset.mediaPlaceholder || '';
+                const preview = field.querySelector('[data-media-preview]');
+                const allowClear = field.dataset.required !== '1';
+
+                if (fileName && (!hiddenInput || !hiddenInput.value)) {
+                    fileName.textContent = placeholder || fileName.textContent;
+                }
+
+                if (pickButton && !pickButton.dataset.bound) {
+                    pickButton.dataset.bound = '1';
+                    pickButton.addEventListener('click', (event) => {
+                        event.preventDefault();
+                        window.meridiana_open_media_picker(event.currentTarget);
+                    });
+                }
+
+                if (clearButton) {
+                    if (!allowClear) {
+                        clearButton.hidden = true;
+                    } else {
+                        const toggleClear = () => {
+                            clearButton.hidden = !hiddenInput || !hiddenInput.value;
+                        };
+
+                        toggleClear();
+
+                        if (!clearButton.dataset.bound) {
+                            clearButton.dataset.bound = '1';
+                            clearButton.addEventListener('click', (event) => {
+                                event.preventDefault();
+                                if (!hiddenInput) {
+                                    return;
+                                }
+                                hiddenInput.value = '';
+                                hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                                if (fileName) {
+                                    fileName.textContent = placeholder || fileName.textContent;
+                                }
+                                if (preview) {
+                                    preview.innerHTML = '';
+                                }
+                                toggleClear();
+                            });
+                        }
+                    }
+                }
+            });
+
+            const atsToggle = target.querySelector('#ats_flag');
+            if (atsToggle) {
+                const label = target.querySelector('[data-ats-label]');
+                const updateLabel = () => {
+                    if (label) {
+                        label.textContent = atsToggle.checked ? 'SÌ, pianificazione ATS' : 'NO, documento standard';
+                    }
+                };
+
+                updateLabel();
+
+                if (!atsToggle.dataset.bound) {
+                    atsToggle.dataset.bound = '1';
+                    atsToggle.addEventListener('change', updateLabel);
+                }
+            }
+        },
 
         openDocumentoChoice() {
             this.selectedPostType = 'documenti';
@@ -121,36 +269,17 @@ document.addEventListener('alpine:init', () => {
                     }
                     this.modalStep = 'form';
 
-                    this.$nextTick(() => {
-                        // Reinitialize ACF fields (media picker, file uploads, etc.)
+                    
+this.$nextTick(() => {
                         if (window.acf && this.$refs.modalContent) {
-                            // Append action triggers ACF field initialization
                             window.acf.doAction('append', this.$refs.modalContent);
-                            
-                            // Fix label accessibility issues
                             if (window.fixACFLabelRelationships) {
                                 window.fixACFLabelRelationships(this.$refs.modalContent);
                             }
-                            
-                            // FIX MEDIA PICKER: Bind buttons per file field nel modal
-                            const addFileButtons = this.$refs.modalContent.querySelectorAll('.acf-file-uploader .button');
-                            if (addFileButtons.length > 0 && typeof wp !== 'undefined' && wp.media) {
-                                addFileButtons.forEach(button => {
-                                    // Remove old listeners
-                                    const clone = button.cloneNode(true);
-                                    button.parentNode.replaceChild(clone, button);
-                                    
-                                    // Bind new click handler
-                                    clone.addEventListener('click', function(e) {
-                                        e.preventDefault();
-                                        e.stopPropagation();
-                                        window.meridiana_open_media_picker(this);
-                                    });
-                                });
-                            }
                         }
-                        
-                        // Render icons
+
+                        this.initDocumentFormEnhancements(this.$refs.modalContent);
+
                         if (window.lucide) {
                             window.lucide.createIcons();
                         }
@@ -207,7 +336,15 @@ document.addEventListener('alpine:init', () => {
 
                 const result = await response.json();
                 if (result.success) {
+                    const selectedType = this.selectedPostType;
+                    let nextTab = this.allowedTabs.includes(selectedType) ? selectedType : this.activeTab;
+                    if (!this.allowedTabs.includes(nextTab)) {
+                        nextTab = 'documenti';
+                    }
+
                     this.successMessage = result.data?.message || 'Salvato con successo';
+                    this.activeTab = nextTab;
+                    this.persistActiveTab(nextTab);
                     this.closeModal();
                     setTimeout(() => { location.reload(); }, 1000);
                 } else {
