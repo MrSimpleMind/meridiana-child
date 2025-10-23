@@ -681,6 +681,344 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
 
 
 
+
+
+function meridiana_render_comunicazione_form($action = 'new', $post_id = null) {
+
+    $post_data = null;
+
+
+
+    if ($action === 'edit' && $post_id) {
+
+        $post_data = get_post($post_id);
+
+        if (!$post_data || $post_data->post_type !== 'post') {
+
+            return null;
+
+        }
+
+    }
+
+
+
+    $title = $post_data ? $post_data->post_title : '';
+
+    $excerpt = $post_data ? $post_data->post_excerpt : '';
+
+    $content = $post_data ? $post_data->post_content : '';
+
+    $status = $post_data ? $post_data->post_status : 'draft';
+
+
+
+    $allowed_status = [
+
+        'publish' => __('Pubblicato', 'meridiana-child'),
+
+        'draft'   => __('Bozza', 'meridiana-child'),
+
+    ];
+
+    if (!array_key_exists($status, $allowed_status)) {
+
+        $status = 'draft';
+
+    }
+
+
+
+    $featured_image_id = $post_data ? intval(get_post_thumbnail_id($post_id)) : 0;
+
+    $featured_info = meridiana_get_attachment_info($featured_image_id);
+
+    $featured_placeholder = __('Nessuna immagine selezionata', 'meridiana-child');
+
+    if (empty($featured_info['name'])) {
+
+        $featured_info['name'] = $featured_placeholder;
+
+    }
+
+
+
+    $categories = get_terms([
+
+        'taxonomy'   => 'category',
+
+        'hide_empty' => false,
+
+        'orderby'    => 'name',
+
+        'order'      => 'ASC',
+
+    ]);
+
+    $selected_categories = $post_data ? wp_get_post_terms($post_id, 'category', ['fields' => 'ids']) : [];
+
+    if (!is_array($selected_categories)) {
+
+        $selected_categories = [];
+
+    }
+
+    $categories_count = is_array($categories) ? count($categories) : 0;
+
+    $category_select_size = max(5, min(10, $categories_count));
+
+
+
+    $editor_id = 'gestore_comunicazione_content_' . ($post_id ?: 'new');
+
+    $editor_settings = [
+
+        'tinymce'      => true,
+
+        'quicktags'    => true,
+
+        'mediaButtons' => true,
+
+    ];
+
+    $editor_settings_attr = esc_attr(wp_json_encode($editor_settings));
+
+
+
+    ob_start();
+
+    ?>
+
+    <form data-gestore-form="1" data-form-type="comunicazioni" data-form-mode="<?php echo esc_attr($action); ?>" @submit.prevent="submitForm">
+
+        <div class="acf-form-fields">
+
+            <div class="acf-field acf-field-text">
+
+                <div class="acf-label">
+
+                    <label for="post_title">Titolo <span class="required">*</span></label>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <input type="text" id="post_title" name="post_title" value="<?php echo esc_attr($title); ?>" required />
+
+                </div>
+
+            </div>
+
+
+
+            <div class="acf-field acf-field-textarea">
+
+                <div class="acf-label">
+
+                    <label for="post_excerpt"><?php esc_html_e('Riassunto', 'meridiana-child'); ?></label>
+
+                    <p class="description"><?php esc_html_e('Breve abstract della comunicazione', 'meridiana-child'); ?></p>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <textarea id="post_excerpt" name="post_excerpt" rows="3" style="width: 100%;"><?php echo esc_textarea($excerpt); ?></textarea>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="acf-field acf-field-wysiwyg">
+
+                <div class="acf-label">
+
+                    <label for="<?php echo esc_attr($editor_id); ?>"><?php esc_html_e('Contenuto', 'meridiana-child'); ?> <span class="required">*</span></label>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <textarea
+
+                        id="<?php echo esc_attr($editor_id); ?>"
+
+                        name="post_content"
+
+                        class="wysiwyg-editor"
+
+                        data-wysiwyg="1"
+
+                        data-editor-settings="<?php echo $editor_settings_attr; ?>"
+
+                        rows="10"
+
+                    ><?php echo esc_textarea($content); ?></textarea>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="acf-field acf-field-file">
+
+                <div class="acf-label">
+
+                    <label><?php esc_html_e('Immagine in evidenza', 'meridiana-child'); ?></label>
+
+                    <p class="description"><?php esc_html_e('Opzionale. Mostrata nelle anteprime della comunicazione.', 'meridiana-child'); ?></p>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <div
+
+                        class="media-field"
+
+                        data-media-field
+
+                        data-media-type="image"
+
+                        data-media-placeholder="<?php echo esc_attr($featured_placeholder); ?>"
+
+                    >
+
+                        <input type="hidden" name="featured_image_id" value="<?php echo esc_attr($featured_info['id']); ?>" />
+
+                        <button type="button" class="button media-picker"><?php esc_html_e('Seleziona immagine', 'meridiana-child'); ?></button>
+
+                        <button type="button" class="button button-secondary media-clear" <?php echo $featured_info['id'] ? '' : 'hidden'; ?>><?php esc_html_e('Rimuovi', 'meridiana-child'); ?></button>
+
+                        <span class="media-file-name" data-media-file-name><?php echo esc_html($featured_info['name']); ?></span>
+
+                        <div class="media-preview" data-media-preview>
+
+                            <?php if (!empty($featured_info['thumbnail'])): ?>
+
+                                <img src="<?php echo esc_url($featured_info['thumbnail']); ?>" alt="" />
+
+                            <?php endif; ?>
+
+                        </div>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+
+
+            <div class="acf-field acf-field-select">
+
+                <div class="acf-label">
+
+                    <label for="post_status"><?php esc_html_e('Stato', 'meridiana-child'); ?></label>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <select id="post_status" name="post_status">
+
+                        <?php foreach ($allowed_status as $status_key => $label): ?>
+
+                            <option value="<?php echo esc_attr($status_key); ?>" <?php selected($status, $status_key); ?>>
+
+                                <?php echo esc_html($label); ?>
+
+                            </option>
+
+                        <?php endforeach; ?>
+
+                    </select>
+
+                </div>
+
+            </div>
+
+        </div>
+
+
+
+        <div class="acf-form-taxonomies">
+
+            <div class="acf-field acf-field-select acf-field-taxonomy">
+
+                <div class="acf-label">
+
+                    <label for="post_categories"><?php esc_html_e('Categorie', 'meridiana-child'); ?></label>
+
+                    <p class="description"><?php esc_html_e('Seleziona una o più categorie per la comunicazione', 'meridiana-child'); ?></p>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <?php if (!empty($categories) && !is_wp_error($categories)): ?>
+
+                        <select id="post_categories" class="taxonomy-select" name="post_categories[]" multiple size="<?php echo esc_attr($category_select_size); ?>">
+
+                            <?php foreach ($categories as $category):
+
+                                $selected = in_array($category->term_id, $selected_categories, true) ? 'selected' : '';
+
+                            ?>
+
+                                <option value="<?php echo esc_attr($category->term_id); ?>" <?php echo $selected; ?>>
+
+                                    <?php echo esc_html($category->name); ?>
+
+                                </option>
+
+                            <?php endforeach; ?>
+
+                        </select>
+
+                    <?php else: ?>
+
+                        <p class="description"><?php esc_html_e('Nessuna categoria disponibile. Creane una dal backend di WordPress.', 'meridiana-child'); ?></p>
+
+                    <?php endif; ?>
+
+                </div>
+
+            </div>
+
+        </div>
+
+        <input type="hidden" name="post_type" value="comunicazioni" />
+
+        <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
+
+
+
+        <button type="submit" class="button button-primary">
+
+            <?php echo $action === 'new' ? __('Pubblica comunicazione', 'meridiana-child') : __('Aggiorna comunicazione', 'meridiana-child'); ?>
+
+        </button>
+
+    </form>
+
+    <?php
+
+    return ob_get_clean();
+
+}
+
+
+
+
+
+
+
+
+
 function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 0) {
 
     $taxonomies = [
@@ -845,6 +1183,137 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
 // ============================================
 // SAVE DOCUMENTO FORM
 // ============================================
+
+
+
+
+
+function meridiana_ajax_save_comunicazione() {
+
+    if (!current_user_can('manage_platform') && !current_user_can('edit_posts') && !current_user_can('manage_options')) {
+
+        wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
+
+    }
+
+
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+
+
+
+    $title = isset($_POST['post_title']) ? sanitize_text_field(wp_unslash($_POST['post_title'])) : '';
+
+    if (empty($title)) {
+
+        wp_send_json_error(['message' => __('Titolo obbligatorio', 'meridiana-child')], 400);
+
+    }
+
+
+
+    $status = isset($_POST['post_status']) ? sanitize_text_field(wp_unslash($_POST['post_status'])) : 'draft';
+
+    $allowed_status = ['publish', 'draft'];
+
+    if (!in_array($status, $allowed_status, true)) {
+
+        $status = 'draft';
+
+    }
+
+
+
+    $excerpt = isset($_POST['post_excerpt']) ? sanitize_textarea_field(wp_unslash($_POST['post_excerpt'])) : '';
+
+    $content_raw = isset($_POST['post_content']) ? wp_unslash($_POST['post_content']) : '';
+
+    $content = wp_kses_post($content_raw);
+
+
+
+    $post_data = [
+
+        'post_title'   => $title,
+
+        'post_content' => $content,
+
+        'post_excerpt' => $excerpt,
+
+        'post_status'  => $status,
+
+        'post_type'    => 'post',
+
+    ];
+
+
+
+    if ($post_id === 0) {
+
+        $post_id = wp_insert_post($post_data, true);
+
+        if (is_wp_error($post_id)) {
+
+            wp_send_json_error(['message' => __('Errore creazione comunicazione', 'meridiana-child')], 500);
+
+        }
+
+    } else {
+
+        $post_data['ID'] = $post_id;
+
+        $updated = wp_update_post($post_data, true);
+
+        if (is_wp_error($updated)) {
+
+            wp_send_json_error(['message' => __('Errore aggiornamento comunicazione', 'meridiana-child')], 500);
+
+        }
+
+    }
+
+
+
+    $categories_input = isset($_POST['post_categories']) ? (array) $_POST['post_categories'] : [];
+
+    $category_ids = array_map('intval', array_map('wp_unslash', $categories_input));
+
+    wp_set_post_terms($post_id, $category_ids, 'category', false);
+
+
+
+    if (array_key_exists('featured_image_id', $_POST)) {
+
+        $thumbnail_id = intval($_POST['featured_image_id']);
+
+        if ($thumbnail_id > 0) {
+
+            set_post_thumbnail($post_id, $thumbnail_id);
+
+        } else {
+
+            delete_post_thumbnail($post_id);
+
+        }
+
+    }
+
+
+
+    wp_send_json_success([
+
+        'message' => __('Comunicazione salvata con successo', 'meridiana-child'),
+
+        'post_id' => $post_id,
+
+    ]);
+
+}
+
+
+
+
+
 
 
 

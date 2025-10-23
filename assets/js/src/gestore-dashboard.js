@@ -86,6 +86,7 @@ document.addEventListener('alpine:init', () => {
         modalStep: 'choose', // 'choose' = scelta CPT, 'form' = carica form
         errorMessage: '',
         successMessage: '',
+        activeEditors: [],
         allowedTabs: ['documenti', 'comunicazioni', 'convenzioni', 'salute', 'utenti'],
 
         init() {
@@ -197,6 +198,8 @@ document.addEventListener('alpine:init', () => {
                 }
             });
 
+            this.initRichTextEditors(target);
+
             const atsToggle = target.querySelector('#ats_flag');
             if (atsToggle) {
                 const label = target.querySelector('[data-ats-label]');
@@ -215,7 +218,97 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        initRichTextEditors(target) {
+            if (!target || typeof window === 'undefined' || !window.wp || !window.wp.editor) {
+                return;
+            }
+
+            const editors = target.querySelectorAll('.wysiwyg-editor[data-wysiwyg]');
+            editors.forEach((textarea) => {
+                const editorId = textarea.getAttribute('id');
+                if (!editorId) {
+                    return;
+                }
+
+                let settings = { tinymce: true, quicktags: true, mediaButtons: true };
+                const settingsAttr = textarea.getAttribute('data-editor-settings');
+                if (settingsAttr) {
+                    try {
+                        settings = JSON.parse(settingsAttr);
+                    } catch (error) {
+                        console.warn('Impossibile parsare le impostazioni editor', error);
+                    }
+                }
+
+                try {
+                    if (window.wp.editor && window.wp.editor.remove) {
+                        window.wp.editor.remove(editorId);
+                    }
+                } catch (error) {
+                    // ignore
+                }
+
+                if (window.wp.editor && window.wp.editor.initialize) {
+                    window.wp.editor.initialize(editorId, settings);
+                    if (!this.activeEditors.includes(editorId)) {
+                        this.activeEditors.push(editorId);
+                    }
+                }
+            });
+        },
+
+        destroyRichTextEditors() {
+            if (!this.activeEditors.length || typeof window === 'undefined' || !window.wp || !window.wp.editor) {
+                this.activeEditors = [];
+                return;
+            }
+
+            this.activeEditors.forEach((editorId) => {
+                try {
+                    if (window.wp.editor && window.wp.editor.remove) {
+                        window.wp.editor.remove(editorId);
+                    }
+                } catch (error) {
+                    // ignore
+                }
+            });
+
+            this.activeEditors = [];
+        },
+
+        syncEditors() {
+            if (!this.activeEditors.length || typeof window === 'undefined') {
+                return;
+            }
+
+            const hasWP = window.wp && window.wp.editor && window.wp.editor.get;
+            const hasTinyMCE = typeof window.tinyMCE !== 'undefined';
+
+            this.activeEditors.forEach((editorId) => {
+                let synced = false;
+                if (hasWP) {
+                    try {
+                        const editorInstance = window.wp.editor.get(editorId);
+                        if (editorInstance && editorInstance.triggerSave) {
+                            editorInstance.triggerSave();
+                            synced = true;
+                        }
+                    } catch (error) {
+                        // fallback
+                    }
+                }
+
+                if (!synced && hasTinyMCE) {
+                    const tinyInstance = window.tinyMCE.get(editorId);
+                    if (tinyInstance && tinyInstance.save) {
+                        tinyInstance.save();
+                    }
+                }
+            });
+        },
+
         openDocumentoChoice() {
+            this.destroyRichTextEditors();
             this.selectedPostType = 'documenti';
             this.modalStep = 'choose';
             this.modalOpen = true;
@@ -230,6 +323,7 @@ document.addEventListener('alpine:init', () => {
         },
 
         async openFormModal(postType, action = 'new', postId = null, cpt = null) {
+            this.destroyRichTextEditors();
             this.selectedPostType = postType;
             this.selectedPostId = postId;
             this.isLoading = true;
@@ -297,6 +391,7 @@ this.$nextTick(() => {
         },
 
         closeModal() {
+            this.destroyRichTextEditors();
             this.modalOpen = false;
             this.modalContent = '';
             this.selectedPostId = null;
@@ -318,6 +413,8 @@ this.$nextTick(() => {
                     this.isLoading = false;
                     return;
                 }
+
+                this.syncEditors();
 
                 const formData = new FormData(formElement);
                 formData.set('action', 'gestore_save_form');
@@ -377,6 +474,30 @@ this.$nextTick(() => {
                 }
             } catch (error) {
                 console.error('Delete error:', error);
+                this.errorMessage = 'Errore di rete';
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        async deleteComunicazione(postId) {
+            if (!confirm('Sei sicuro di voler eliminare questa comunicazione?')) return;
+            this.isLoading = true;
+            try {
+                const response = await fetch(meridiana.ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'gestore_delete_comunicazione', nonce: meridiana.nonce, post_id: postId }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.successMessage = data.data?.message || 'Comunicazione eliminata';
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    this.errorMessage = data.data?.message || 'Errore';
+                }
+            } catch (error) {
+                console.error('Delete comunicazione error:', error);
                 this.errorMessage = 'Errore di rete';
             } finally {
                 this.isLoading = false;

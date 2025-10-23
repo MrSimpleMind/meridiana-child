@@ -28,7 +28,7 @@ function meridiana_ajax_load_form() {
     $action_type = isset($_POST['action_type']) ? sanitize_text_field($_POST['action_type']) : 'new';
     $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
 
-    if (!in_array($post_type, ['documenti', 'utenti'])) {
+    if (!in_array($post_type, ['documenti', 'utenti', 'comunicazioni'])) {
         wp_send_json_error(['message' => 'Tipo form non valido'], 400);
     }
 
@@ -48,6 +48,8 @@ function meridiana_ajax_load_form() {
         $form_html = meridiana_render_documento_form($action_type, $post_id > 0 ? $post_id : null, $document_cpt);
     } elseif ($post_type === 'utenti') {
         $form_html = meridiana_render_user_form($action_type, $post_id > 0 ? $post_id : null);
+    } elseif ($post_type === 'comunicazioni') {
+        $form_html = meridiana_render_comunicazione_form($action_type, $post_id > 0 ? $post_id : null);
     }
 
     if (!$form_html) {
@@ -90,6 +92,8 @@ function meridiana_ajax_save_form() {
         meridiana_ajax_save_documento();
     } elseif ($post_type === 'utenti') {
         meridiana_ajax_save_user();
+    } elseif ($post_type === 'comunicazioni') {
+        meridiana_ajax_save_comunicazione();
     } else {
         wp_send_json_error(['message' => 'Tipo form non valido'], 400);
     }
@@ -100,6 +104,44 @@ function meridiana_ajax_save_form() {
 // ============================================
 
 add_action('wp_ajax_gestore_delete_documento', 'meridiana_ajax_delete_documento');
+add_action('wp_ajax_gestore_delete_comunicazione', 'meridiana_ajax_delete_comunicazione');
+
+
+
+function meridiana_ajax_delete_comunicazione() {
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
+        wp_send_json_error(['message' => __('Nonce non valido', 'meridiana-child')], 403);
+    }
+
+    if (!current_user_can('manage_platform') && !current_user_can('delete_posts')) {
+        wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
+    }
+
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    if (!$post_id) {
+        wp_send_json_error(['message' => __('ID comunicazione non valido', 'meridiana-child')], 400);
+    }
+
+    $post_type = get_post_type($post_id);
+    if ($post_type !== 'post') {
+        wp_send_json_error(['message' => __('Tipo contenuto non consentito', 'meridiana-child')], 400);
+    }
+
+    $deleted = wp_delete_post($post_id, true);
+
+    if (!$deleted) {
+        wp_send_json_error(['message' => __('Errore durante l\'eliminazione', 'meridiana-child')], 500);
+    }
+
+    wp_send_json_success([
+        'message' => __('Comunicazione eliminata con successo', 'meridiana-child'),
+        'post_id' => $post_id,
+    ]);
+}
+
+
+
+
 
 function meridiana_ajax_delete_documento() {
     // Security: Nonce check
