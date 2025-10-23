@@ -1,7 +1,58 @@
 /**
  * Alpine.js Component: gestoreDashboard
- * FIX: Aggiunto Step 1 scelta CPT, form rendering corretto
+ * FIX: Aggiunto Step 1 scelta CPT, form rendering corretto, media picker fix
  */
+
+// ============================================
+// HELPER: Media Picker per File Field
+// ============================================
+
+window.meridiana_open_media_picker = function(button, inputField) {
+    if (typeof wp === 'undefined' || !wp.media) {
+        console.error('WordPress media library not loaded');
+        return;
+    }
+
+    // Crea media frame se non esiste
+    if (!window.meridiana_file_frame) {
+        window.meridiana_file_frame = wp.media({
+            title: 'Seleziona File PDF',
+            button: { text: 'Seleziona' },
+            library: { type: 'application/pdf' },
+            multiple: false
+        });
+
+        // Quando un file viene selezionato
+        window.meridiana_file_frame.on('select', function() {
+            const attachment = window.meridiana_file_frame.state().get('selection').first().toJSON();
+            
+            // Trova l'input field hidden per il file ID
+            const hiddenInput = document.querySelector('input[name="acf[field_pdf_protocollo]"], input[name="acf[field_pdf_modulo]"]');
+            if (hiddenInput) {
+                hiddenInput.value = attachment.id;
+                
+                // Trigger change event per ACF
+                const event = new Event('change', { bubbles: true });
+                hiddenInput.dispatchEvent(event);
+                
+                // Update preview
+                const previewText = document.querySelector('.acf-file-uploader .description');
+                if (previewText) {
+                    previewText.textContent = '✓ File selezionato: ' + attachment.filename;
+                }
+                
+                console.log('[MediaPicker] File selezionato:', attachment.id, attachment.filename);
+            }
+        });
+    }
+
+    // Apri il media picker
+    window.meridiana_file_frame.open();
+};
+
+// ============================================
+// ALPINE COMPONENT
+// ============================================
 
 document.addEventListener('alpine:init', () => {
     Alpine.data('gestoreDashboard', () => ({
@@ -71,9 +122,35 @@ document.addEventListener('alpine:init', () => {
                     this.modalStep = 'form';
 
                     this.$nextTick(() => {
+                        // Reinitialize ACF fields (media picker, file uploads, etc.)
                         if (window.acf && this.$refs.modalContent) {
+                            // Append action triggers ACF field initialization
                             window.acf.doAction('append', this.$refs.modalContent);
+                            
+                            // Fix label accessibility issues
+                            if (window.fixACFLabelRelationships) {
+                                window.fixACFLabelRelationships(this.$refs.modalContent);
+                            }
+                            
+                            // FIX MEDIA PICKER: Bind buttons per file field nel modal
+                            const addFileButtons = this.$refs.modalContent.querySelectorAll('.acf-file-uploader .button');
+                            if (addFileButtons.length > 0 && typeof wp !== 'undefined' && wp.media) {
+                                addFileButtons.forEach(button => {
+                                    // Remove old listeners
+                                    const clone = button.cloneNode(true);
+                                    button.parentNode.replaceChild(clone, button);
+                                    
+                                    // Bind new click handler
+                                    clone.addEventListener('click', function(e) {
+                                        e.preventDefault();
+                                        e.stopPropagation();
+                                        window.meridiana_open_media_picker(this);
+                                    });
+                                });
+                            }
                         }
+                        
+                        // Render icons
                         if (window.lucide) {
                             window.lucide.createIcons();
                         }
@@ -218,9 +295,15 @@ document.addEventListener('alpine:init', () => {
         },
 
         getModalTitle() {
-            const typeMap = { 'documenti': 'Documento', 'comunicazioni': 'Comunicazione', 'convenzioni': 'Convenzione', 'salute': 'Articolo', 'utenti': 'Utente' };
+            const typeMap = {
+                'documenti': this.selectedCPT === 'protocollo' ? 'Nuovo Protocollo' : 'Nuovo Modulo',
+                'comunicazioni': 'Nuova Comunicazione',
+                'convenzioni': 'Nuova Convenzione',
+                'salute': 'Nuovo Articolo',
+                'utenti': 'Nuovo Utente'
+            };
             const type = typeMap[this.selectedPostType] || 'Elemento';
-            return `${this.selectedPostId ? 'Modifica' : 'Nuovo'} ${type}`;
+            return `${this.selectedPostId ? 'Modifica' : type.split(' ')[0]} ${type.replace(/^Nuovo\s|^Modifica\s/, '')}`;
         },
 
         showNotification(message, type = 'success') {

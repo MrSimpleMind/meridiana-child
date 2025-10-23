@@ -13,6 +13,14 @@ if (function_exists('acf_form_head')) {
     acf_form_head();
 }
 
+// Enqueue WordPress media library (required for ACF file picker)
+wp_enqueue_media();
+
+// Enqueue ACF scripts for modal media picker support
+if (function_exists('acf_enqueue_scripts')) {
+    acf_enqueue_scripts();
+}
+
 get_header();
 ?>
 

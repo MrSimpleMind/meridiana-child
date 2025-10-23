@@ -444,6 +444,8 @@ require_once MERIDIANA_CHILD_DIR . '/includes/gestore-enqueue.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/auto-create-pages.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/ajax-gestore-handlers.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/acf-media-fix.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
 
 /**
  * TEMPLATE ROUTING
