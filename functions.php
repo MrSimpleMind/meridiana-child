@@ -29,7 +29,8 @@ function meridiana_enqueue_styles() {
     );
     
     // Force cache bust on CSS file
-    $css_version = time();
+    $css_file_path = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
+    $css_version = file_exists($css_file_path) ? filemtime($css_file_path) : MERIDIANA_CHILD_VERSION;
     
     wp_enqueue_style(
         'meridiana-child-style',
@@ -111,22 +112,26 @@ function meridiana_enqueue_scripts() {
         true
     );
 
-    // Enqueue scripts for Analytics page (always enqueue, logic will be in JS)
-    wp_enqueue_script(
-        'chart-js',
-        'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
-        array(),
-        '4.4.1',
-        true
-    );
+    // Enqueue Analitiche scripts only on the Analitiche page
+    if (is_page_template('page-analitiche.php')) {
+        // Enqueue Chart.js library
+        wp_enqueue_script(
+            'chartjs',
+            'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+            array(),
+            '4.4.1',
+            true
+        );
 
-    wp_enqueue_script(
-        'meridiana-analytics-page',
-        MERIDIANA_CHILD_URI . '/assets/js/src/analytics-page.js',
-        array('meridiana-child-scripts', 'chart-js'),
-        MERIDIANA_CHILD_VERSION,
-        true
-    );
+        // Enqueue Analitiche custom script
+        wp_enqueue_script(
+            'meridiana-analitiche-scripts',
+            MERIDIANA_CHILD_URI . '/assets/js/dist/analitiche.min.js', // Will be compiled by Webpack
+            array('chartjs'), // Depends on Chart.js
+            MERIDIANA_CHILD_VERSION, // Use theme version for cache busting
+            true
+        );
+    }
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_scripts');
 

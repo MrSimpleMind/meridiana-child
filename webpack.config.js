@@ -6,10 +6,11 @@ module.exports = (env, argv) => {
     return {
         entry: {
             main: path.resolve(__dirname, 'assets/js/src/index.js'),
+            analitiche: path.resolve(__dirname, 'assets/js/src/analitiche.js'),
         },
         output: {
             path: path.resolve(__dirname, 'assets/js/dist'),
-            filename: 'main.min.js',
+            filename: '[name].min.js',
             clean: true,
         },
         mode: isProd ? 'production' : 'development',
