@@ -60,9 +60,6 @@ get_header();
                 <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'utenti' }" @click="activeTab = 'utenti'">
                     <i data-lucide="users"></i><span>Utenti</span>
                 </button>
-                <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'analitiche' }" @click="activeTab = 'analitiche'">
-                    <i data-lucide="bar-chart-2"></i><span>Analitiche</span>
-                </button>
             </div>
         </div>
     </div>
@@ -84,9 +81,6 @@ get_header();
                 </div>
                 <div class="dashboard-tab-pane" x-show="activeTab === 'utenti'" x-cloak>
                     <?php get_template_part('templates/parts/gestore/tab-utenti'); ?>
-                </div>
-                <div class="dashboard-tab-pane" x-show="activeTab === 'analitiche'" x-cloak>
-                    <?php get_template_part('templates/parts/gestore/tab-analitiche'); ?>
                 </div>
             </div>
         </div>

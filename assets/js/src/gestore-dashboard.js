@@ -1,4 +1,4 @@
-﻿/**
+/**
  * Alpine.js Component: gestoreDashboard
  * FIX: Aggiunto Step 1 scelta CPT, form rendering corretto, media picker fix
  */
@@ -68,8 +68,6 @@ window.meridiana_open_media_picker = function(trigger) {
     frame.open();
 };
 
-// ============================================
-// ALPINE COMPONENT
 // ============================================
 // ALPINE COMPONENT
 // ============================================
@@ -746,5 +744,3 @@ document.addEventListener('alpine:init', () => {
         },
     }));
 });
-
-

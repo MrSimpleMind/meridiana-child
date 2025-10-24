@@ -1,12 +1,74 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 23 Ottobre 2025 - [GESTORE DASHBOARD - TABS COMPLETE + FILE ARCHIVING] ✅ COMPLETATO
-> **Stato**: In Sviluppo - Fase 1-4 COMPLETATE | Fase 5 SETUP (75%)
+> **Aggiornato**: 24 Ottobre 2025 - [ROLLBACK ANALYTICS + FIX DIPENDENZE SCRIPT + PAGINA ANALITICHE CREATA] ✅ COMPLETATO
+> **Stato**: In Sviluppo - Fase 1-4 COMPLETATE | Fase 5-6 SETUP (60%)
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
 
 ---
 
-## 🔧 AGGIORNAMENTI SESSION - 23 Ottobre 2025 - DASHBOARD GESTORE TABS COMPLETE (Comunicazioni + Documentazione + Utenti)
+## 🔧 AGGIORNAMENTI SESSION - 24 Ottobre 2025 - PAGINA ANALITICHE CREATA
+
+### ✅ SETUP: Pagina Analytics creata manualmente
+**Status**: ✅ CREATA - Pagina WordPress ready per template
+
+**Dettagli Pagina**:
+- **Titolo**: Analitiche
+- **Slug**: `/analitiche/`
+- **URL**: http://nuova-formazione.local/analitiche/
+- **Stato**: Pubblicato
+- **Autore**: Matteo
+- **Template**: Template predefinito
+- **Data Creazione**: 24 Ottobre 2025
+
+**Prossimi Step - Implementazione**:
+1. ✅ **Template PHP** → `page-analitiche.php` (creato da Claude)
+2. ✅ **Backend Functions** → `includes/analytics-functions.php` (query dati, KPI, cache)
+3. ✅ **Frontend HTML/CSS/JS** → Analytics dashboard con:
+   - KPI Cards (utenti, protocolli, moduli, etc.)
+   - Grafico distribuzione contenuti
+   - Ricerca utenti + protocolli
+   - Export CSV (fase 2)
+4. ✅ **Permission check** → Solo gestore + admin
+
+**Architettura Dati**:
+- Fonte: `wp_document_views` + `wp_posts` + `wp_users`
+- Caching: Transient API (1 ora)
+- Performance: Query ottimizzate con indexing
+
+---
+
+
+
+### ✅ COMPLETATO: Rollback versione analytics + Fix infinite loop dipendenze script
+**Status**: ✅ COMPLETATO - Dashboard Gestore funzionante (Production Ready)
+
+**Cosa Successo**:
+- ⚠️ Implementazione analytics tab ha rotto tutte le form della dashboard gestore
+- ⚠️ Causa: Funzioni PHP non definite in `tab-analitiche.php` (meridiana_get_cached_stat, etc.)
+- ⚠️ Memory exhausted: Infinite loop dipendenze script (gestore-dashboard → alpinejs → gestore-dashboard)
+
+**Azioni Eseguite**:
+1. ✅ **Backup emergenza creati** in `/home/claude/BACKUP_ROLLBACK_24OCT_*`
+2. ✅ **Rimosso tab Analitiche** da pagina dashboard (`page-dashboard-gestore.php`)
+3. ✅ **Ripulito `gestore-enqueue.php`** da logica analytics obsoleta
+4. ✅ **Fix infinite loop**: Rimossa dipendenza circolare script
+   - gestore-dashboard.js NON dipende più da alpinejs
+   - alpinejs carica DOPO e dipende da gestore-dashboard
+
+**File Modificati**:
+- `page-dashboard-gestore.php` - Rimosso button + tab pane analitiche
+- `includes/gestore-enqueue.php` - Pulizia logica analytics + fix dipendenze
+- `functions.php` - Riga 443: ripreso `require_once gestore-enqueue.php`
+
+**Result**: Dashboard Gestore Rollback **100% COMPLETATO** ✅🎉
+
+**Prossimi Step**:
+- Analytics verrà re-implementato DOPO in modo pulito (con tutte le funzioni PHP necessarie)
+- Focus: Completare tab Convenzioni + Salute e Benessere della dashboard gestore
+
+---
+
+
 
 ### ✅ COMPLETATO: Dashboard Gestore - Tutti i Tab Principali con Form Funzionanti
 **Status**: ✅ COMPLETATO - Production Ready | Fase 5 salita a 75%
