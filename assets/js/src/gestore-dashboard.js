@@ -83,7 +83,6 @@ document.addEventListener('alpine:init', () => {
         selectedPostType: null, // 'documenti' | 'utenti'
         selectedCPT: null, // 'protocollo' | 'modulo' (per documenti)
         isLoading: false,
-        modalStep: 'choose', // 'choose' = scelta CPT, 'form' = carica form
         errorMessage: '',
         successMessage: '',
         activeEditors: [],
@@ -438,21 +437,6 @@ document.addEventListener('alpine:init', () => {
             });
         },
 
-        openDocumentoChoice() {
-            this.destroyRichTextEditors();
-            this.selectedPostType = 'documenti';
-            this.modalStep = 'choose';
-            this.modalOpen = true;
-            this.selectedCPT = null;
-        },
-
-        async selectCPT(cpt) {
-            // Dopo scelta CPT, carica il form
-            this.selectedCPT = cpt;
-            this.modalStep = 'form';
-            await this.openFormModal('documenti', 'new', 0, cpt);
-        },
-
         async openFormModal(postType, action = 'new', postId = null, cpt = null) {
             this.destroyRichTextEditors();
             this.selectedPostType = postType;
@@ -466,6 +450,8 @@ document.addEventListener('alpine:init', () => {
             if (postType === 'documenti') {
                 targetCPT = targetCPT || this.selectedCPT || 'protocollo';
                 this.selectedCPT = targetCPT;
+            } else {
+                this.selectedCPT = null;
             }
 
             this.modalOpen = true;
@@ -492,10 +478,8 @@ document.addEventListener('alpine:init', () => {
                     if (postType === 'documenti' && data.data?.document_cpt) {
                         this.selectedCPT = data.data.document_cpt;
                     }
-                    this.modalStep = 'form';
 
-                    
-this.$nextTick(() => {
+                    this.$nextTick(() => {
                         if (window.acf && this.$refs.modalContent) {
                             window.acf.doAction('append', this.$refs.modalContent);
                             if (window.fixACFLabelRelationships) {
@@ -528,7 +512,6 @@ this.$nextTick(() => {
             this.selectedPostId = null;
             this.selectedPostType = null;
             this.selectedCPT = null;
-            this.modalStep = 'choose';
             this.errorMessage = '';
         },
 
@@ -732,15 +715,24 @@ this.$nextTick(() => {
         },
 
         getModalTitle() {
-            const typeMap = {
-                'documenti': this.selectedCPT === 'protocollo' ? 'Nuovo Protocollo' : 'Nuovo Modulo',
-                'comunicazioni': 'Nuova Comunicazione',
-                'convenzioni': 'Nuova Convenzione',
-                'salute': 'Nuovo Articolo',
-                'utenti': 'Nuovo Utente'
+            if (!this.selectedPostType) {
+                return '';
+            }
+
+            if (this.selectedPostType === 'documenti') {
+                const isProtocollo = (this.selectedCPT || 'protocollo') === 'protocollo';
+                const baseLabel = isProtocollo ? 'Protocollo' : 'Modulo';
+                return (this.selectedPostId ? 'Modifica ' : 'Nuovo ') + baseLabel;
+            }
+
+            const labels = {
+                'comunicazioni': ['Nuova Comunicazione', 'Modifica Comunicazione'],
+                'convenzioni': ['Nuova Convenzione', 'Modifica Convenzione'],
+                'salute': ['Nuovo Articolo', 'Modifica Articolo'],
+                'utenti': ['Nuovo Utente', 'Modifica Utente'],
             };
-            const type = typeMap[this.selectedPostType] || 'Elemento';
-            return `${this.selectedPostId ? 'Modifica' : type.split(' ')[0]} ${type.replace(/^Nuov[oa]\s|^Modifica\s/, '')}`;
+            const typeLabels = labels[this.selectedPostType] || ['Nuovo Elemento', 'Modifica Elemento'];
+            return this.selectedPostId ? typeLabels[1] : typeLabels[0];
         },
 
         showNotification(message, type = 'success') {

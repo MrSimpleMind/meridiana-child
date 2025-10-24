@@ -90,46 +90,16 @@ get_header();
     <div class="dashboard-modal" x-show="modalOpen" x-cloak @keydown.escape="closeModal()">
         <div class="dashboard-modal__overlay" @click="closeModal()"></div>
         <div class="dashboard-modal__body">
-            <!-- STEP 1: Scelta Tipo Documento -->
-            <template x-if="modalStep === 'choose'">
-                <div>
-                    <div class="dashboard-modal__header">
-                        <h2>Nuovo Documento</h2>
-                        <button type="button" class="dashboard-modal__close" @click="closeModal()">
-                            <i data-lucide="x"></i>
-                        </button>
-                    </div>
-                    <div class="dashboard-modal__content">
-                        <p style="margin-bottom: 24px; text-align: center; color: #666;">Seleziona il tipo di documento da creare:</p>
-                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                            <button type="button" class="btn btn-primary" @click="selectCPT('protocollo')" :disabled="isLoading">
-                                <i data-lucide="file-text" style="margin-right: 8px;"></i>
-                                Protocollo
-                            </button>
-                            <button type="button" class="btn btn-primary" @click="selectCPT('modulo')" :disabled="isLoading">
-                                <i data-lucide="file" style="margin-right: 8px;"></i>
-                                Modulo
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </template>
-
-            <!-- STEP 2: Form -->
-            <template x-if="modalStep === 'form'">
-                <div>
-                    <div class="dashboard-modal__header">
-                        <h2 x-text="getModalTitle()"></h2>
-                        <button type="button" class="dashboard-modal__close" @click="closeModal()">
-                            <i data-lucide="x"></i>
-                        </button>
-                    </div>
-                    <div class="dashboard-modal__content" x-ref="modalContent" x-html="modalContent"></div>
-                    <div class="dashboard-modal__footer" x-show="isLoading">
-                        <span class="loading-spinner"><i data-lucide="loader"></i> Salvataggio...</span>
-                    </div>
-                </div>
-            </template>
+            <div class="dashboard-modal__header">
+                <h2 x-text="getModalTitle()"></h2>
+                <button type="button" class="dashboard-modal__close" @click="closeModal()">
+                    <i data-lucide="x"></i>
+                </button>
+            </div>
+            <div class="dashboard-modal__content" x-ref="modalContent" x-html="modalContent"></div>
+            <div class="dashboard-modal__footer" x-show="isLoading">
+                <span class="loading-spinner"><i data-lucide="loader"></i> Salvataggio...</span>
+            </div>
         </div>
     </div>
 </div>

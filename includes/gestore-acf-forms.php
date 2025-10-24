@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * Gestore ACF Forms - Dashboard Gestore
  * Rendering forms + handler di salvataggio

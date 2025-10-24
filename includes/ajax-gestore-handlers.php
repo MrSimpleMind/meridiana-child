@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 /**
  * AJAX Handlers - Dashboard Gestore
  * Delete documenti, utenti, reset password, ecc.
