@@ -22,14 +22,14 @@ $comunicazioni_query = new WP_Query([
                     <?php 
                     $categories = get_the_category();
                     if (!empty($categories)) {
-                        echo esc_html($categories[0]->name);
-                    } else {
-                        echo '<span class="badge badge-info">Senza categoria</span>';
+                        foreach ($categories as $category) {
+                            echo meridiana_get_badge('category', $category->name);
+                        }
                     }
                     ?>
                 </td>
                 <td class="date-cell"><?php echo get_the_date('d/m/Y'); ?></td>
-                <td><span class="badge <?php echo get_post_status() === 'publish' ? 'badge-success' : 'badge-warning'; ?>"><?php echo ucfirst(get_post_status()); ?></span></td>
+                <td><?php echo meridiana_get_status_badge(get_the_ID()); ?></td>
                 <td class="actions-cell">
                     <button class="btn-icon" @click="openFormModal('comunicazioni', 'edit', <?php echo get_the_ID(); ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
                     <button class="btn-icon" @click="deleteComunicazione(<?php echo get_the_ID(); ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>

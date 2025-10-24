@@ -29,13 +29,25 @@ $convenzioni_query = new WP_Query([
             <tr>
                 <td class="title-cell"><strong><?php the_title(); ?></strong></td>
                 <td>
-                    <?php if ($category_display): ?>
-                        <?php echo esc_html($category_display); ?>
-                    <?php else: ?>
-                        <span class="badge badge-info"><?php esc_html_e('Senza categoria', 'meridiana-child'); ?></span>
-                    <?php endif; ?>
+                    <?php
+                    $categories = get_the_terms($post_id, 'category');
+                    if (!is_wp_error($categories) && !empty($categories)) {
+                        foreach ($categories as $category) {
+                            echo meridiana_get_badge('category', $category->name);
+                        }
+                    }
+                    ?>
                 </td>
-                <td><span class="badge <?php echo esc_attr($status_class); ?>"><?php echo esc_html($status_label); ?></span></td>
+                <td>
+                    <?php
+                    $is_active = (bool) get_field('convenzione_attiva', $post_id);
+                    if ($is_active) {
+                        echo '<span class="badge badge-success">Attiva</span>';
+                    } else {
+                        echo '<span class="badge badge-error">Scaduta</span>';
+                    }
+                    ?>
+                </td>
                 <td class="date-cell"><?php echo esc_html($updated_date); ?></td>
                 <td class="actions-cell">
                     <button class="btn-icon" @click="openFormModal('convenzioni', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>

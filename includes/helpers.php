@@ -75,3 +75,32 @@ function meridiana_get_badge($type, $text) {
         esc_html($text)
     );
 }
+
+/**
+ * Renderizza un badge standardizzato per lo stato di un post.
+ *
+ * @param string|WP_Post $post Post object o ID.
+ * @return string Il markup HTML del badge di stato.
+ */
+function meridiana_get_status_badge($post) {
+    $status = get_post_status($post);
+    
+    $status_map = [
+        'publish' => ['text' => 'Pubblicato', 'class' => 'badge-success'],
+        'draft'   => ['text' => 'Bozza', 'class' => 'badge-warning'],
+        'pending' => ['text' => 'In attesa', 'class' => 'badge-warning'],
+        'private' => ['text' => 'Privato', 'class' => 'badge-secondary'],
+        'future'  => ['text' => 'Pianificato', 'class' => 'badge-info'],
+    ];
+
+    if (isset($status_map[$status])) {
+        $badge_data = $status_map[$status];
+        return sprintf(
+            '<span class="badge %s">%s</span>',
+            esc_attr($badge_data['class']),
+            esc_html($badge_data['text'])
+        );
+    }
+
+    return '';
+}

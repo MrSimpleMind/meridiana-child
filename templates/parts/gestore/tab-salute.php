@@ -31,13 +31,16 @@ $salute_query = new WP_Query([
             <tr>
                 <td class="title-cell"><strong><?php the_title(); ?></strong></td>
                 <td>
-                    <?php if ($category_display): ?>
-                        <?php echo esc_html($category_display); ?>
-                    <?php else: ?>
-                        <span class="badge badge-info"><?php esc_html_e('Senza categoria', 'meridiana-child'); ?></span>
-                    <?php endif; ?>
+                    <?php
+                    $categories = get_the_terms($post_id, 'category');
+                    if (!is_wp_error($categories) && !empty($categories)) {
+                        foreach ($categories as $category) {
+                            echo meridiana_get_badge('category', $category->name);
+                        }
+                    }
+                    ?>
                 </td>
-                <td><span class="badge <?php echo esc_attr($status_class); ?>"><?php echo esc_html($status_label); ?></span></td>
+                <td><?php echo meridiana_get_status_badge($post_id); ?></td>
                 <td class="date-cell"><?php echo esc_html($updated_date); ?></td>
                 <td><?php echo esc_html(number_format_i18n($risorse_count)); ?></td>
                 <td class="actions-cell">

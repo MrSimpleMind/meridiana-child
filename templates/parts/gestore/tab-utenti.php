@@ -70,8 +70,8 @@ $status_badge_classes = [
                         N/D
                     <?php endif; ?>
                 </td>
-                <td><?php echo $profilo ? esc_html($profilo) : 'N/D'; ?></td>
-                <td><?php echo $udo ? esc_html($udo) : 'N/D'; ?></td>
+                <td><?php if ($profilo) echo meridiana_get_badge('category', $profilo); ?></td>
+                <td><?php if ($udo) echo meridiana_get_badge('category', $udo); ?></td>
                 <td class="link-status-cell">
                     <?php if (!empty($link_autologin)): ?>
                         <a href="<?php echo esc_url($link_autologin); ?>" class="link-status link-status--available" target="_blank" rel="noopener noreferrer" aria-label="Apri link autologin">
