@@ -136,6 +136,11 @@ error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_r
             <i data-lucide="settings"></i>
             <span>Dashboard Gestore</span>
         </a>
+        <a href="<?php echo home_url('/analitiche/'); ?>" 
+           class="sidebar-nav__item <?php echo is_page('analitiche') ? 'active' : ''; ?>">
+            <i data-lucide="bar-chart-2"></i>
+            <span>Analitiche</span>
+        </a>
         <?php endif; ?>
     </div>
     

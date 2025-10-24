@@ -141,3 +141,95 @@ function register_analytics_rest_routes() {
     ));
 }
 add_action('rest_api_init', 'register_analytics_rest_routes');
+
+/**
+ * AJAX: Get Global Statistics
+ * Action: meridiana_analytics_get_global_stats
+ */
+function meridiana_ajax_get_global_stats() {
+    // Verify permissions
+    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+        wp_send_json_error('Insufficient permissions');
+    }
+
+    $stats = array();
+
+    // 1. User Stats
+    $users_count = count_users();
+    $stats['total_users'] = $users_count['total_users'];
+    // TODO: Implement logic for suspended/fired users based on user meta or custom roles
+    $stats['active_users'] = $users_count['total_users']; // Placeholder
+    $stats['suspended_users'] = 0; // Placeholder
+    $stats['fired_users'] = 0; // Placeholder
+
+    // 2. Content Stats
+    $stats['total_protocols'] = wp_count_posts('protocollo')->publish;
+    $stats['total_modules'] = wp_count_posts('modulo')->publish;
+    $stats['total_convenzioni'] = wp_count_posts('convenzione')->publish;
+    $stats['total_salute_benessere'] = wp_count_posts('salute-e-benessere-l')->publish;
+    $stats['total_comunicazioni'] = wp_count_posts('post')->publish;
+
+    // 3. ATS Protocols
+    $ats_protocols_query = new WP_Query(array(
+        'post_type' => 'protocollo',
+        'posts_per_page' => -1,
+        'meta_query' => array(
+            array(
+                'key' => 'pianificazione_ats',
+                'value' => '1',
+                'compare' => '='
+            )
+        ),
+        'fields' => 'ids', // Only get post IDs for performance
+    ));
+    $stats['total_ats_protocols'] = $ats_protocols_query->post_count;
+    wp_reset_postdata();
+
+    wp_send_json_success($stats);
+}
+add_action('wp_ajax_meridiana_analytics_get_global_stats', 'meridiana_ajax_get_global_stats');
+
+/**
+ * AJAX: Track Document View
+ * Action: meridiana_track_document_view
+ */
+function meridiana_ajax_track_document_view() {
+    // Verify nonce and user login
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
+        wp_send_json_error('Nonce verification failed');
+    }
+
+    if (!is_user_logged_in()) {
+        wp_send_json_error('User not logged in');
+    }
+
+    $user_id = get_current_user_id();
+    $document_id = isset($_POST['document_id']) ? intval($_POST['document_id']) : 0;
+
+    if (!$document_id) {
+        wp_send_json_error('Invalid document ID');
+    }
+
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'document_views';
+
+    // Insert view into database
+    $inserted = $wpdb->insert(
+        $table_name,
+        array(
+            'user_id' => $user_id,
+            'document_id' => $document_id,
+            'view_timestamp' => current_time('mysql'),
+        ),
+        array('%d', '%d', '%s')
+    );
+
+    if ($inserted) {
+        wp_send_json_success('Document view tracked.');
+    } else {
+        wp_send_json_error('Failed to track document view.');
+    }
+}
+add_action('wp_ajax_meridiana_track_document_view', 'meridiana_ajax_track_document_view');
+
+

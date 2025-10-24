@@ -296,6 +296,38 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
             }
         });
     }
+
+    // Script per tracciare le visualizzazioni dei documenti
+    if (typeof meridiana !== 'undefined' && meridiana.userId) {
+        const postId = <?php echo json_encode(get_the_ID()); ?>;
+        const postType = <?php echo json_encode(get_post_type()); ?>;
+
+        // Traccia solo per protocollo e modulo
+        if (postId && (postType === 'protocollo' || postType === 'modulo')) {
+            fetch(meridiana.ajaxurl, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: new URLSearchParams({
+                    action: 'meridiana_track_document_view',
+                    nonce: meridiana.nonce,
+                    document_id: postId,
+                }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Document view tracked successfully.');
+                } else {
+                    console.error('Error tracking document view:', data.data);
+                }
+            })
+            .catch(error => {
+                console.error('Network error tracking document view:', error);
+            });
+        }
+    }
 })();
 </script>
 

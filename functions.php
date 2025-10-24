@@ -110,6 +110,23 @@ function meridiana_enqueue_scripts() {
         MERIDIANA_CHILD_VERSION,
         true
     );
+
+    // Enqueue scripts for Analytics page (always enqueue, logic will be in JS)
+    wp_enqueue_script(
+        'chart-js',
+        'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
+        array(),
+        '4.4.1',
+        true
+    );
+
+    wp_enqueue_script(
+        'meridiana-analytics-page',
+        MERIDIANA_CHILD_URI . '/assets/js/src/analytics-page.js',
+        array('meridiana-child-scripts', 'chart-js'),
+        MERIDIANA_CHILD_VERSION,
+        true
+    );
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_scripts');
 
@@ -566,5 +583,40 @@ add_action('init', 'meridiana_disable_embeds_init', 9999);
 
 function meridiana_theme_activation() {
     flush_rewrite_rules();
+    meridiana_create_document_views_table();
 }
 add_action('after_switch_theme', 'meridiana_theme_activation');
+
+/**
+ * Create custom database table for document views
+ */
+function meridiana_create_document_views_table() {
+    global $wpdb;
+    $table_name = $wpdb->prefix . 'document_views';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
+        user_id bigint(20) UNSIGNED NOT NULL,
+        document_id bigint(20) UNSIGNED NOT NULL,
+        view_timestamp datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
+        PRIMARY KEY  (id),
+        KEY user_id (user_id),
+        KEY document_id (document_id)
+    ) $charset_collate;";
+
+    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
+    dbDelta($sql);
+
+    add_option('meridiana_document_views_db_version', MERIDIANA_CHILD_VERSION);
+}
+
+// Ensure table exists on init (e.g., if theme was updated or option deleted)
+function meridiana_check_document_views_table() {
+    if (get_option('meridiana_document_views_db_version') != MERIDIANA_CHILD_VERSION) {
+        meridiana_create_document_views_table();
+    }
+}
+add_action('init', 'meridiana_check_document_views_table');
+
