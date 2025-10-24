@@ -21,7 +21,7 @@
         <?php wp_footer(); ?>
         
         <!-- Initialize Lucide Icons -->
-        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="https://unpkg.com/lucide@0.288.0"></script>
         <script>
             lucide.createIcons();
         </script>
