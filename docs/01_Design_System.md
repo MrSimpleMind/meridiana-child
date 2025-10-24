@@ -683,6 +683,42 @@ $z-notification: 1300;
 }
 ```
 
+### Badge Semantici per Contenuto (✨ Nuovo - Ottobre 2025)
+
+Per standardizzare la rappresentazione dei tipi di contenuto, sono stati introdotti dei badge specifici.
+
+**Logica e Colori:**
+- **Protocollo (P)**: Blu (`--color-info`). Indica un documento di riferimento, una linea guida.
+- **Modulo (M)**: Verde (`--color-success`). Indica un documento operativo, da compilare.
+- **ATS**: Viola (`--color-accent-purple`). Un tipo speciale di protocollo, con un colore distintivo.
+- **Categoria**: Grigio (stile `badge-secondary`). Usato per tassonomie e metadati.
+
+**Classi SCSS Corrispondenti:**
+- `.badge-protocollo`
+- `.badge-modulo`
+- `.badge-ats`
+- `.badge-category`
+
+**Implementazione via Helper PHP:**
+Per garantire consistenza, utilizzare sempre la funzione helper `meridiana_get_badge($type, $text)` definita in `includes/helpers.php`.
+
+*Esempio di utilizzo in un template:*
+```php
+// Per un protocollo
+echo meridiana_get_badge('protocollo', 'P');
+
+// Per un modulo
+echo meridiana_get_badge('modulo', 'M');
+
+// Per un protocollo ATS
+echo meridiana_get_badge('ats', 'ATS');
+
+// Per una categoria
+echo meridiana_get_badge('category', 'Nome Categoria');
+```
+
+Questo sistema assicura che tutti i badge relativi ai contenuti siano uniformi in tutta la piattaforma.
+
 ### Input Fields
 
 ```scss

@@ -16,7 +16,15 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
             <?php while ($documenti_query->have_posts()): $documenti_query->the_post(); ?>
             <tr>
                 <td class="title-cell"><strong><?php the_title(); ?></strong></td>
-                <td><span class="badge <?php echo get_post_type() === 'protocollo' ? 'badge-blue' : 'badge-green'; ?>"><?php echo get_post_type() === 'protocollo' ? 'Protocollo' : 'Modulo'; ?></span></td>
+                <td>
+                    <?php
+                    $post_type = get_post_type();
+                    $is_ats = ($post_type === 'protocollo') ? get_field('pianificazione_ats', get_the_ID()) : false;
+                    $badge_type = $is_ats ? 'ats' : $post_type;
+                    $badge_label = $is_ats ? 'Protocollo ATS' : ($post_type === 'protocollo' ? 'Protocollo' : 'Modulo');
+                    echo meridiana_get_badge($badge_type, $badge_label);
+                    ?>
+                </td>
                 <td class="date-cell"><?php echo get_the_date('d/m/Y'); ?></td>
                 <td><span class="badge <?php echo get_post_status() === 'publish' ? 'badge-success' : 'badge-warning'; ?>"><?php echo ucfirst(get_post_status()); ?></span></td>
                 <td class="actions-cell">

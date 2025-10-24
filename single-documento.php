@@ -144,12 +144,14 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                             Informazioni
                         </h3>
                         
-                        <!-- Tipo (con colori differenziati) -->
                         <div class="single-documento__info-item">
                             <strong>Tipo:</strong>
-                            <span class="badge-<?php echo esc_attr($badge_color); ?>">
-                                <?php echo esc_html($type_label); ?>
-                            </span>
+                            <?php
+                            $badge_type = $pianificazione_ats ? 'ats' : $post_type;
+                            // Usa un'etichetta più descrittiva per ATS
+                            $badge_label = $pianificazione_ats ? 'Protocollo ATS' : $type_label;
+                            echo meridiana_get_badge($badge_type, $badge_label);
+                            ?>
                         </div>
 
                         <!-- Data Pubblicazione (TAG STYLE) -->

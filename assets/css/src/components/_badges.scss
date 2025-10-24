@@ -208,3 +208,25 @@
         }
     }
 }
+
+// ========================================
+// BADGE SPECIFICI PER CONTENUTO
+// ========================================
+
+// Badge per Tipi di Documento
+.badge-protocollo {
+    background-color: var(--color-info); // Blu
+    color: white;
+}
+
+.badge-modulo {
+    background-color: var(--color-success); // Verde
+    color: white;
+}
+
+// Badge per Categorie/Tassonomie
+.badge-category {
+    @extend .badge-secondary; // Grigio, stile neutro
+    text-transform: none;
+    font-size: 11px;
+}

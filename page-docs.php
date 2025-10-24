@@ -203,13 +203,23 @@ error_log( 'Area: ' . count($area_competenza) );
 
                         <!-- CONTENT -->
                         <div class="docs-item__content">
-                            <!-- Badge Tipo (alto a sinistra del contenuto) -->
-                            <div class="docs-item__badge">
-                                <span class="badge badge-<?php echo ($type === 'protocollo') ? 'blue' : 'green'; ?>">
-                                    <?php echo $type_short; ?>
-                                </span>
-                            </div>
-                            
+                                                    <div class="docs-item__badge">
+                                                        <?php 
+                                                        $badge_text = '';
+                                                        $badge_type = '';
+                                                        if ($is_ats) {
+                                                            $badge_text = 'ATS';
+                                                            $badge_type = 'ats';
+                                                        } elseif ($type === 'protocollo') {
+                                                            $badge_text = 'P';
+                                                            $badge_type = 'protocollo';
+                                                        } else { // modulo
+                                                            $badge_text = 'M';
+                                                            $badge_type = 'modulo';
+                                                        }
+                                                        echo meridiana_get_badge($badge_type, $badge_text);
+                                                        ?>
+                                                    </div>                            
                             <h3 class="docs-item__title">
                                 <?php echo esc_html($doc->post_title); ?>
                             </h3>

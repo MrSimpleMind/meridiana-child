@@ -51,3 +51,27 @@ function meridiana_display_featured_image() {
 add_action('blocksy:single:content:top', 'meridiana_display_featured_image', 1);
 
 // ... [resto del file] ...
+
+/**
+ * Renderizza un badge standardizzato per tipo di post o tassonomia.
+ *
+ * @param string $type Il tipo di badge (es. 'protocollo', 'modulo', 'category').
+ * @param string $text Il testo da visualizzare nel badge.
+ * @return string Il markup HTML del badge.
+ */
+function meridiana_get_badge($type, $text) {
+    $class_map = [
+        'protocollo' => 'badge-protocollo',
+        'modulo'     => 'badge-modulo',
+        'ats'        => 'badge-ats',
+        'category'   => 'badge-category',
+    ];
+
+    $badge_class = isset($class_map[$type]) ? $class_map[$type] : 'badge-secondary';
+
+    return sprintf(
+        '<span class="badge %s">%s</span>',
+        esc_attr($badge_class),
+        esc_html($text)
+    );
+}
