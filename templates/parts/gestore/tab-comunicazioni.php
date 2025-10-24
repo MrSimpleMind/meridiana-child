@@ -4,6 +4,7 @@ $comunicazioni_query = new WP_Query([
     'posts_per_page' => 50,
     'orderby' => 'date',
     'order' => 'DESC',
+    'post_status' => ['publish', 'draft'],
 ]);
 ?>
 <div class="tab-header">
