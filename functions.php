@@ -427,6 +427,7 @@ add_action('wp_head', 'meridiana_add_inline_styles', 99);
  * INCLUDE FILES
  */
 
+require_once MERIDIANA_CHILD_DIR . '/includes/analytics.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-config.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/taxonomies.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/user-roles.php';
@@ -443,6 +444,7 @@ require_once MERIDIANA_CHILD_DIR . '/includes/security.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-enqueue.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/auto-create-pages.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/ajax-gestore-handlers.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/ajax-analytics.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-media-fix.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
