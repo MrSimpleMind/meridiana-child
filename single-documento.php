@@ -147,10 +147,13 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                         <div class="single-documento__info-item">
                             <strong>Tipo:</strong>
                             <?php
-                            $badge_type = $pianificazione_ats ? 'ats' : $post_type;
-                            // Usa un'etichetta più descrittiva per ATS
-                            $badge_label = $pianificazione_ats ? 'Protocollo ATS' : $type_label;
-                            echo meridiana_get_badge($badge_type, $badge_label);
+                            // Mostra sempre il badge del tipo principale
+                            echo meridiana_get_badge($post_type, $type_label);
+
+                            // Se è un protocollo ATS, aggiungi il badge ATS
+                            if ($pianificazione_ats) {
+                                echo meridiana_get_badge('ats', 'ATS');
+                            }
                             ?>
                         </div>
 

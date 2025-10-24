@@ -19,10 +19,16 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
                 <td>
                     <?php
                     $post_type = get_post_type();
-                    $is_ats = ($post_type === 'protocollo') ? get_field('pianificazione_ats', get_the_ID()) : false;
-                    $badge_type = $is_ats ? 'ats' : $post_type;
-                    $badge_label = $is_ats ? 'Protocollo ATS' : ($post_type === 'protocollo' ? 'Protocollo' : 'Modulo');
-                    echo meridiana_get_badge($badge_type, $badge_label);
+                    $is_ats = ($post_type === 'protocollo') && get_field('pianificazione_ats', get_the_ID());
+
+                    // Mostra sempre il badge del tipo principale
+                    $type_label = $post_type === 'protocollo' ? 'Protocollo' : 'Modulo';
+                    echo meridiana_get_badge($post_type, $type_label);
+
+                    // Se è un protocollo ATS, aggiungi il badge ATS
+                    if ($is_ats) {
+                        echo meridiana_get_badge('ats', 'ATS');
+                    }
                     ?>
                 </td>
                 <td class="date-cell"><?php echo get_the_date('d/m/Y'); ?></td>
