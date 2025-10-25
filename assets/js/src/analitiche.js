@@ -36,6 +36,37 @@ function formatDateValue(value) {
     return date.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" });
 }
 
+function downloadDataset(rows, columns, filename, format = 'csv') {
+    if (!rows || !rows.length) {
+        return;
+    }
+
+    const delimiter = ';';
+    const sanitize = (value) => {
+        if (value === null || value === undefined) {
+            value = '';
+        }
+        const str = String(value).replace(/"/g, '""');
+        return '"' + str + '"';
+    };
+
+    const headerLine = columns.map((column) => sanitize(column.label)).join(delimiter);
+    const lines = rows.map((row) => columns.map((column) => {
+        const rawValue = typeof column.formatter === 'function' ? column.formatter(row) : row[column.key];
+        return sanitize(rawValue);
+    }).join(delimiter));
+
+    const content = [headerLine, ...lines].join('\u000A');
+    const blob = new Blob([content], { type: format === 'xls' ? 'application/vnd.ms-excel' : 'text/csv;charset=utf-8;' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = filename + '.' + (format === 'xls' ? 'xls' : 'csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+}
+
 document.addEventListener("alpine:init", () => {
     Alpine.data("analyticsDashboard", () => ({
         activeTab: "overview",
@@ -383,6 +414,54 @@ document.addEventListener("alpine:init", () => {
                 return [];
             }
             return this.documentDetails.non_viewers.slice(0, limit);
+        },
+
+        exportUserViews(format = 'csv') {
+            if (!this.userSelected || !this.userViews.length) {
+                return;
+            }
+
+            const rows = this.sortedUserViews();
+            const columns = [
+                { key: 'post_title', label: 'Documento' },
+                { key: 'post_type', label: 'Tipo', formatter: (row) => this.formatDocumentType(row.post_type) },
+                { key: 'view_count', label: 'Visualizzazioni' },
+                { key: 'last_view', label: 'Ultima visualizzazione', formatter: (row) => formatDateValue(row.last_view) },
+            ];
+
+            downloadDataset(rows, columns, `analytics-utente-${this.userSelected.ID}`, format);
+        },
+
+        exportDocumentViewers(format = 'csv') {
+            if (!this.documentDetails || !this.documentDetails.viewers.length) {
+                return;
+            }
+
+            const rows = this.sortedDocumentViewers();
+            const docId = this.documentDetails.document.id;
+            const columns = [
+                { key: 'display_name', label: 'Nome' },
+                { key: 'user_email', label: 'Email' },
+                { key: 'view_count', label: 'Visualizzazioni' },
+                { key: 'last_view', label: 'Ultima visualizzazione', formatter: (row) => formatDateValue(row.last_view) },
+            ];
+
+            downloadDataset(rows, columns, `analytics-documento-${docId}-viewers`, format);
+        },
+
+        exportDocumentNonViewers(format = 'csv') {
+            if (!this.documentDetails || !this.documentDetails.non_viewers.length) {
+                return;
+            }
+
+            const rows = this.documentDetails.non_viewers.slice();
+            const docId = this.documentDetails.document.id;
+            const columns = [
+                { key: 'display_name', label: 'Nome' },
+                { key: 'user_email', label: 'Email' },
+            ];
+
+            downloadDataset(rows, columns, `analytics-documento-${docId}-non-viewers`, format);
         },
 
         formatDocumentType(type) {

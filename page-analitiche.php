@@ -49,7 +49,7 @@ get_header();
                         <div class="dashboard-tab-pane" x-show="activeTab === 'overview'" x-cloak>
                             <div class="analitiche-section">
                                 <h2 class="analitiche-section__title">Statistiche Globali</h2>
-                                <div class="stats-cards-grid" id="globalStatsCards" x-ref="globalStats">
+                                <div class="stats-cards-grid stats-cards-grid--compact" id="globalStatsCards" x-ref="globalStats">
                                     <div class="stat-card loading">
                                         <span class="stat-card__value">...</span>
                                         <span class="stat-card__label">Caricamento Utenti</span>
@@ -94,6 +94,14 @@ get_header();
                                     </div>
                                     <div class="analytics-card__status" x-show="userLoading" x-cloak>
                                         <span class="loading-spinner"><i data-lucide="loader"></i> Caricamento...</span>
+                                    </div>
+                                    <div class="analytics-actions" x-show="userViews.length" x-cloak>
+                                        <button type="button"
+                                                class="analytics-button analytics-button--primary"
+                                                @click="exportUserViews('csv')">Esporta CSV</button>
+                                        <button type="button"
+                                                class="analytics-button analytics-button--outline"
+                                                @click="exportUserViews('xls')">Esporta Excel</button>
                                     </div>
                                 </div>
 
@@ -250,6 +258,10 @@ get_header();
                                             <div>
                                                 <div class="analytics-panel__subheader">
                                                     <h5>Utenti che hanno visualizzato</h5>
+                                                    <div class="analytics-actions" x-show="documentDetails.viewers.length" x-cloak>
+                                                        <button type="button" class="analytics-button analytics-button--primary" @click="exportDocumentViewers('csv')">CSV</button>
+                                                        <button type="button" class="analytics-button analytics-button--outline" @click="exportDocumentViewers('xls')">Excel</button>
+                                                    </div>
                                                     <select class="analytics-input analytics-input--small" x-model="viewerSort">
                                                         <option value="recent">Più recenti</option>
                                                         <option value="name">Nome A-Z</option>
@@ -283,6 +295,10 @@ get_header();
                                             <div>
                                                 <div class="analytics-panel__subheader">
                                                     <h5>Utenti che non hanno visualizzato</h5>
+                                                    <div class="analytics-actions" x-show="documentDetails.non_viewers.length" x-cloak>
+                                                        <button type="button" class="analytics-button analytics-button--primary" @click="exportDocumentNonViewers('csv')">CSV</button>
+                                                        <button type="button" class="analytics-button analytics-button--outline" @click="exportDocumentNonViewers('xls')">Excel</button>
+                                                    </div>
                                                 </div>
                                                 <div class="analytics-scrollable">
                                                     <template x-if="documentDetails.non_viewers.length">
