@@ -43,14 +43,67 @@ function meridiana_enqueue_styles() {
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
 
+/**
+ * Returns true when the current request should load the analytics assets.
+ *
+ * WordPress may load page-analitiche.php directly via its slug, so
+ * is_page_template('page-analitiche.php') can be false unless the template is
+ * explicitly assigned in the admin. We fall back to checking common slugs to
+ * avoid missing the enqueue.
+ */
+function meridiana_is_analytics_page() {
+    if (!is_page()) {
+        return false;
+    }
+
+    $matches_template = is_page_template('page-analitiche.php');
+
+    $queried_object = get_queried_object();
+    $analytics_slugs = array('analitiche', 'analytics');
+
+    $matches_slug = ($queried_object instanceof WP_Post)
+        ? in_array($queried_object->post_name, $analytics_slugs, true)
+        : false;
+
+    $is_analytics_page = $matches_template || $matches_slug;
+
+    return (bool) apply_filters('meridiana_is_analytics_page', $is_analytics_page, $queried_object);
+}
+
+function meridiana_get_analytics_document_options() {
+    $cached = wp_cache_get('meridiana_analytics_documents', 'meridiana');
+    if ($cached !== false) {
+        return $cached;
+    }
+
+    $documents = get_posts(array(
+        'post_type' => array('protocollo', 'modulo'),
+        'post_status' => 'publish',
+        'posts_per_page' => -1,
+        'orderby' => 'title',
+        'order' => 'ASC',
+        'no_found_rows' => true,
+    ));
+
+    $formatted = array();
+
+    foreach ($documents as $doc) {
+        $formatted[] = array(
+            'ID' => $doc->ID,
+            'post_title' => get_the_title($doc),
+            'post_type' => $doc->post_type,
+            'modified_at' => get_post_modified_time('Y-m-d H:i:s', true, $doc),
+        );
+    }
+
+    wp_cache_set('meridiana_analytics_documents', $formatted, 'meridiana', HOUR_IN_SECONDS);
+
+    return $formatted;
+}
+
 function meridiana_enqueue_scripts() {
-    wp_enqueue_script(
-        'alpinejs',
-        'https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js',
-        array('meridiana-gestore-dashboard'), // Dipende da gestore-dashboard.js (carica DOPO)
-        '3.13.0',
-        true
-    );
+    error_log('meridiana_enqueue_scripts called');
+
     
     add_filter('script_loader_tag', 'meridiana_defer_alpinejs', 10, 2);
     
@@ -63,7 +116,7 @@ function meridiana_enqueue_scripts() {
     wp_enqueue_script(
         'meridiana-child-scripts',
         MERIDIANA_CHILD_URI . '/assets/js/dist/main.min.js',
-        array('alpinejs'), // Carica DOPO Alpine
+        array(), // Ora nessuna dipendenza da alpinejs
         $js_version,
         true
     );
@@ -113,7 +166,7 @@ function meridiana_enqueue_scripts() {
     );
 
     // Enqueue Analitiche scripts only on the Analitiche page
-    if (is_page_template('page-analitiche.php')) {
+    if (meridiana_is_analytics_page()) {
         // Enqueue Chart.js library
         wp_enqueue_script(
             'chartjs',
@@ -130,6 +183,14 @@ function meridiana_enqueue_scripts() {
             array('chartjs'), // Depends on Chart.js
             MERIDIANA_CHILD_VERSION, // Use theme version for cache busting
             true
+        );
+
+        wp_localize_script(
+            'meridiana-analitiche-scripts',
+            'meridianaAnalyticsData',
+            array(
+                'documents' => meridiana_get_analytics_document_options(),
+            )
         );
     }
 }
@@ -470,6 +531,7 @@ require_once MERIDIANA_CHILD_DIR . '/includes/ajax-analytics.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-media-fix.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
+require_once MERIDIANA_CHILD_DIR . '/api/analytics-api.php';
 
 /**
  * TEMPLATE ROUTING
@@ -592,36 +654,5 @@ function meridiana_theme_activation() {
 }
 add_action('after_switch_theme', 'meridiana_theme_activation');
 
-/**
- * Create custom database table for document views
- */
-function meridiana_create_document_views_table() {
-    global $wpdb;
-    $table_name = $wpdb->prefix . 'document_views';
 
-    $charset_collate = $wpdb->get_charset_collate();
-
-    $sql = "CREATE TABLE $table_name (
-        id bigint(20) UNSIGNED NOT NULL AUTO_INCREMENT,
-        user_id bigint(20) UNSIGNED NOT NULL,
-        document_id bigint(20) UNSIGNED NOT NULL,
-        view_timestamp datetime DEFAULT CURRENT_TIMESTAMP NOT NULL,
-        PRIMARY KEY  (id),
-        KEY user_id (user_id),
-        KEY document_id (document_id)
-    ) $charset_collate;";
-
-    require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-    dbDelta($sql);
-
-    add_option('meridiana_document_views_db_version', MERIDIANA_CHILD_VERSION);
-}
-
-// Ensure table exists on init (e.g., if theme was updated or option deleted)
-function meridiana_check_document_views_table() {
-    if (get_option('meridiana_document_views_db_version') != MERIDIANA_CHILD_VERSION) {
-        meridiana_create_document_views_table();
-    }
-}
-add_action('init', 'meridiana_check_document_views_table');
 

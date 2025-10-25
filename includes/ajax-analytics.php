@@ -9,6 +9,10 @@
 
 if (!defined('ABSPATH')) exit;
 
+function meridiana_user_can_view_analytics() {
+    return current_user_can('gestore_piattaforma') || current_user_can('manage_options');
+}
+
 /**
  * AJAX: Ricerca Utenti
  * Action: meridiana_analytics_search_users
@@ -147,43 +151,21 @@ add_action('rest_api_init', 'register_analytics_rest_routes');
  * Action: meridiana_analytics_get_global_stats
  */
 function meridiana_ajax_get_global_stats() {
-    // Verify permissions
-    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
-        wp_send_json_error('Insufficient permissions');
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
     }
 
-    $stats = array();
-
-    // 1. User Stats
-    $users_count = count_users();
-    $stats['total_users'] = $users_count['total_users'];
-    // TODO: Implement logic for suspended/fired users based on user meta or custom roles
-    $stats['active_users'] = $users_count['total_users']; // Placeholder
-    $stats['suspended_users'] = 0; // Placeholder
-    $stats['fired_users'] = 0; // Placeholder
-
-    // 2. Content Stats
-    $stats['total_protocols'] = wp_count_posts('protocollo')->publish;
-    $stats['total_modules'] = wp_count_posts('modulo')->publish;
-    $stats['total_convenzioni'] = wp_count_posts('convenzione')->publish;
-    $stats['total_salute_benessere'] = wp_count_posts('salute-e-benessere-l')->publish;
-    $stats['total_comunicazioni'] = wp_count_posts('post')->publish;
-
-    // 3. ATS Protocols
-    $ats_protocols_query = new WP_Query(array(
-        'post_type' => 'protocollo',
-        'posts_per_page' => -1,
-        'meta_query' => array(
-            array(
-                'key' => 'pianificazione_ats',
-                'value' => '1',
-                'compare' => '='
-            )
-        ),
-        'fields' => 'ids', // Only get post IDs for performance
-    ));
-    $stats['total_ats_protocols'] = $ats_protocols_query->post_count;
-    wp_reset_postdata();
+    $stats = array(
+        'total_users' => count_users()['total_users'],
+        'total_protocols' => wp_count_posts('protocollo')->publish,
+        'total_modules' => wp_count_posts('modulo')->publish,
+        'total_convenzioni' => wp_count_posts('convenzione')->publish,
+        'total_salute_benessere' => wp_count_posts('salute-e-benessere-l')->publish,
+        'total_comunicazioni' => wp_count_posts('post')->publish,
+        'total_ats_protocols' => meridiana_get_stats_protocolli_ats(),
+    );
 
     wp_send_json_success($stats);
 }
@@ -233,3 +215,102 @@ function meridiana_ajax_track_document_view() {
 add_action('wp_ajax_meridiana_track_document_view', 'meridiana_ajax_track_document_view');
 
 
+/**
+ * AJAX: Get Content Distribution
+ * Action: meridiana_analytics_get_content_distribution
+ */
+function meridiana_ajax_get_content_distribution() {
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+    }
+
+    $distribution = meridiana_get_views_per_document_type();
+
+    wp_send_json_success($distribution);
+}
+add_action('wp_ajax_meridiana_analytics_get_content_distribution', 'meridiana_ajax_get_content_distribution');
+
+/**
+ * AJAX: Documenti visualizzati da un utente
+ */
+function meridiana_ajax_analytics_get_user_views() {
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+    }
+
+    $user_id = isset($_POST['user_id']) ? intval($_POST['user_id']) : 0;
+
+    if (!$user_id) {
+        wp_send_json_error(array('message' => 'Utente non valido.'));
+    }
+
+    $views = meridiana_get_user_viewed_documents($user_id);
+
+    wp_send_json_success(array('views' => $views));
+}
+add_action('wp_ajax_meridiana_analytics_get_user_views', 'meridiana_ajax_analytics_get_user_views');
+
+/**
+ * AJAX: Ricerca documenti monitorati
+ */
+function meridiana_ajax_analytics_search_documents() {
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+    }
+
+    $query = isset($_POST['query']) ? sanitize_text_field(wp_unslash($_POST['query'])) : '';
+    $post_type = isset($_POST['post_type']) ? sanitize_key(wp_unslash($_POST['post_type'])) : 'all';
+
+    if (strlen($query) < 2) {
+        wp_send_json_success(array());
+    }
+
+    $allowed_types = array('protocollo', 'modulo');
+    $types = ($post_type !== 'all' && in_array($post_type, $allowed_types, true)) ? array($post_type) : $allowed_types;
+
+    $documents = meridiana_search_documents($query, array(
+        'limit' => 10,
+        'post_type' => $types,
+    ));
+
+    wp_send_json_success($documents);
+}
+add_action('wp_ajax_meridiana_analytics_search_documents', 'meridiana_ajax_analytics_search_documents');
+
+/**
+ * AJAX: Insight documento (chi ha visto / non ha visto)
+ */
+function meridiana_ajax_analytics_get_document_insights() {
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+    }
+
+    $document_id = isset($_POST['document_id']) ? intval($_POST['document_id']) : 0;
+    $post = $document_id ? get_post($document_id) : null;
+
+    if (!$post || !in_array($post->post_type, array('protocollo', 'modulo'), true)) {
+        wp_send_json_error(array('message' => 'Documento non valido.'));
+    }
+
+    $details = meridiana_get_document_view_details($document_id);
+
+    wp_send_json_success(array(
+        'document' => array(
+            'id' => $post->ID,
+            'title' => $post->post_title,
+            'type' => $post->post_type,
+        ),
+        'viewers' => $details['viewers'],
+        'non_viewers' => $details['non_viewers'],
+        'non_viewers_count' => $details['non_viewers_count'],
+    ));
+}
+add_action('wp_ajax_meridiana_analytics_get_document_insights', 'meridiana_ajax_analytics_get_document_insights');

@@ -74,6 +74,14 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                 
                 <!-- MAIN CONTENT -->
                 <main class="single-documento__content">
+                    <?php
+                    // Alpine.js document tracker
+                    $post_id = get_the_ID();
+                    $post_type = get_post_type();
+                    if ($post_id && ($post_type === 'protocollo' || $post_type === 'modulo')) {
+                        echo '<div x-data="documentTracker(' . esc_attr($post_id) . ')"></div>';
+                    }
+                    ?>
                     
                     <!-- RIASSUNTO - SOLO PROTOCOLLO (NO PADDING, NO SHADOW) -->
                     <?php if ($is_protocollo && $riassunto): ?>
@@ -266,23 +274,23 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
 <script>
 (function() {
     'use strict';
-    
+
     const btnStampa = document.getElementById('btn-stampa-modulo');
-    
+
     if (btnStampa) {
         btnStampa.addEventListener('click', function(e) {
             e.preventDefault();
-            
+
             const pdfUrl = this.getAttribute('data-pdf-url');
-            
+
             if (!pdfUrl) {
                 alert('Errore: URL del PDF non trovato');
                 return;
             }
-            
+
             // Crea una finestra pop-up con il PDF
             const printWindow = window.open(pdfUrl, 'Stampa Modulo', 'height=600,width=800');
-            
+
             if (printWindow) {
                 printWindow.addEventListener('load', function() {
                     // Aspetta che il PDF carichi e apri il dialog di stampa
@@ -295,38 +303,6 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
                 alert('Abilita le pop-up del browser per stampare il modulo');
             }
         });
-    }
-
-    // Script per tracciare le visualizzazioni dei documenti
-    if (typeof meridiana !== 'undefined' && meridiana.userId) {
-        const postId = <?php echo json_encode(get_the_ID()); ?>;
-        const postType = <?php echo json_encode(get_post_type()); ?>;
-
-        // Traccia solo per protocollo e modulo
-        if (postId && (postType === 'protocollo' || postType === 'modulo')) {
-            fetch(meridiana.ajaxurl, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/x-www-form-urlencoded',
-                },
-                body: new URLSearchParams({
-                    action: 'meridiana_track_document_view',
-                    nonce: meridiana.nonce,
-                    document_id: postId,
-                }),
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Document view tracked successfully.');
-                } else {
-                    console.error('Error tracking document view:', data.data);
-                }
-            })
-            .catch(error => {
-                console.error('Network error tracking document view:', error);
-            });
-        }
     }
 })();
 </script>

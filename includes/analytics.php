@@ -255,6 +255,132 @@ function meridiana_get_views_per_document_type() {
 }
 
 /**
+ * Documenti visualizzati da un utente specifico
+ */
+function meridiana_get_user_viewed_documents($user_id, $args = array()) {
+    global $wpdb;
+
+    $defaults = array(
+        'limit' => 50,
+        'post_types' => array('protocollo', 'modulo'),
+    );
+
+    $args = wp_parse_args($args, $defaults);
+
+    if (!$user_id) {
+        return array();
+    }
+
+    $post_types = array_filter((array) $args['post_types']);
+    if (empty($post_types)) {
+        $post_types = array('protocollo', 'modulo');
+    }
+
+    $post_types = array_map('esc_sql', $post_types);
+    $types_placeholder = "'" . implode("','", $post_types) . "'";
+
+    $limit = intval($args['limit']);
+    if ($limit <= 0) {
+        $limit = 50;
+    }
+
+    $table = $wpdb->prefix . 'document_views';
+    $sql = "SELECT dv.document_id, p.post_title, p.post_type, MAX(dv.view_timestamp) AS last_view, COUNT(*) AS view_count, SUM(COALESCE(dv.view_duration, 0)) AS total_duration
+            FROM $table dv
+            LEFT JOIN {$wpdb->posts} p ON dv.document_id = p.ID
+            WHERE dv.user_id = %d
+              AND p.ID IS NOT NULL
+              AND p.post_status = 'publish'
+              AND p.post_type IN ($types_placeholder)
+            GROUP BY dv.document_id
+            ORDER BY last_view DESC
+            LIMIT %d";
+
+    return $wpdb->get_results($wpdb->prepare($sql, $user_id, $limit));
+}
+
+/**
+ * Ricerca documenti (Protocollo/Modulo)
+ */
+function meridiana_search_documents($query, $args = array()) {
+    $defaults = array(
+        'limit' => 10,
+        'post_type' => array('protocollo', 'modulo'),
+    );
+
+    $args = wp_parse_args($args, $defaults);
+    $post_types = (array) $args['post_type'];
+
+    $search_args = array(
+        'post_type' => $post_types,
+        'posts_per_page' => intval($args['limit']),
+        's' => $query,
+        'post_status' => 'publish',
+        'orderby' => 'modified',
+        'order' => 'DESC',
+        'no_found_rows' => true,
+        'fields' => 'ids',
+    );
+
+    $results = array();
+    $documents = new WP_Query($search_args);
+
+    if ($documents->have_posts()) {
+        foreach ($documents->posts as $post_id) {
+            $post = get_post($post_id);
+            if (!$post) {
+                continue;
+            }
+
+            $results[] = array(
+                'ID' => $post->ID,
+                'post_title' => $post->post_title,
+                'post_type' => $post->post_type,
+                'modified_at' => get_post_modified_time('Y-m-d H:i:s', true, $post),
+            );
+        }
+        wp_reset_postdata();
+    }
+
+    return $results;
+}
+
+/**
+ * Dettaglio visualizzazioni documento (chi ha visto / non ha visto)
+ */
+function meridiana_get_document_view_details($document_id, $args = array()) {
+    $defaults = array(
+        'non_viewers_limit' => 200,
+    );
+
+    $args = wp_parse_args($args, $defaults);
+
+    if (!$document_id) {
+        return array(
+            'viewers' => array(),
+            'non_viewers' => array(),
+            'non_viewers_count' => 0,
+        );
+    }
+
+    $viewers = meridiana_get_users_who_viewed($document_id);
+    $non_viewers = meridiana_get_users_who_not_viewed($document_id);
+
+    $non_viewers_count = is_array($non_viewers) ? count($non_viewers) : 0;
+    $limited_non_viewers = array();
+
+    if (!empty($non_viewers)) {
+        $limited_non_viewers = array_slice($non_viewers, 0, intval($args['non_viewers_limit']));
+    }
+
+    return array(
+        'viewers' => $viewers,
+        'non_viewers' => $limited_non_viewers,
+        'non_viewers_count' => $non_viewers_count,
+    );
+}
+
+/**
  * Cache wrapper per query pesanti
  */
 function meridiana_get_cached_stat($cache_key, $callback, $expiration = 1 * HOUR_IN_SECONDS) {

@@ -24,5 +24,8 @@ module.exports = (env, argv) => {
         optimization: {
             minimize: isProd,
         },
+        plugins: [ // Aggiungi questa sezione
+            // OLD: new webpack.ProvidePlugin({ Alpine: 'alpinejs' }), // Rimuovi questa riga
+        ],
     };
 };

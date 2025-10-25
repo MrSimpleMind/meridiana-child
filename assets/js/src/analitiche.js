@@ -1,127 +1,402 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const analiticheDashboard = document.querySelector('.analitiche-dashboard');
-    if (!analiticheDashboard) return;
+const ANALYTICS_CHART_COLORS = [
+    "rgba(6, 182, 212, 0.8)",
+    "rgba(16, 185, 129, 0.8)",
+    "rgba(99, 102, 241, 0.8)",
+    "rgba(249, 115, 22, 0.8)",
+    "rgba(244, 63, 94, 0.8)",
+    "rgba(59, 130, 246, 0.8)"
+];
 
-    const ajaxUrl = analiticheDashboard.dataset.ajaxUrl;
-    const nonce = analiticheDashboard.dataset.nonce;
-    const globalStatsCards = document.getElementById('globalStatsCards');
-    const contentDistributionChartCanvas = document.getElementById('contentDistributionChart');
+const ANALYTICS_CHART_BORDERS = [
+    "rgba(6, 182, 212, 1)",
+    "rgba(16, 185, 129, 1)",
+    "rgba(99, 102, 241, 1)",
+    "rgba(249, 115, 22, 1)",
+    "rgba(244, 63, 94, 1)",
+    "rgba(59, 130, 246, 1)"
+];
 
-    // Funzione per caricare le statistiche globali
-    function fetchGlobalStats() {
-        if (!globalStatsCards) return;
+const ANALYTICS_DATA = window.meridianaAnalyticsData || {};
 
-        // Rimuovi le card di caricamento esistenti
-        globalStatsCards.innerHTML = ''; 
-
-        fetch(ajaxUrl, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: new URLSearchParams({
-                action: 'meridiana_analytics_get_global_stats',
-                nonce: nonce,
-            }),
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.success) {
-                const stats = data.data;
-                
-                // Popola le card con i dati reali
-                globalStatsCards.innerHTML = `
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_users}</span>
-                        <span class="stat-card__label">Utenti Totali</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_protocols}</span>
-                        <span class="stat-card__label">Protocolli Pubblicati</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_modules}</span>
-                        <span class="stat-card__label">Moduli Pubblicati</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_convenzioni}</span>
-                        <span class="stat-card__label">Convenzioni Pubblicate</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_salute_benessere}</span>
-                        <span class="stat-card__label">Articoli Salute Pubblicati</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_comunicazioni}</span>
-                        <span class="stat-card__label">Comunicazioni Pubblicate</span>
-                    </div>
-                    <div class="stat-card">
-                        <span class="stat-card__value">${stats.total_ats_protocols}</span>
-                        <span class="stat-card__label">Protocolli ATS</span>
-                    </div>
-                `;
-            } else {
-                globalStatsCards.innerHTML = `<div class="notification notification-error">Errore nel caricamento delle statistiche.</div>`;
-                console.error('Error fetching global stats:', data.data);
-            }
-        })
-        .catch(error => {
-            globalStatsCards.innerHTML = `<div class="notification notification-error">Errore di rete nel caricamento delle statistiche.</div>`;
-            console.error('Network error fetching global stats:', error);
-        });
+function normalizeDate(value) {
+    if (!value) {
+        return null;
     }
+    return value.replace(" ", "T");
+}
 
-    // Funzione per renderizzare il grafico di distribuzione dei contenuti
-    function renderContentDistributionChart() {
-        if (!contentDistributionChartCanvas) return;
+function formatDateValue(value) {
+    if (!value) {
+        return "—";
+    }
+    const date = new Date(normalizeDate(value));
+    if (Number.isNaN(date.getTime())) {
+        return value;
+    }
+    return date.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" });
+}
 
-        // Assumiamo che Chart.js sia disponibile globalmente o caricato in precedenza
-        // Se non lo è, dovremmo enqueuarlo o importarlo.
-        if (typeof Chart === 'undefined') {
-            console.warn('Chart.js non è disponibile. Impossibile renderizzare il grafico.');
-            return;
-        }
+document.addEventListener("alpine:init", () => {
+    Alpine.data("analyticsDashboard", () => ({
+        activeTab: "overview",
+        ajaxUrl: "",
+        nonce: "",
+        chartInstance: null,
+        globalStatsError: "",
+        userQuery: "",
+        userResults: [],
+        userSelected: null,
+        userViews: [],
+        userSort: "recent",
+        userLoading: false,
+        userError: "",
+        userSearchTimeout: null,
+        documentTypeFilter: "all",
+        documentSelectionId: "",
+        documentOptions: Array.isArray(ANALYTICS_DATA.documents) ? ANALYTICS_DATA.documents : [],
+        documentDetails: null,
+        documentLoading: false,
+        documentError: "",
+        viewerSort: "recent",
 
-        // Dati di esempio per il grafico (dovrebbero venire da AJAX in futuro)
-        const chartData = {
-            labels: ['Protocolli', 'Moduli', 'Convenzioni', 'Salute', 'Comunicazioni'],
-            datasets: [{
-                label: 'Numero di Contenuti',
-                data: [12, 19, 3, 5, 2],
-                backgroundColor: [
-                    'rgba(6, 182, 212, 0.8)', // info color
-                    'rgba(16, 185, 129, 0.8)', // success color
-                    'rgba(255, 99, 132, 0.8)', // custom
-                    'rgba(255, 159, 64, 0.8)', // custom
-                    'rgba(54, 162, 235, 0.8)'  // custom
-                ],
-                borderColor: [
-                    'rgba(6, 182, 212, 1)',
-                    'rgba(16, 185, 129, 1)',
-                    'rgba(255, 99, 132, 1)',
-                    'rgba(255, 159, 64, 1)',
-                    'rgba(54, 162, 235, 1)'
-                ],
-                borderWidth: 1
-            }]
-        };
+        init() {
+            this.ajaxUrl = this.$refs.dashboard?.dataset.ajaxUrl || "";
+            this.nonce = this.$refs.dashboard?.dataset.nonce || "";
+            this.fetchGlobalStats();
+            this.fetchContentDistribution();
+        },
 
-        new Chart(contentDistributionChartCanvas, {
-            type: 'bar',
-            data: chartData,
-            options: {
-                responsive: true,
-                maintainAspectRatio: false,
-                scales: {
-                    y: {
-                        beginAtZero: true
+        setTab(tab) {
+            this.activeTab = tab;
+        },
+
+        request(params) {
+            if (!this.ajaxUrl) {
+                return Promise.reject("Endpoint non disponibile");
+            }
+            const payload = new URLSearchParams(Object.assign({}, params, { nonce: this.nonce }));
+            return fetch(this.ajaxUrl, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: payload
+            }).then((response) => response.json());
+        },
+
+        // -------------------- Panoramica --------------------
+        fetchGlobalStats() {
+            const target = this.$refs.globalStats;
+            if (!target) {
+                return;
+            }
+
+            this.globalStatsError = "";
+
+            this.request({ action: "meridiana_analytics_get_global_stats" })
+                .then((data) => {
+                    if (!data.success) {
+                        throw data.data || "Errore";
+                    }
+                    this.renderGlobalStats(target, data.data);
+                })
+                .catch((error) => {
+                    this.globalStatsError = typeof error === "string" ? error : "Errore nel caricamento delle statistiche.";
+                    target.innerHTML = '<div class="notification notification-error">' + this.globalStatsError + "</div>";
+                });
+        },
+
+        renderGlobalStats(target, stats) {
+            const cards = [
+                { label: "Utenti Totali", value: stats.total_users },
+                { label: "Protocolli Pubblicati", value: stats.total_protocols },
+                { label: "Moduli Pubblicati", value: stats.total_modules },
+                { label: "Convenzioni Pubblicate", value: stats.total_convenzioni },
+                { label: "Articoli Salute", value: stats.total_salute_benessere },
+                { label: "Comunicazioni Pubblicate", value: stats.total_comunicazioni },
+                { label: "Protocolli ATS", value: stats.total_ats_protocols }
+            ];
+
+            const markup = cards
+                .map((card) => {
+                    return (
+                        '<div class="stat-card">' +
+                        '<span class="stat-card__value">' + (card.value || 0) + '</span>' +
+                        '<span class="stat-card__label">' + card.label + '</span>' +
+                        "</div>"
+                    );
+                })
+                .join("");
+
+            target.innerHTML = markup;
+        },
+
+        fetchContentDistribution() {
+            const canvas = this.$refs.contentChart;
+            if (!canvas || typeof Chart === "undefined") {
+                return;
+            }
+
+            this.request({ action: "meridiana_analytics_get_content_distribution" })
+                .then((data) => {
+                    if (!data.success) {
+                        throw data.data || "Errore";
+                    }
+                    this.renderDistributionChart(canvas, data.data || []);
+                })
+                .catch((error) => {
+                    console.error("Errore grafico analitiche:", error);
+                });
+        },
+
+        renderDistributionChart(canvas, dataset) {
+            if (!dataset.length) {
+                canvas.parentElement.innerHTML = '<p class="analytics-empty">Nessuna visualizzazione registrata finora.</p>';
+                return;
+            }
+
+            const labels = dataset.map((item) => this.formatDocumentType(item.document_type));
+            const views = dataset.map((item) => Number(item.view_count));
+            const unique = dataset.map((item) => Number(item.unique_users));
+
+            if (this.chartInstance) {
+                this.chartInstance.destroy();
+            }
+
+            this.chartInstance = new Chart(canvas, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Visualizzazioni",
+                            data: views,
+                            backgroundColor: ANALYTICS_CHART_COLORS,
+                            borderColor: ANALYTICS_CHART_BORDERS,
+                            borderWidth: 1
+                        },
+                        {
+                            label: "Utenti unici",
+                            data: unique,
+                            backgroundColor: "rgba(15, 118, 110, 0.15)",
+                            borderColor: "rgba(15, 118, 110, 0.8)",
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
                     }
                 }
-            }
-        });
-    }
+            });
+        },
 
-    // Esegui le funzioni al caricamento della pagina
-    fetchGlobalStats();
-    renderContentDistributionChart();
+        // -------------------- Ricerca utente --------------------
+        handleUserQuery() {
+            clearTimeout(this.userSearchTimeout);
+
+            if (!this.userQuery || this.userQuery.length < 2) {
+                this.userResults = [];
+                return;
+            }
+
+            this.userSearchTimeout = setTimeout(() => {
+                this.searchUsers();
+            }, 250);
+        },
+
+        searchUsers() {
+            this.request({
+                action: "meridiana_analytics_search_users",
+                query: this.userQuery
+            })
+                .then((data) => {
+                    this.userResults = data.success ? data.data : [];
+                })
+                .catch(() => {
+                    this.userResults = [];
+                });
+        },
+
+        resetUserSearch() {
+            this.userQuery = "";
+            this.userResults = [];
+        },
+
+        selectUser(result) {
+            this.userSelected = result;
+            this.userQuery = result.display_name;
+            this.userResults = [];
+            this.fetchUserViews(result.ID);
+        },
+
+        fetchUserViews(userId) {
+            if (!userId) {
+                return;
+            }
+
+            this.userLoading = true;
+            this.userError = "";
+            this.userViews = [];
+
+            this.request({
+                action: "meridiana_analytics_get_user_views",
+                user_id: userId
+            })
+                .then((data) => {
+                    if (!data.success) {
+                        throw data.data || "Errore";
+                    }
+                    this.userViews = data.data.views || [];
+                })
+                .catch((error) => {
+                    this.userError = typeof error === "string" ? error : "Errore nel recupero delle visualizzazioni.";
+                })
+                .finally(() => {
+                    this.userLoading = false;
+                });
+        },
+
+        sortedUserViews() {
+            const views = Array.isArray(this.userViews) ? this.userViews.slice() : [];
+
+            if (this.userSort === "views") {
+                views.sort((a, b) => Number(b.view_count) - Number(a.view_count));
+            } else if (this.userSort === "title") {
+                views.sort((a, b) => (a.post_title || "").localeCompare(b.post_title || ""));
+            } else {
+                views.sort((a, b) => {
+                    const dateA = new Date(normalizeDate(a.last_view || ""));
+                    const dateB = new Date(normalizeDate(b.last_view || ""));
+                    return dateB - dateA;
+                });
+            }
+
+            return views;
+        },
+
+        // -------------------- Selezione documento --------------------
+        handleDocumentTypeChange() {
+            if (this.documentSelectionId) {
+                const selected = this.documentOptions.find((doc) => String(doc.ID) === String(this.documentSelectionId));
+                if (!selected || !this.isDocumentOptionVisible(selected)) {
+                    this.documentSelectionId = "";
+                    this.documentDetails = null;
+                }
+            }
+        },
+
+        handleDocumentSelection() {
+            if (!this.documentSelectionId) {
+                this.documentDetails = null;
+                return;
+            }
+            const selected = this.documentOptions.find((doc) => String(doc.ID) === String(this.documentSelectionId));
+            if (selected) {
+                this.selectDocument(selected);
+            } else {
+                this.documentDetails = null;
+            }
+        },
+
+        filteredDocumentOptions() {
+            const list = Array.isArray(this.documentOptions) ? this.documentOptions : [];
+            let filtered = list;
+            if (this.documentTypeFilter !== "all") {
+                filtered = list.filter((doc) => doc.post_type === this.documentTypeFilter);
+            }
+            return filtered.slice().sort((a, b) => (a.post_title || "").localeCompare(b.post_title || ""));
+        },
+
+        isDocumentOptionVisible(doc) {
+            if (!doc) {
+                return false;
+            }
+            return this.documentTypeFilter === "all" || doc.post_type === this.documentTypeFilter;
+        },
+
+        selectDocument(doc) {
+            this.documentSelectionId = String(doc.ID);
+            this.fetchDocumentInsights(doc.ID);
+        },
+
+        fetchDocumentInsights(documentId) {
+            if (!documentId) {
+                return;
+            }
+
+            this.documentLoading = true;
+            this.documentError = "";
+            this.documentDetails = null;
+
+            this.request({
+                action: "meridiana_analytics_get_document_insights",
+                document_id: documentId
+            })
+                .then((data) => {
+                    if (!data.success) {
+                        throw data.data || "Errore";
+                    }
+                    this.documentDetails = {
+                        document: data.data.document,
+                        viewers: data.data.viewers || [],
+                        non_viewers: data.data.non_viewers || [],
+                        non_viewers_count: data.data.non_viewers_count || 0
+                    };
+                })
+                .catch((error) => {
+                    this.documentError = typeof error === "string" ? error : "Errore nel recupero dei dati.";
+                })
+                .finally(() => {
+                    this.documentLoading = false;
+                });
+        },
+
+        sortedDocumentViewers() {
+            if (!this.documentDetails) {
+                return [];
+            }
+
+            const viewers = this.documentDetails.viewers.slice();
+
+            if (this.viewerSort === "name") {
+                viewers.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || ""));
+            } else if (this.viewerSort === "views") {
+                viewers.sort((a, b) => Number(b.view_count) - Number(a.view_count));
+            } else {
+                viewers.sort((a, b) => {
+                    const dateA = new Date(normalizeDate(a.last_view || ""));
+                    const dateB = new Date(normalizeDate(b.last_view || ""));
+                    return dateB - dateA;
+                });
+            }
+
+            return viewers;
+        },
+
+        limitedNonViewers(limit) {
+            limit = limit || 25;
+            if (!this.documentDetails) {
+                return [];
+            }
+            return this.documentDetails.non_viewers.slice(0, limit);
+        },
+
+        formatDocumentType(type) {
+            if (type === "protocollo") {
+                return "Protocollo";
+            }
+            if (type === "modulo") {
+                return "Modulo";
+            }
+            return type ? type.charAt(0).toUpperCase() + type.slice(1) : "";
+        },
+
+        formatDate(value) {
+            return formatDateValue(value);
+        }
+    }));
 });
