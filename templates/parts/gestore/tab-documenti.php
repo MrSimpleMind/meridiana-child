@@ -46,12 +46,15 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
             </div>
             <div class="item-card__content" id="card-<?php echo get_the_ID(); ?>">
                 <?php
+                // Lista dei campi da escludere
+                $exclude_fields = ['pdf_modulo', 'pdf_protocollo'];
+
                 // Recupera tutte le ACF field
                 $fields = get_fields(get_the_ID());
                 if ($fields && is_array($fields)) {
                     foreach ($fields as $field_name => $field_value) {
-                        // Salta i campi vuoti e quelli privati (iniziano con _)
-                        if (empty($field_value) || strpos($field_name, '_') === 0) {
+                        // Salta i campi vuoti, quelli privati (iniziano con _) e quelli esclusi
+                        if (empty($field_value) || strpos($field_name, '_') === 0 || in_array($field_name, $exclude_fields)) {
                             continue;
                         }
 
@@ -62,7 +65,19 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
                         // Formatta il valore a seconda del tipo
                         $display_value = '';
                         if (is_array($field_value)) {
-                            $display_value = implode(', ', array_map('esc_html', $field_value));
+                            // Se è il campo "moduli_allegati", mostra i titoli dei post
+                            if ($field_name === 'moduli_allegati' && !empty($field_value)) {
+                                $module_titles = [];
+                                foreach ($field_value as $module_id) {
+                                    $module_post = get_post($module_id);
+                                    if ($module_post) {
+                                        $module_titles[] = esc_html($module_post->post_title);
+                                    }
+                                }
+                                $display_value = implode(', ', $module_titles);
+                            } else {
+                                $display_value = implode(', ', array_map('esc_html', $field_value));
+                            }
                         } elseif (is_object($field_value)) {
                             $display_value = isset($field_value->post_title) ? esc_html($field_value->post_title) : esc_html((string)$field_value);
                         } else {
@@ -78,14 +93,20 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
                     }
                 }
 
-                // Recupera tutte le taxonomy
-                $taxonomies = get_taxonomies(['object_type' => [$post_type]], 'objects');
-                foreach ($taxonomies as $taxonomy) {
-                    $terms = get_the_terms(get_the_ID(), $taxonomy->name);
+                // Lista delle tassonomie da mostrare (esplicite per evitare problemi)
+                $taxonomy_names = ['unita_offerta', 'profili_professionali', 'aree_competenza', 'category'];
+
+                foreach ($taxonomy_names as $tax_name) {
+                    $terms = get_the_terms(get_the_ID(), $tax_name);
                     if ($terms && !is_wp_error($terms) && !empty($terms)) {
+                        // Ottieni il label della tassonomia
+                        $tax_object = get_taxonomy($tax_name);
+                        $tax_label = $tax_object ? $tax_object->label : ucwords(str_replace('_', ' ', $tax_name));
+
+                        // Mostra TUTTI i termini selezionati
                         $term_names = wp_list_pluck($terms, 'name');
                         echo '<div class="item-card__row">';
-                        echo '<span class="item-card__label">' . esc_html($taxonomy->label) . '</span>';
+                        echo '<span class="item-card__label">' . esc_html($tax_label) . '</span>';
                         echo '<span class="item-card__value">' . esc_html(implode(', ', $term_names)) . '</span>';
                         echo '</div>';
                     }
