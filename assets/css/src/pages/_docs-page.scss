@@ -27,8 +27,8 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-2) var(--space-3);
-    background-color: var(--color-bg-primary);
-    border: 1px solid var(--color-border);
+    background-color: transparent;
+    border: none;
     border-radius: var(--radius-md);
     transition: border-color 0.2s ease;
 
@@ -40,7 +40,7 @@
     }
 
     &:focus-within {
-        border-color: var(--color-primary);
+        border-color: transparent;
     }
 }
 
@@ -225,15 +225,17 @@
 // =============================================================================
 
 .docs-filters {
-    display: grid;
+    display: flex;
+    flex-wrap: nowrap;
     gap: var(--space-3);
+    overflow-x: auto;
 
     @media (min-width: 768px) {
-        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        flex-wrap: nowrap;
     }
 
-    @media (min-width: 1200px) {
-        grid-template-columns: repeat(3, 1fr);
+    @media (min-width: 1024px) {
+        flex-wrap: nowrap;
     }
 }
 
@@ -241,6 +243,8 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
+    flex-shrink: 0;
+    min-width: 180px;
 }
 
 .filter-group__label {

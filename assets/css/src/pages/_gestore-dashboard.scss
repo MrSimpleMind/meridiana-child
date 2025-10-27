@@ -116,6 +116,21 @@ body.admin-bar {
     }
 }
 
+// Tab Header Button Group
+.tab-header__buttons {
+    display: flex;
+    gap: var(--space-3);
+    width: 100%;
+
+    @media (max-width: 768px) {
+        width: 100%;
+    }
+
+    button {
+        flex: 1;
+    }
+}
+
 // Tables
 .dashboard-table {
     width: 100%;

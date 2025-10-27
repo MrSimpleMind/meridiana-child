@@ -22,9 +22,9 @@ $area_competenza = get_terms(array(
 ?>
 <div class="tab-header">
     <h2>Documentazione</h2>
-    <div style="display: flex; gap: 12px;">
-        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'modulo')" style="flex: 1;"><i data-lucide="plus"></i> Nuovo Modulo</button>
-        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'protocollo')" style="flex: 1;"><i data-lucide="plus"></i> Nuovo Protocollo</button>
+    <div class="tab-header__buttons">
+        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'modulo')"><i data-lucide="plus"></i> Nuovo Modulo</button>
+        <button class="btn btn-primary" @click="openFormModal('documenti', 'new', 0, 'protocollo')"><i data-lucide="plus"></i> Nuovo Protocollo</button>
     </div>
 </div>
 
