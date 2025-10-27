@@ -1,4 +1,4 @@
-﻿// ========================================
+// ========================================
 // Dashboard Gestore - Styling
 // ========================================
 
@@ -121,6 +121,7 @@ body.admin-bar {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+ table-layout: fixed;
 
     thead {
         background-color: #F9FAFB;
@@ -139,9 +140,15 @@ body.admin-bar {
         padding: var(--space-3) var(--space-4);
         border-bottom: 1px solid #E5E7EB;
         color: #4B5563;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
 
         &.link-status-cell {
             text-align: center;
+            overflow: visible;
+            text-overflow: clip;
+            white-space: normal;
         }
 
         .link-status {
@@ -189,7 +196,7 @@ body.admin-bar {
 }
 
 .tab-table-wrapper {
-    overflow-x: auto;
+ overflow: hidden;
     border-radius: 4px;
     margin-bottom: var(--space-8);
     -webkit-overflow-scrolling: touch;
@@ -603,4 +610,5 @@ body.admin-bar {
     min-height: 220px;
     overflow-y: auto;
 }
+
 

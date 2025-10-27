@@ -45,14 +45,37 @@ function meridiana_ajax_analytics_search_users() {
     // Enrichisci con metadata
     $results = array();
     foreach ($users as $user) {
-        $udo = get_field('udo_riferimento', 'user_' . $user->ID);
-        $udo_term = $udo ? get_term($udo) : null;
+        // Recupera il valore UDO (è una stringa key, non un term ID)
+        $udo_value = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
+        
+        // Se la funzione ACF non è disponibile, fallback a get_user_meta
+        if (!$udo_value) {
+            $udo_value = get_user_meta($user->ID, 'udo_riferimento', true);
+        }
+        
+        // Mappa il valore alla label UDO
+        $udo_label = null;
+        if ($udo_value) {
+            $default_udo_choices = array(
+                'ambulatori' => 'Ambulatori',
+                'ap' => 'AP',
+                'cdi' => 'CDI',
+                'cure_domiciliari' => 'Cure Domiciliari',
+                'hospice' => 'Hospice',
+                'paese' => 'Paese',
+                'r20' => 'R20',
+                'rsa' => 'RSA',
+                'rsa_aperta' => 'RSA Aperta',
+                'rsd' => 'RSD',
+            );
+            $udo_label = isset($default_udo_choices[$udo_value]) ? $default_udo_choices[$udo_value] : $udo_value;
+        }
         
         $results[] = array(
             'ID' => $user->ID,
             'display_name' => $user->display_name,
             'user_email' => $user->user_email,
-            'udo' => $udo_term ? $udo_term->name : null,
+            'udo' => $udo_label,
         );
     }
     
@@ -126,14 +149,37 @@ function register_analytics_rest_routes() {
             
             $results = array();
             foreach ($users as $user) {
-                $udo = get_field('udo_riferimento', 'user_' . $user->ID);
-                $udo_term = $udo ? get_term($udo) : null;
+                // Recupera il valore UDO (è una stringa key, non un term ID)
+                $udo_value = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
+                
+                // Se la funzione ACF non è disponibile, fallback a get_user_meta
+                if (!$udo_value) {
+                    $udo_value = get_user_meta($user->ID, 'udo_riferimento', true);
+                }
+                
+                // Mappa il valore alla label UDO
+                $udo_label = null;
+                if ($udo_value) {
+                    $default_udo_choices = array(
+                        'ambulatori' => 'Ambulatori',
+                        'ap' => 'AP',
+                        'cdi' => 'CDI',
+                        'cure_domiciliari' => 'Cure Domiciliari',
+                        'hospice' => 'Hospice',
+                        'paese' => 'Paese',
+                        'r20' => 'R20',
+                        'rsa' => 'RSA',
+                        'rsa_aperta' => 'RSA Aperta',
+                        'rsd' => 'RSD',
+                    );
+                    $udo_label = isset($default_udo_choices[$udo_value]) ? $default_udo_choices[$udo_value] : $udo_value;
+                }
                 
                 $results[] = array(
                     'ID' => $user->ID,
                     'display_name' => $user->display_name,
                     'user_email' => $user->user_email,
-                    'udo' => $udo_term ? $udo_term->name : null,
+                    'udo' => $udo_label,
                 );
             }
             
