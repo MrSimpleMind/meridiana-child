@@ -29,7 +29,7 @@ $comunicazioni_query = new WP_Query([
                     <div class="item-card__meta">
                         <?php echo meridiana_get_status_badge(get_the_ID()); ?>
                         <?php if (!empty($categories)): ?>
-                            <?php foreach (array_slice($categories, 0, 1) as $cat): ?>
+                            <?php foreach ($categories as $cat): ?>
                                 <span class="item-card__separator">•</span>
                                 <span class="item-card__category-text"><?php echo esc_html($cat->name); ?></span>
                             <?php endforeach; ?>

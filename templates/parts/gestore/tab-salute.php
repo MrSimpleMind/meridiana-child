@@ -33,7 +33,7 @@ $salute_query = new WP_Query([
                         <?php
                         $categories = get_the_terms($post_id, 'category');
                         if (!is_wp_error($categories) && !empty($categories)) {
-                            foreach (array_slice($categories, 0, 1) as $cat) {
+                            foreach ($categories as $cat) {
                                 echo '<span class="item-card__separator">•</span>';
                                 echo '<span class="item-card__category-text">' . esc_html($cat->name) . '</span>';
                             }
