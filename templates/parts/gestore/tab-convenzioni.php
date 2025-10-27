@@ -13,43 +13,7 @@ $convenzioni_query = new WP_Query([
 
 <?php if ($convenzioni_query->have_posts()): ?>
 
-    <!-- DESKTOP (> 1024px) -->
-    <div class="tab-table-wrapper desktop-only">
-        <table class="dashboard-table">
-            <thead><tr><th>Titolo</th><th>Categorie</th><th>Stato</th><th>Aggiornata</th><th>Azioni</th></tr></thead>
-            <tbody>
-                <?php while ($convenzioni_query->have_posts()): $convenzioni_query->the_post(); ?>
-                <?php
-                    $post_id = get_the_ID();
-                    $is_active = (bool) get_field('convenzione_attiva', $post_id);
-                    $updated_date = get_the_modified_date('d/m/Y');
-                ?>
-                <tr>
-                    <td class="title-cell"><strong><?php the_title(); ?></strong></td>
-                    <td>
-                        <?php
-                        $categories = get_the_terms($post_id, 'category');
-                        if (!is_wp_error($categories) && !empty($categories)) {
-                            foreach ($categories as $category) {
-                                echo meridiana_get_badge('category', $category->name);
-                            }
-                        }
-                        ?>
-                    </td>
-                    <td><span class="badge <?php echo $is_active ? 'badge-success' : 'badge-warning'; ?>"><?php echo $is_active ? 'Attiva' : 'Scaduta'; ?></span></td>
-                    <td class="date-cell"><?php echo esc_html($updated_date); ?></td>
-                    <td class="actions-cell">
-                        <button class="btn-icon" @click="openFormModal('convenzioni', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
-                        <button class="btn-icon" @click="deleteConvenzione(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
-                        <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- LAPTOP (<= 1024px) -->
+    <!-- CARD LAYOUT - Card List -->
     <div class="item-cards-container laptop-only">
         <?php 
         $convenzioni_query->rewind_posts();
@@ -63,32 +27,26 @@ $convenzioni_query = new WP_Query([
                 <div class="item-card__info">
                     <div class="item-card__title"><?php the_title(); ?></div>
                     <div class="item-card__meta">
-                        <span class="item-card__type type-convenzione"><?php echo $is_active ? 'Attiva' : 'Scaduta'; ?></span>
-                        <span class="item-card__divider">•</span>
-                        <span class="item-card__date"><?php echo esc_html($updated_date); ?></span>
-                    </div>
-                </div>
-                <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
-            </div>
-            <div class="item-card__content" id="card-<?php echo $post_id; ?>">
-                <div class="item-card__row">
-                    <span class="item-card__label">Categorie</span>
-                    <span class="item-card__value">
+                        <span class="badge <?php echo $is_active ? 'badge-success' : 'badge-warning'; ?>"><?php echo $is_active ? 'Attiva' : 'Scaduta'; ?></span>
                         <?php
                         $categories = get_the_terms($post_id, 'category');
                         if (!is_wp_error($categories) && !empty($categories)) {
-                            echo esc_html(implode(', ', wp_list_pluck($categories, 'name')));
-                        } else {
-                            echo 'N/D';
+                            foreach (array_slice($categories, 0, 1) as $cat) {
+                                echo '<span class="item-card__separator">•</span>';
+                                echo '<span class="item-card__type type-convenzione">' . esc_html($cat->name) . '</span>';
+                            }
                         }
                         ?>
-                    </span>
+                    </div>
+                </div>
+                <div class="item-card__actions-group">
+                    <button class="btn-icon" @click.stop="openFormModal('convenzioni', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
+                    <button class="btn-icon" @click.stop="deleteConvenzione(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
+                    <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
+                    <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
                 </div>
             </div>
-            <div class="item-card__actions">
-                <button class="btn-icon" @click="openFormModal('convenzioni', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
-                <button class="btn-icon" @click="deleteConvenzione(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
-                <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
+            <div class="item-card__content" id="card-<?php echo $post_id; ?>">
             </div>
         </div>
         <?php endwhile; ?>

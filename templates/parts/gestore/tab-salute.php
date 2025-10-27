@@ -13,46 +13,7 @@ $salute_query = new WP_Query([
 
 <?php if ($salute_query->have_posts()): ?>
 
-    <!-- DESKTOP (> 1024px) -->
-    <div class="tab-table-wrapper desktop-only">
-        <table class="dashboard-table">
-            <thead><tr><th>Titolo</th><th>Categorie</th><th>Stato</th><th>Aggiornato</th><th>Risorse</th><th>Azioni</th></tr></thead>
-            <tbody>
-                <?php while ($salute_query->have_posts()): $salute_query->the_post(); ?>
-                <?php
-                    $post_id = get_the_ID();
-                    $status = get_post_status($post_id);
-                    $updated_date = get_the_modified_date('d/m/Y');
-                    $risorse = get_field('risorse', $post_id);
-                    $risorse_count = is_array($risorse) ? count($risorse) : 0;
-                ?>
-                <tr>
-                    <td class="title-cell"><strong><?php the_title(); ?></strong></td>
-                    <td>
-                        <?php
-                        $categories = get_the_terms($post_id, 'category');
-                        if (!is_wp_error($categories) && !empty($categories)) {
-                            foreach ($categories as $category) {
-                                echo meridiana_get_badge('category', $category->name);
-                            }
-                        }
-                        ?>
-                    </td>
-                    <td><?php echo meridiana_get_status_badge($post_id); ?></td>
-                    <td class="date-cell"><?php echo esc_html($updated_date); ?></td>
-                    <td><?php echo esc_html(number_format_i18n($risorse_count)); ?></td>
-                    <td class="actions-cell">
-                        <button class="btn-icon" @click="openFormModal('salute', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
-                        <button class="btn-icon" @click="deleteSalute(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
-                        <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
-                    </td>
-                </tr>
-                <?php endwhile; ?>
-            </tbody>
-        </table>
-    </div>
-
-    <!-- LAPTOP (<= 1024px) -->
+    <!-- CARD LAYOUT - Card List -->
     <div class="item-cards-container laptop-only">
         <?php 
         $salute_query->rewind_posts();
@@ -68,23 +29,26 @@ $salute_query = new WP_Query([
                 <div class="item-card__info">
                     <div class="item-card__title"><?php the_title(); ?></div>
                     <div class="item-card__meta">
-                        <span class="item-card__type type-salute_benessere"><?php echo $status === 'publish' ? 'Pubblicato' : 'Bozza'; ?></span>
-                        <span class="item-card__divider">•</span>
-                        <span class="item-card__date"><?php echo esc_html($updated_date); ?></span>
+                        <span class="badge <?php echo $status === 'publish' ? 'badge-success' : 'badge-warning'; ?>"><?php echo $status === 'publish' ? 'Pubblicato' : 'Bozza'; ?></span>
+                        <?php
+                        $categories = get_the_terms($post_id, 'category');
+                        if (!is_wp_error($categories) && !empty($categories)) {
+                            foreach (array_slice($categories, 0, 1) as $cat) {
+                                echo '<span class="item-card__separator">•</span>';
+                                echo '<span class="item-card__type type-salute_benessere">' . esc_html($cat->name) . '</span>';
+                            }
+                        }
+                        ?>
                     </div>
                 </div>
-                <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
-            </div>
-            <div class="item-card__content" id="card-<?php echo $post_id; ?>">
-                <div class="item-card__row">
-                    <span class="item-card__label">Risorse</span>
-                    <span class="item-card__value"><?php echo esc_html(number_format_i18n($risorse_count)); ?></span>
+                <div class="item-card__actions-group">
+                    <button class="btn-icon" @click.stop="openFormModal('salute', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
+                    <button class="btn-icon" @click.stop="deleteSalute(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
+                    <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
+                    <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
                 </div>
             </div>
-            <div class="item-card__actions">
-                <button class="btn-icon" @click="openFormModal('salute', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
-                <button class="btn-icon" @click="deleteSalute(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
-                <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
+            <div class="item-card__content" id="card-<?php echo $post_id; ?>">
             </div>
         </div>
         <?php endwhile; ?>
