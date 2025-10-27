@@ -135,10 +135,16 @@ document.addEventListener('DOMContentLoaded', function() {
         element: item
     }));
 
-    const fuse = new Fuse(itemsData, { keys: ['title'], threshold: 0.4, minMatchCharLength: 2 });
+    const fuse = new Fuse(itemsData, {
+        keys: ['title'],
+        threshold: 0.4,
+        minMatchCharLength: 2,
+        includeScore: true,
+        ignoreLocation: true
+    });
 
     function filterItems() {
-        const searchTerm = searchInput.value.trim();
+        const searchTerm = searchInput ? searchInput.value.trim() : '';
         const categoryFilter = filterCategory ? filterCategory.value : '';
         let filteredItems = [...itemsData];
 
@@ -164,14 +170,16 @@ document.addEventListener('DOMContentLoaded', function() {
             if (isVisible) visibleCount++;
         });
 
-        if (visibleCount === 0 && !itemsContainer.parentElement.querySelector('.no-content')) {
-            const noContentDiv = document.createElement('div');
-            noContentDiv.className = 'no-content';
-            noContentDiv.innerHTML = '<i data-lucide="inbox"></i><p>Nessuna comunicazione trovata</p>';
-            itemsContainer.after(noContentDiv);
-        } else if (visibleCount > 0) {
-            const noContent = itemsContainer.parentElement.querySelector('.no-content');
-            if (noContent) noContent.remove();
+        if (itemsContainer && itemsContainer.parentElement) {
+            if (visibleCount === 0 && !itemsContainer.parentElement.querySelector('.no-content')) {
+                const noContentDiv = document.createElement('div');
+                noContentDiv.className = 'no-content';
+                noContentDiv.innerHTML = '<i data-lucide="inbox"></i><p>Nessuna comunicazione trovata</p>';
+                itemsContainer.after(noContentDiv);
+            } else if (visibleCount > 0) {
+                const noContent = itemsContainer.parentElement.querySelector('.no-content');
+                if (noContent) noContent.remove();
+            }
         }
 
         if (window.lucide) lucide.createIcons();
