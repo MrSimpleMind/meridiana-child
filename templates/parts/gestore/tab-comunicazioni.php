@@ -61,7 +61,7 @@ $categories_unique = get_terms(array(
 <?php if ($comunicazioni_query->have_posts()): ?>
 
     <!-- CARD LAYOUT - Card List -->
-    <div class="item-cards-container laptop-only">
+    <div class="item-cards-container laptop-only" id="comunicazioni-cards">
         <?php
         $comunicazioni_query->rewind_posts();
         while ($comunicazioni_query->have_posts()): $comunicazioni_query->the_post();
@@ -122,7 +122,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchClear = document.getElementById('comunicazioni-search-clear');
     const filterCategory = document.getElementById('filter-category-comunicazioni');
     const statusButtons = document.querySelectorAll('#comunicazioni-filters-panel [data-status]');
-    const itemsContainer = document.querySelector('.item-cards-container');
+    const itemsContainer = document.querySelector('#comunicazioni-cards');
     const itemCards = itemsContainer ? itemsContainer.querySelectorAll('.item-card') : [];
 
     let selectedStatus = 'all';

@@ -132,7 +132,7 @@ sort($udo_unique);
 <?php if (!empty($users)): ?>
 
     <!-- CARD LAYOUT - Card List -->
-    <div class="users-cards-container laptop-only">
+    <div class="users-cards-container laptop-only" id="utenti-cards">
         <?php foreach ($users as $user):
             $user_meta_key = 'user_' . $user->ID;
             $full_name = trim($user->first_name . ' ' . $user->last_name);
@@ -240,8 +240,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchClear = document.getElementById('utenti-search-clear');
     const filterProfilo = document.getElementById('filter-profilo-utenti');
     const filterUdo = document.getElementById('filter-udo-utenti');
-    const statusButtons = document.querySelectorAll('[data-status]');
-    const usersContainer = document.querySelector('.users-cards-container');
+    const statusButtons = document.querySelectorAll('#utenti-filters-panel [data-status]');
+    const usersContainer = document.querySelector('#utenti-cards');
     const userCards = usersContainer ? usersContainer.querySelectorAll('.user-card') : [];
 
     let selectedStatus = 'all';

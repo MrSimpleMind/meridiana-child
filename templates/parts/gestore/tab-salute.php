@@ -60,7 +60,7 @@ $categories_unique = get_terms(array(
 <?php if ($salute_query->have_posts()): ?>
 
     <!-- CARD LAYOUT - Card List -->
-    <div class="item-cards-container laptop-only">
+    <div class="item-cards-container laptop-only" id="salute-cards">
         <?php
         $salute_query->rewind_posts();
         while ($salute_query->have_posts()): $salute_query->the_post();
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const searchClear = document.getElementById('salute-search-clear');
     const filterCategory = document.getElementById('filter-category-salute');
     const statusButtons = document.querySelectorAll('#salute-filters-panel [data-status]');
-    const itemsContainer = document.querySelector('.item-cards-container');
+    const itemsContainer = document.querySelector('#salute-cards');
     const itemCards = itemsContainer ? itemsContainer.querySelectorAll('.item-card') : [];
 
     let selectedStatus = 'all';

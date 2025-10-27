@@ -137,7 +137,7 @@ $area_competenza = get_terms(array(
 <?php if ($documenti_query->have_posts()): ?>
 
     <!-- CARD LAYOUT - Card List -->
-    <div class="item-cards-container laptop-only">
+    <div class="item-cards-container laptop-only" id="documenti-cards">
         <?php
         $documenti_query->rewind_posts();
         while ($documenti_query->have_posts()): $documenti_query->the_post();
@@ -291,8 +291,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const filterProfilo = document.getElementById('filter-profilo-documenti');
     const filterUdo = document.getElementById('filter-udo-documenti');
     const filterAreaCompetenza = document.getElementById('filter-area-competenza-documenti');
-    const typeButtons = document.querySelectorAll('.docs-type-btn');
-    const itemsContainer = document.querySelector('.item-cards-container');
+    const typeButtons = document.querySelectorAll('#documenti-filters-panel .docs-type-btn');
+    const itemsContainer = document.querySelector('#documenti-cards');
     const itemCards = itemsContainer ? itemsContainer.querySelectorAll('.item-card') : [];
 
     let selectedType = 'all';
