@@ -24,76 +24,170 @@ $status_badge_classes = [
     <h2>Utenti</h2>
     <button class="btn btn-primary" @click="openFormModal('utenti', 'new')"><i data-lucide="plus"></i> Nuovo Utente</button>
 </div>
+
 <?php if (!empty($users)): ?>
-<div class="tab-table-wrapper">
-    <table class="dashboard-table">
-        <thead>
-            <tr>
-                <th>Nome</th>
-                <th>Email</th>
-                <th>Stato</th>
-                <th>Profilo</th>
-                <th>Unita di Offerta</th>
-                <th>Link Autologin</th>
-                <th>Codice Fiscale</th>
-                <th>Azioni</th>
-            </tr>
-        </thead>
-        <tbody>
-            <?php foreach ($users as $user):
-                $user_meta_key = 'user_' . $user->ID;
-                $full_name = trim($user->first_name . ' ' . $user->last_name);
-                if ($full_name === '') {
-                    $full_name = $user->display_name ?: $user->user_login;
-                }
-                $stato_field = get_field_object('field_stato_utente', $user_meta_key);
-                $stato_value = is_array($stato_field) ? ($stato_field['value'] ?? '') : '';
-                $stato_label = $stato_value && isset($stato_field['choices'][$stato_value])
-                    ? $stato_field['choices'][$stato_value]
-                    : ($stato_value && isset($stato_choices[$stato_value]) ? $stato_choices[$stato_value] : '');
-                $profilo = get_field('profilo_professionale', $user_meta_key);
-                $udo = get_field('udo_riferimento', $user_meta_key);
-                $link_autologin = get_field('link_autologin_esterno', $user_meta_key);
-                $codice_fiscale = get_field('codice_fiscale', $user_meta_key);
-            ?>
-            <tr>
-                <td class="title-cell"><strong><?php echo esc_html($full_name); ?></strong></td>
-                <td><?php echo esc_html($user->user_email); ?></td>
-                <td>
-                    <?php if ($stato_label): ?>
-                        <?php
-                        $status_key = is_string($stato_value) ? $stato_value : '';
-                        $status_badge_class = $status_badge_classes[$status_key] ?? 'badge badge-sm badge-secondary';
-                        ?>
-                        <span class="<?php echo esc_attr($status_badge_class); ?>"><?php echo esc_html($stato_label); ?></span>
-                    <?php else: ?>
-                        N/D
-                    <?php endif; ?>
-                </td>
-                <td><?php if ($profilo) echo meridiana_get_badge('category', $profilo); ?></td>
-                <td><?php if ($udo) echo meridiana_get_badge('category', $udo); ?></td>
-                <td class="link-status-cell">
-                    <?php if (!empty($link_autologin)): ?>
-                        <a href="<?php echo esc_url($link_autologin); ?>" class="link-status link-status--available" target="_blank" rel="noopener noreferrer" aria-label="Apri link autologin">
-                            <i data-lucide="arrow-up-right"></i><span class="sr-only">Link autologin</span>
-                        </a>
-                    <?php else: ?>
-                        <span class="link-status link-status--missing" aria-label="Link autologin non disponibile">
-                            <i data-lucide="x-circle"></i><span class="sr-only">Nessun link</span>
-                        </span>
-                    <?php endif; ?>
-                </td>
-                <td><?php echo $codice_fiscale ? esc_html($codice_fiscale) : 'N/D'; ?></td>
-                <td class="actions-cell">
-                    <button class="btn-icon" @click="openFormModal('utenti', 'edit', <?php echo $user->ID; ?>)" title="Modifica"><i data-lucide="edit-2"></i></button>
-                    <button class="btn-icon" @click="resetUserPassword(<?php echo $user->ID; ?>)" title="Reset Password"><i data-lucide="key"></i></button>
-                    <button class="btn-icon" @click="deleteUser(<?php echo $user->ID; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
-                </td>
-            </tr>
-            <?php endforeach; ?>
-        </tbody>
-    </table>
-</div>
+
+    <!-- DESKTOP VIEW (> 1024px) - Tabella -->
+    <div class="tab-table-wrapper desktop-only">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Nome</th>
+                    <th>Email</th>
+                    <th>Stato</th>
+                    <th>Profilo</th>
+                    <th>Unita di Offerta</th>
+                    <th>Link Autologin</th>
+                    <th>Codice Fiscale</th>
+                    <th>Azioni</th>
+                </tr>
+            </thead>
+            <tbody>
+                <?php foreach ($users as $user):
+                    $user_meta_key = 'user_' . $user->ID;
+                    $full_name = trim($user->first_name . ' ' . $user->last_name);
+                    if ($full_name === '') {
+                        $full_name = $user->display_name ?: $user->user_login;
+                    }
+                    $stato_field = get_field_object('field_stato_utente', $user_meta_key);
+                    $stato_value = is_array($stato_field) ? ($stato_field['value'] ?? '') : '';
+                    $stato_label = $stato_value && isset($stato_field['choices'][$stato_value])
+                        ? $stato_field['choices'][$stato_value]
+                        : ($stato_value && isset($stato_choices[$stato_value]) ? $stato_choices[$stato_value] : '');
+                    $profilo = get_field('profilo_professionale', $user_meta_key);
+                    $udo = get_field('udo_riferimento', $user_meta_key);
+                    $link_autologin = get_field('link_autologin_esterno', $user_meta_key);
+                    $codice_fiscale = get_field('codice_fiscale', $user_meta_key);
+                ?>
+                <tr>
+                    <td class="title-cell"><strong><?php echo esc_html($full_name); ?></strong></td>
+                    <td class="wrap-text"><?php echo esc_html($user->user_email); ?></td>
+                    <td class="is-center">
+                        <?php if ($stato_label): ?>
+                            <?php
+                            $status_key = is_string($stato_value) ? $stato_value : '';
+                            $status_badge_class = $status_badge_classes[$status_key] ?? 'badge badge-sm badge-secondary';
+                            ?>
+                            <span class="<?php echo esc_attr($status_badge_class); ?>"><?php echo esc_html($stato_label); ?></span>
+                        <?php else: ?>
+                            N/D
+                        <?php endif; ?>
+                    </td>
+                    <td class="wrap-text"><?php if ($profilo) echo meridiana_get_badge('category', $profilo); ?></td>
+                    <td class="is-center"><?php if ($udo) echo meridiana_get_badge('category', $udo); ?></td>
+                    <td class="is-center">
+                        <?php if (!empty($link_autologin)): ?>
+                            <a href="<?php echo esc_url($link_autologin); ?>" class="link-status link-status--available" target="_blank" rel="noopener noreferrer" aria-label="Apri link autologin">
+                                <i data-lucide="arrow-up-right"></i><span class="sr-only">Link autologin</span>
+                            </a>
+                        <?php else: ?>
+                            <span class="link-status link-status--missing" aria-label="Link autologin non disponibile">
+                                <i data-lucide="x-circle"></i><span class="sr-only">Nessun link</span>
+                            </span>
+                        <?php endif; ?>
+                    </td>
+                    <td class="truncate-text"><?php echo $codice_fiscale ? esc_html($codice_fiscale) : 'N/D'; ?></td>
+                    <td class="is-center">
+                        <button class="btn-icon" @click="openFormModal('utenti', 'edit', <?php echo $user->ID; ?>)" title="Modifica"><i data-lucide="edit-2"></i></button>
+                        <button class="btn-icon" @click="resetUserPassword(<?php echo $user->ID; ?>)" title="Reset Password"><i data-lucide="key"></i></button>
+                        <button class="btn-icon" @click="deleteUser(<?php echo $user->ID; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
+                    </td>
+                </tr>
+                <?php endforeach; ?>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- LAPTOP VIEW (<= 1024px) - Card Layout -->
+    <div class="users-cards-container laptop-only">
+        <?php foreach ($users as $user):
+            $user_meta_key = 'user_' . $user->ID;
+            $full_name = trim($user->first_name . ' ' . $user->last_name);
+            if ($full_name === '') {
+                $full_name = $user->display_name ?: $user->user_login;
+            }
+            $stato_field = get_field_object('field_stato_utente', $user_meta_key);
+            $stato_value = is_array($stato_field) ? ($stato_field['value'] ?? '') : '';
+            $stato_label = $stato_value && isset($stato_field['choices'][$stato_value])
+                ? $stato_field['choices'][$stato_value]
+                : ($stato_value && isset($stato_choices[$stato_value]) ? $stato_choices[$stato_value] : '');
+            $profilo = get_field('profilo_professionale', $user_meta_key);
+            $udo = get_field('udo_riferimento', $user_meta_key);
+            $link_autologin = get_field('link_autologin_esterno', $user_meta_key);
+            $codice_fiscale = get_field('codice_fiscale', $user_meta_key);
+            
+            $status_key = is_string($stato_value) ? $stato_value : '';
+            $status_badge_class = $status_badge_classes[$status_key] ?? 'badge badge-sm badge-secondary';
+        ?>
+        <div class="user-card" data-user-id="<?php echo $user->ID; ?>">
+            <div class="user-card__header" data-toggle="card-<?php echo $user->ID; ?>">
+                <div class="user-card__info">
+                    <div class="user-card__title"><?php echo esc_html($full_name); ?></div>
+                    <div class="user-card__meta">
+                        <?php if ($stato_label): ?>
+                            <span class="user-card__badge <?php echo esc_attr($status_badge_class); ?>"><?php echo esc_html($stato_label); ?></span>
+                        <?php endif; ?>
+                        <?php if ($profilo): ?>
+                            <span class="user-card__profilo">•</span>
+                            <span class="user-card__profilo-text"><?php echo esc_html($profilo); ?></span>
+                        <?php endif; ?>
+                    </div>
+                </div>
+                <button class="user-card__toggle" aria-label="Espandi dettagli"><i data-lucide="chevron-down"></i></button>
+            </div>
+            <div class="user-card__content" id="card-<?php echo $user->ID; ?>">
+                <div class="user-card__row">
+                    <span class="user-card__label">Email</span>
+                    <span class="user-card__value"><?php echo esc_html($user->user_email); ?></span>
+                </div>
+                <div class="user-card__row">
+                    <span class="user-card__label">Unita di Offerta</span>
+                    <span class="user-card__value"><?php echo $udo ? esc_html($udo) : 'N/D'; ?></span>
+                </div>
+                <div class="user-card__row">
+                    <span class="user-card__label">Link Autologin</span>
+                    <span class="user-card__value">
+                        <?php if (!empty($link_autologin)): ?>
+                            <a href="<?php echo esc_url($link_autologin); ?>" class="link-status link-status--available" target="_blank" rel="noopener noreferrer">
+                                <i data-lucide="arrow-up-right"></i> Apri
+                            </a>
+                        <?php else: ?>
+                            <span class="text-gray-500">Non disponibile</span>
+                        <?php endif; ?>
+                    </span>
+                </div>
+                <div class="user-card__row">
+                    <span class="user-card__label">Codice Fiscale</span>
+                    <span class="user-card__value"><?php echo $codice_fiscale ? esc_html($codice_fiscale) : 'N/D'; ?></span>
+                </div>
+            </div>
+            <div class="user-card__actions">
+                <button class="btn-icon" @click="openFormModal('utenti', 'edit', <?php echo $user->ID; ?>)" title="Modifica"><i data-lucide="edit-2"></i></button>
+                <button class="btn-icon" @click="resetUserPassword(<?php echo $user->ID; ?>)" title="Reset Password"><i data-lucide="key"></i></button>
+                <button class="btn-icon" @click="deleteUser(<?php echo $user->ID; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+
 <?php else: ?>
 <div class="no-content"><i data-lucide="inbox"></i><p>Nessun utente trovato</p></div>
 <?php endif; ?>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle card content on laptop view
+    document.querySelectorAll('.user-card__header').forEach(header => {
+        header.addEventListener('click', function() {
+            const cardId = this.getAttribute('data-toggle');
+            const content = document.getElementById(cardId);
+            const toggle = this.querySelector('.user-card__toggle');
+            
+            if (content && toggle) {
+                content.classList.toggle('open');
+                toggle.classList.toggle('open');
+            }
+        });
+    });
+});
+</script>
