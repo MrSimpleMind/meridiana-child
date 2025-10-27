@@ -102,8 +102,27 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    // Handler per il click sul toggle button
+    document.querySelectorAll('.item-card__toggle').forEach(toggle => {
+        toggle.addEventListener('click', function(e) {
+            e.stopPropagation();
+            const header = this.closest('.item-card__header');
+            const cardId = header.getAttribute('data-toggle');
+            const content = document.getElementById(cardId);
+            if (content && this) {
+                content.classList.toggle('open');
+                this.classList.toggle('open');
+            }
+        });
+    });
+
+    // Handler per il click sull'header (area titolo e meta)
     document.querySelectorAll('.item-card__header').forEach(header => {
-        header.addEventListener('click', function() {
+        header.addEventListener('click', function(e) {
+            // Non eseguire se il click proviene dal toggle button o dai pulsanti di azione
+            if (e.target.closest('.item-card__toggle') || e.target.closest('.item-card__actions-group')) {
+                return;
+            }
             const cardId = this.getAttribute('data-toggle');
             const content = document.getElementById(cardId);
             const toggle = this.querySelector('.item-card__toggle');
