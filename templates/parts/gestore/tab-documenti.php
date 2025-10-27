@@ -47,7 +47,7 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
             <div class="item-card__content" id="card-<?php echo get_the_ID(); ?>">
                 <?php
                 // Lista dei campi da escludere
-                $exclude_fields = ['pdf_modulo', 'pdf_protocollo'];
+                $exclude_fields = ['pdf_modulo', 'pdf_protocollo', 'pianificazione_ats'];
 
                 // Recupera tutte le ACF field
                 $fields = get_fields(get_the_ID());
@@ -94,7 +94,7 @@ $documenti_query = new WP_Query(['post_type' => ['protocollo', 'modulo'], 'posts
                 }
 
                 // Lista delle tassonomie da mostrare (esplicite per evitare problemi)
-                $taxonomy_names = ['unita_offerta', 'profili_professionali', 'aree_competenza', 'category'];
+                $taxonomy_names = ['unita-offerta', 'profilo-professionale', 'area-competenza', 'category'];
 
                 foreach ($taxonomy_names as $tax_name) {
                     $terms = get_the_terms(get_the_ID(), $tax_name);
