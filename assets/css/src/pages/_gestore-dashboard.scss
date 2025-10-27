@@ -386,6 +386,15 @@ body.admin-bar {
 }
 
 // Badges
+.badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 600;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
 .badge-success {
     background-color: #D1FAE5;
     color: #065F46;
@@ -962,6 +971,15 @@ body.admin-bar {
 
 .item-card__separator {
     color: #D1D5DB;
+}
+
+.item-card__category-text {
+    color: #6B7280;
+    font-weight: 500;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .item-card__divider {

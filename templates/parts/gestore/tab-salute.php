@@ -35,7 +35,7 @@ $salute_query = new WP_Query([
                         if (!is_wp_error($categories) && !empty($categories)) {
                             foreach (array_slice($categories, 0, 1) as $cat) {
                                 echo '<span class="item-card__separator">•</span>';
-                                echo '<span class="item-card__type type-salute_benessere">' . esc_html($cat->name) . '</span>';
+                                echo '<span class="item-card__category-text">' . esc_html($cat->name) . '</span>';
                             }
                         }
                         ?>
@@ -45,7 +45,6 @@ $salute_query = new WP_Query([
                     <button class="btn-icon" @click.stop="openFormModal('salute', 'edit', <?php echo $post_id; ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
                     <button class="btn-icon" @click.stop="deleteSalute(<?php echo $post_id; ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
                     <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
-                    <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
                 </div>
             </div>
             <div class="item-card__content" id="card-<?php echo $post_id; ?>">

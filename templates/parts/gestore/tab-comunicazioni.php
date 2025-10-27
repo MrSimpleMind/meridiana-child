@@ -31,7 +31,7 @@ $comunicazioni_query = new WP_Query([
                         <?php if (!empty($categories)): ?>
                             <?php foreach (array_slice($categories, 0, 1) as $cat): ?>
                                 <span class="item-card__separator">•</span>
-                                <span class="item-card__type type-post"><?php echo esc_html($cat->name); ?></span>
+                                <span class="item-card__category-text"><?php echo esc_html($cat->name); ?></span>
                             <?php endforeach; ?>
                         <?php endif; ?>
                     </div>
@@ -40,7 +40,6 @@ $comunicazioni_query = new WP_Query([
                     <button class="btn-icon" @click.stop="openFormModal('comunicazioni', 'edit', <?php echo get_the_ID(); ?>, null)" title="Modifica"><i data-lucide="edit-2"></i></button>
                     <button class="btn-icon" @click.stop="deleteComunicazione(<?php echo get_the_ID(); ?>)" title="Elimina"><i data-lucide="trash-2"></i></button>
                     <a href="<?php the_permalink(); ?>" class="btn-icon" title="Visualizza" target="_blank"><i data-lucide="eye"></i></a>
-                    <button class="item-card__toggle" aria-label="Espandi"><i data-lucide="chevron-down"></i></button>
                 </div>
             </div>
             <div class="item-card__content" id="card-<?php echo get_the_ID(); ?>">
