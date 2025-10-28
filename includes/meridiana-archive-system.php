@@ -547,8 +547,10 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
         return false;
     }
 
-    // Normalize path for Windows compatibility
+    // Normalize path immediately after reading from metadata (for backwards compatibility with old archives)
     $archived_path = wp_normalize_path($archived_path);
+    error_log("Meridiana: Restore - Raw archived_path from metadata: " . ($archive_metadata['archived_file_path'] ?? 'EMPTY'));
+    error_log("Meridiana: Restore - Normalized archived_path: $archived_path");
 
     if (!file_exists($archived_path)) {
         error_log("Meridiana: Restore FAIL - Archived file does not exist: $archived_path");
