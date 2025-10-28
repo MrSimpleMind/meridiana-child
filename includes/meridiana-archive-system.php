@@ -554,7 +554,25 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
 
     if (!file_exists($archived_path)) {
         error_log("Meridiana: Restore FAIL - Archived file does not exist: $archived_path");
-        return false;
+        error_log("Meridiana: Restore - Trying to find file with glob fallback...");
+
+        // Fallback: Try to find the file using glob
+        $archive_dir = dirname($archived_path);
+        $filename_pattern = basename($archived_path);
+
+        if (is_dir($archive_dir)) {
+            $found_files = glob($archive_dir . '/*' . $filename_pattern);
+            if (!empty($found_files)) {
+                $archived_path = $found_files[0]; // Use first match
+                error_log("Meridiana: Restore - Found file via glob: $archived_path");
+            } else {
+                error_log("Meridiana: Restore FAIL - File not found even with glob in: $archive_dir");
+                return false;
+            }
+        } else {
+            error_log("Meridiana: Restore FAIL - Archive directory does not exist: $archive_dir");
+            return false;
+        }
     }
 
     error_log("Meridiana: Restore - Archive metadata OK, file exists at: $archived_path");
