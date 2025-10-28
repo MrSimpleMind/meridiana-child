@@ -315,10 +315,6 @@ function meridiana_handle_archive_restore() {
     wp_send_json_success([
         'message' => __('File ripristinato con successo', 'meridiana-child'),
         'post_id' => $post_id,
-        'redirect' => add_query_arg([
-            'post' => $post_id,
-            'action' => 'edit',
-            'restored' => 'true',
-        ], admin_url('post.php')),
+        'redirect' => home_url('/dashboard-gestore/'),
     ]);
 }
