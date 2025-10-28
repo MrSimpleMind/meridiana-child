@@ -412,6 +412,38 @@ function meridiana_get_archive_download_url($post_id, $archive_number) {
 
 
 /**
+ * Genera URL per ripristinare un file archiviato
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio da ripristinare
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_restore_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    // Check permissions - solo admin o editor del documento
+    if (!current_user_can('edit_post', $post_id)) {
+        return '';
+    }
+
+    // Crea nonce valido
+    $nonce = wp_create_nonce('meridiana_restore_archive_' . $post_id);
+
+    return add_query_arg([
+        'action' => 'meridiana_restore_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+}
+
+
+/**
  * Valida se un archivio è ancora disponibile (non ancora eliminato)
  *
  * @param int $post_id - ID del documento
