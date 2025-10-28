@@ -296,9 +296,13 @@ $area_competenza = get_terms(array(
                         echo '</div>';
                         echo '<div class="file-item__actions">';
 
-                        // View Button - Open PDF in new tab
-                        if ($download_url) {
-                            echo '<a href="' . esc_url($download_url) . '" class="btn-icon" title="' . esc_attr__('Visualizza file', 'meridiana-child') . '" target="_blank">';
+                        // View Button - Open PDF inline in new tab
+                        $view_url = function_exists('meridiana_get_archive_view_url')
+                            ? meridiana_get_archive_view_url($post_id, $archive_num)
+                            : '';
+
+                        if ($view_url) {
+                            echo '<a href="' . esc_url($view_url) . '" class="btn-icon" title="' . esc_attr__('Visualizza file', 'meridiana-child') . '" target="_blank">';
                             echo '<i data-lucide="eye"></i>';
                             echo '</a>';
                         }

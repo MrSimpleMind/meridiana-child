@@ -537,6 +537,37 @@ function meridiana_get_archive_download_url($post_id, $archive_number) {
 
 
 /**
+ * Genera URL per visualizzare un file archiviato inline nel browser
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio (1, 2, 3, etc)
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_view_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    // Crea nonce valido per 1 ora
+    $nonce = wp_create_nonce('meridiana_archive_view_' . $post_id);
+
+    $url = add_query_arg([
+        'action' => 'meridiana_view_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+
+    error_log("DEBUG meridiana_get_archive_view_url - post_id: $post_id, archive_num: $archive_number, nonce_action: meridiana_archive_view_$post_id, url: $url");
+
+    return $url;
+}
+
+
+/**
  * Genera URL per ripristinare un file archiviato
  *
  * @param int $post_id - ID del documento
