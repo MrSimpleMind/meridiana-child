@@ -712,6 +712,30 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        async restoreArchive(postId, archiveNum) {
+            if (!confirm('Ripristinare questo file? Il file corrente verrà archiviato.')) return;
+            this.isLoading = true;
+            try {
+                const response = await fetch(meridiana.ajaxurl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                    body: new URLSearchParams({ action: 'meridiana_restore_archive', nonce: meridiana.nonce, post_id: postId, archive_num: archiveNum }),
+                });
+                const data = await response.json();
+                if (data.success) {
+                    this.successMessage = 'File ripristinato con successo';
+                    setTimeout(() => { location.reload(); }, 1000);
+                } else {
+                    this.errorMessage = data.data?.message || 'Errore';
+                }
+            } catch (error) {
+                console.error('Restore archive error:', error);
+                this.errorMessage = 'Errore di rete';
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
         getModalTitle() {
             if (!this.selectedPostType) {
                 return '';
