@@ -343,7 +343,120 @@ function meridiana_cleanup_old_archives($older_than_days = 90) {
     return $deleted_count;
 }
 
-// Hook opzionale per cron job (può essere attivato successivamente)
-// add_action('meridiana_cleanup_old_archives_hook', function() {
-//     meridiana_cleanup_old_archives(90);
-// });
+// ============================================
+// HELPER FUNCTIONS: FORMATTING + UTILITIES
+// ============================================
+
+/**
+ * Calcola i giorni rimanenti prima dell'eliminazione automatica
+ *
+ * @param int $archived_timestamp - Timestamp unix di archiving
+ * @param int $deletion_days - Giorni prima dell'eliminazione (default 30)
+ * @return int - Giorni rimanenti
+ */
+function meridiana_get_days_until_deletion($archived_timestamp, $deletion_days = 30) {
+    $timestamp = intval($archived_timestamp);
+    if (!$timestamp) {
+        return 0;
+    }
+
+    $deletion_time = $timestamp + ($deletion_days * 24 * 60 * 60);
+    $days_remaining = ceil(($deletion_time - time()) / (24 * 60 * 60));
+
+    return max(0, intval($days_remaining));
+}
+
+
+/**
+ * Formatta il timestamp di archiving in formato leggibile
+ *
+ * @param int $timestamp - Unix timestamp
+ * @return string - Formato: "27 Ott 2025, 14:30"
+ */
+function meridiana_format_archive_date($timestamp) {
+    $timestamp = intval($timestamp);
+    if (!$timestamp) {
+        return '';
+    }
+
+    // Locale-aware formatting
+    return date_i18n(_x('j M Y, H:i', 'archive date format', 'meridiana-child'), $timestamp);
+}
+
+
+/**
+ * Genera URL di download sicuro per file archiviato
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio (1, 2, 3, etc)
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_download_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    // Crea nonce valido per 1 ora
+    $nonce = wp_create_nonce('meridiana_archive_download_' . $post_id);
+
+    return add_query_arg([
+        'action' => 'meridiana_download_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+}
+
+
+/**
+ * Valida se un archivio è ancora disponibile (non ancora eliminato)
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio
+ * @return bool - True se archivio esiste e file fisico presente
+ */
+function meridiana_archive_exists($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return false;
+    }
+
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_number, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        return false;
+    }
+
+    $archived_path = $archive_metadata['archived_file_path'] ?? '';
+    if (!$archived_path || !file_exists($archived_path)) {
+        return false;
+    }
+
+    return true;
+}
+
+
+// ============================================
+// CRON JOB: PULIZIA ARCHIVI VECCHI (ATTIVO)
+// ============================================
+
+/**
+ * Cron hook per cleanup automatico archivi
+ * Eseguito giornalmente
+ */
+function meridiana_cron_cleanup_old_archives() {
+    // Default: 30 giorni
+    meridiana_cleanup_old_archives(30);
+}
+
+// Registra il cron job
+add_action('meridiana_cleanup_archives_cron', 'meridiana_cron_cleanup_old_archives');
+
+// Schedula il cron se non già schedulato
+if (!wp_next_scheduled('meridiana_cleanup_archives_cron')) {
+    wp_schedule_event(time(), 'daily', 'meridiana_cleanup_archives_cron');
+}

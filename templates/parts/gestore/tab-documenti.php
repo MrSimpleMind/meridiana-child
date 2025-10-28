@@ -252,6 +252,63 @@ $area_competenza = get_terms(array(
                         echo '</div>';
                     }
                 }
+
+                // ===============================================
+                // ARCHIVE HISTORY SECTION
+                // ===============================================
+                $post_id = get_the_ID();
+                $archives = function_exists('meridiana_get_document_archives') ? meridiana_get_document_archives($post_id) : [];
+
+                if (!empty($archives)) {
+                    echo '<div class="archive-history-section">';
+                    echo '<div class="archive-history__header">';
+                    echo '<h3 class="archive-history__title">' . esc_html__('Storico File Sostituiti', 'meridiana-child') . '</h3>';
+                    echo '</div>';
+
+                    echo '<div class="archive-history__list">';
+                    foreach ($archives as $archive) {
+                        if (!is_array($archive)) continue;
+
+                        $archive_num = $archive['archive_number'] ?? 0;
+                        $original_filename = $archive['original_filename'] ?? '';
+                        $archived_timestamp = $archive['archived_timestamp'] ?? 0;
+                        $archived_by_user = $archive['archived_by_user_name'] ?? '';
+
+                        // Calcola giorni rimanenti
+                        $days_left = function_exists('meridiana_get_days_until_deletion')
+                            ? meridiana_get_days_until_deletion($archived_timestamp, 30)
+                            : 0;
+
+                        // Formatta data
+                        $formatted_date = function_exists('meridiana_format_archive_date')
+                            ? meridiana_format_archive_date($archived_timestamp)
+                            : '';
+
+                        // URL download
+                        $download_url = function_exists('meridiana_get_archive_download_url')
+                            ? meridiana_get_archive_download_url($post_id, $archive_num)
+                            : '';
+
+                        echo '<div class="archive-item">';
+                        echo '<div class="archive-item__icon">📄</div>';
+                        echo '<div class="archive-item__info">';
+                        echo '<div class="archive-item__filename">' . esc_html($original_filename) . '</div>';
+                        echo '<div class="archive-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
+                        echo '</div>';
+                        echo '<div class="archive-item__actions">';
+                        if ($download_url) {
+                            echo '<a href="' . esc_url($download_url) . '" class="archive-item__download" target="_blank" rel="noopener">';
+                            echo '<i data-lucide="download"></i>';
+                            echo '<span class="archive-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
+                            echo '</a>';
+                        }
+                        echo '<span class="archive-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
+                        echo '</div>';
+                        echo '</div>';
+                    }
+                    echo '</div>';
+                    echo '</div>';
+                }
                 ?>
             </div>
         </div>

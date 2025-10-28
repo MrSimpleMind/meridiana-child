@@ -1075,4 +1075,143 @@ body.admin-bar {
     word-break: break-word;
 }
 
+// ============================================
+// ARCHIVE HISTORY SECTION STYLES
+// ============================================
+
+.archive-history-section {
+    margin-top: var(--space-6);
+    padding-top: var(--space-4);
+    border-top: 2px solid #E5E7EB;
+}
+
+.archive-history__header {
+    margin-bottom: var(--space-4);
+}
+
+.archive-history__title {
+    font-size: 13px;
+    font-weight: 700;
+    color: #6B7280;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.archive-history__list {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.archive-item {
+    display: grid;
+    grid-template-columns: 30px 1fr auto;
+    gap: var(--space-3);
+    align-items: center;
+    padding: var(--space-2) var(--space-3);
+    background: #F9FAFB;
+    border-radius: 4px;
+    border-left: 3px solid #D1D5DB;
+
+    &:hover {
+        background: #F3F4F6;
+        border-left-color: #9CA3AF;
+    }
+}
+
+.archive-item__icon {
+    font-size: 18px;
+    text-align: center;
+    flex-shrink: 0;
+}
+
+.archive-item__info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0; // Per far funzionare l'ellipsis
+}
+
+.archive-item__filename {
+    font-size: 12px;
+    font-weight: 600;
+    color: #1F2937;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.archive-item__meta {
+    font-size: 11px;
+    color: #9CA3AF;
+}
+
+.archive-item__actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.archive-item__download {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    background: #3B82F6;
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
+    transition: background 0.2s;
+    white-space: nowrap;
+
+    &:hover {
+        background: #2563EB;
+    }
+
+    i {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.archive-item__download-text {
+    display: none;
+
+    @media (min-width: 768px) {
+        display: inline;
+    }
+}
+
+.archive-item__expiry {
+    font-size: 11px;
+    color: #EA580C;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+// Responsive: Mobile stack
+@media (max-width: 480px) {
+    .archive-item {
+        grid-template-columns: 30px 1fr;
+        gap: var(--space-2);
+
+        .archive-item__actions {
+            grid-column: 1 / -1;
+            padding-top: var(--space-2);
+            border-top: 1px solid #E5E7EB;
+            justify-content: space-between;
+        }
+    }
+
+    .archive-item__download {
+        padding: 6px 8px;
+    }
+}
+
 
