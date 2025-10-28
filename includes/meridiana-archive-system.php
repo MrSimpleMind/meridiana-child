@@ -21,7 +21,8 @@ if (!defined('ABSPATH')) exit;
 
 function meridiana_ensure_archive_directory() {
     $upload_dir = wp_upload_dir();
-    $archive_path = trailingslashit($upload_dir['basedir']) . 'archived-files';
+    $basedir = wp_normalize_path($upload_dir['basedir']); // Normalize immediately
+    $archive_path = trailingslashit($basedir) . 'archived-files';
 
     // Crea directory se non esiste
     if (!is_dir($archive_path)) {
@@ -89,7 +90,14 @@ function meridiana_archive_replaced_document($post_id, $old_attachment_id = 0, $
     }
 
     $attachment_path = get_attached_file($old_attachment_id);
-    if (!$attachment_path || !file_exists($attachment_path)) {
+    if (!$attachment_path) {
+        return false;
+    }
+
+    // Normalize path immediately for Windows compatibility
+    $attachment_path = wp_normalize_path($attachment_path);
+
+    if (!file_exists($attachment_path)) {
         return false;
     }
 
@@ -558,7 +566,10 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
 
         // Fallback: Try to find the file using glob
         $archive_dir = dirname($archived_path);
+        $archive_dir = wp_normalize_path($archive_dir); // Normalize directory path too
         $filename_pattern = basename($archived_path);
+
+        error_log("Meridiana: Restore - Glob search in: $archive_dir with pattern: $filename_pattern");
 
         if (is_dir($archive_dir)) {
             $found_files = glob($archive_dir . '/*' . $filename_pattern);
