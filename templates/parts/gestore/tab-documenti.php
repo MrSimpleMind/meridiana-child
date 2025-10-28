@@ -284,26 +284,49 @@ $area_competenza = get_terms(array(
                             ? meridiana_format_archive_date($archived_timestamp)
                             : '';
 
-                        // URL download
+                        // URLs per i 3 pulsanti
                         $download_url = function_exists('meridiana_get_archive_download_url')
                             ? meridiana_get_archive_download_url($post_id, $archive_num)
                             : '';
+                        $view_url = function_exists('meridiana_get_archive_view_url')
+                            ? meridiana_get_archive_view_url($post_id, $archive_num)
+                            : '';
 
-                        echo '<div class="file-item">';
-                        echo '<div class="file-item__icon">📄</div>';
-                        echo '<div class="file-item__info">';
-                        echo '<div class="file-item__filename">' . esc_html($original_filename) . '</div>';
-                        echo '<div class="file-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
+                        echo '<div class="archive-item">';
+
+                        // Info: filename + metadata
+                        echo '<div class="archive-item__info">';
+                        echo '<div class="archive-item__filename">' . esc_html($original_filename) . '</div>';
+                        echo '<div class="archive-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
                         echo '</div>';
-                        echo '<div class="file-item__actions">';
-                        if ($download_url) {
-                            echo '<a href="' . esc_url($download_url) . '" class="file-item__download" target="_blank" rel="noopener">';
-                            echo '<i data-lucide="download"></i>';
-                            echo '<span class="file-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
+
+                        // Actions: 3 button icons
+                        echo '<div class="archive-item__actions">';
+
+                        // View button (eye icon)
+                        if ($view_url) {
+                            echo '<a href="' . esc_url($view_url) . '" class="btn-icon" target="_blank" title="' . esc_attr__('Visualizza', 'meridiana-child') . '" rel="noopener">';
+                            echo '<svg><use xlink:href="#icon-eye"></use></svg>';
                             echo '</a>';
                         }
-                        echo '<span class="file-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
+
+                        // Download button (download icon)
+                        if ($download_url) {
+                            echo '<a href="' . esc_url($download_url) . '" class="btn-icon" title="' . esc_attr__('Scarica', 'meridiana-child') . '" rel="noopener">';
+                            echo '<svg><use xlink:href="#icon-download"></use></svg>';
+                            echo '</a>';
+                        }
+
+                        // Restore button (rotate-ccw icon)
+                        echo '<button @click.stop="restoreArchive(' . intval($post_id) . ', ' . intval($archive_num) . ')" class="btn-icon" title="' . esc_attr__('Ripristina', 'meridiana-child') . '">';
+                        echo '<svg><use xlink:href="#icon-rotate-ccw"></use></svg>';
+                        echo '</button>';
+
                         echo '</div>';
+
+                        // Expiry: days remaining
+                        echo '<div class="archive-item__expiry">' . esc_html(intval($days_left)) . ' ' . esc_html__('giorni', 'meridiana-child') . '</div>';
+
                         echo '</div>';
                     }
                     echo '</div>';
