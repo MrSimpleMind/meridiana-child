@@ -523,5 +523,77 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // =================================================================
+    // RESTORE ARCHIVE FILE HANDLER
+    // =================================================================
+    document.querySelectorAll('.file-item__restore').forEach(restoreLink => {
+        restoreLink.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const url = this.href;
+            const postId = new URL(url).searchParams.get('post_id');
+            const archiveNum = new URL(url).searchParams.get('archive_num');
+
+            if (!postId || !archiveNum) {
+                console.error('Invalid restore link');
+                alert('Errore: parametri non validi');
+                return;
+            }
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i data-lucide="loader"></i><span class="file-item__restore-text">Ripristino...</span>';
+            this.disabled = true;
+
+            // Make AJAX request
+            fetch(url, {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                if (data.success) {
+                    // Success - redirect to document edit page
+                    alert('File ripristinato con successo! Reindirizzamento...');
+                    if (data.data && data.data.redirect) {
+                        window.location.href = data.data.redirect;
+                    } else {
+                        window.location.reload();
+                    }
+                } else {
+                    // Error response
+                    const errorMsg = data.data && data.data.message
+                        ? data.data.message
+                        : 'Errore durante il ripristino del file';
+                    alert(errorMsg);
+                    // Restore button state
+                    this.innerHTML = originalText;
+                    this.disabled = false;
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Restore error:', error);
+                alert('Errore durante il ripristino: ' + error.message);
+                // Restore button state
+                this.innerHTML = originalText;
+                this.disabled = false;
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            });
+        });
+    });
 });
 </script>
