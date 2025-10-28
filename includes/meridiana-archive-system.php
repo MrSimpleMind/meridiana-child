@@ -105,6 +105,7 @@ function meridiana_archive_replaced_document($post_id, $old_attachment_id = 0, $
     );
 
     $archived_path = trailingslashit($archive_dir) . $archived_filename;
+    $archived_path = wp_normalize_path($archived_path); // Normalize path for Windows compatibility
 
     // Copia il file in archivio
     if (!copy($attachment_path, $archived_path)) {
@@ -116,7 +117,7 @@ function meridiana_archive_replaced_document($post_id, $old_attachment_id = 0, $
     $archive_metadata = array(
         'original_attachment_id' => $old_attachment_id,
         'original_filename' => $attachment->post_title ?: basename($attachment_path),
-        'original_file_path' => $attachment_path,
+        'original_file_path' => wp_normalize_path($attachment_path),
         'archived_filename' => $archived_filename,
         'archived_file_path' => $archived_path,
         'archived_timestamp' => $timestamp,
@@ -545,6 +546,10 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
         error_log("Meridiana: Restore FAIL - archived_file_path is empty in metadata");
         return false;
     }
+
+    // Normalize path for Windows compatibility
+    $archived_path = wp_normalize_path($archived_path);
+
     if (!file_exists($archived_path)) {
         error_log("Meridiana: Restore FAIL - Archived file does not exist: $archived_path");
         return false;
@@ -582,6 +587,7 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
     // Generate unique filename for restored file in uploads (not in archived-files)
     $restored_filename = wp_unique_filename($uploads_base, $original_filename);
     $restored_path = $uploads_base . $restored_filename;
+    $restored_path = wp_normalize_path($restored_path); // Normalize for Windows
 
     error_log("Meridiana: Restore - Restored path: $restored_path");
 
