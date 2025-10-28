@@ -10,7 +10,10 @@
       "Bash(git commit:*)",
       "Bash(/dev/null)",
       "Bash(cd:*)",
-      "Bash(npm run build:scss:pages:*)"
+      "Bash(npm run build:scss:pages:*)",
+      "Bash(test:*)",
+      "Bash(git check-ignore:*)",
+      "Bash(cat:*)"
     ]
   },
   "outputStyle": "default"
