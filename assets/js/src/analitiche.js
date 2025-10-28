@@ -465,12 +465,18 @@ document.addEventListener("alpine:init", () => {
         },
 
         formatDocumentType(type) {
-            if (type === "protocollo") {
-                return "Protocollo";
+            const typeMap = {
+                "protocollo": "Protocolli",
+                "modulo": "Moduli",
+                "convenzione": "Convenzioni",
+                "salute-e-benessere-l": "Salute & Benessere",
+                "post": "Comunicazioni"
+            };
+
+            if (typeMap[type]) {
+                return typeMap[type];
             }
-            if (type === "modulo") {
-                return "Modulo";
-            }
+
             return type ? type.charAt(0).toUpperCase() + type.slice(1) : "";
         },
 
