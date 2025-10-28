@@ -302,6 +302,19 @@ $area_competenza = get_terms(array(
                             echo '<span class="file-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
                             echo '</a>';
                         }
+
+                        // Restore Button
+                        $restore_url = function_exists('meridiana_get_archive_restore_url')
+                            ? meridiana_get_archive_restore_url($post_id, $archive_num)
+                            : '';
+
+                        if ($restore_url) {
+                            echo '<a href="' . esc_url($restore_url) . '" class="file-item__restore" title="' . esc_attr__('Ripristina questo file', 'meridiana-child') . '">';
+                            echo '<i data-lucide="rotate-ccw"></i>';
+                            echo '<span class="file-item__restore-text">' . esc_html__('Ripristina', 'meridiana-child') . '</span>';
+                            echo '</a>';
+                        }
+
                         echo '<span class="file-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
                         echo '</div>';
                         echo '</div>';
