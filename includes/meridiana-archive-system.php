@@ -511,33 +511,55 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
     $post_id = intval($post_id);
     $archive_number = intval($archive_number);
 
+    error_log("Meridiana: Restore START - post_id=$post_id, archive_number=$archive_number");
+
     if (!$post_id || !$archive_number) {
+        error_log("Meridiana: Restore FAIL - Invalid post_id or archive_number");
         return false;
     }
 
     // Validate post
     $post = get_post($post_id);
-    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+    if (!$post) {
+        error_log("Meridiana: Restore FAIL - Post not found: $post_id");
+        return false;
+    }
+    if (!in_array($post->post_type, ['protocollo', 'modulo'])) {
+        error_log("Meridiana: Restore FAIL - Invalid post_type: {$post->post_type}");
         return false;
     }
 
     // Get archive metadata
     $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_number, true);
-    if (!$archive_metadata || !is_array($archive_metadata)) {
+    if (!$archive_metadata) {
+        error_log("Meridiana: Restore FAIL - Archive metadata not found for archive #$archive_number");
+        return false;
+    }
+    if (!is_array($archive_metadata)) {
+        error_log("Meridiana: Restore FAIL - Archive metadata is not an array");
         return false;
     }
 
     $archived_path = $archive_metadata['archived_file_path'] ?? '';
-    if (!$archived_path || !file_exists($archived_path)) {
+    if (!$archived_path) {
+        error_log("Meridiana: Restore FAIL - archived_file_path is empty in metadata");
         return false;
     }
+    if (!file_exists($archived_path)) {
+        error_log("Meridiana: Restore FAIL - Archived file does not exist: $archived_path");
+        return false;
+    }
+
+    error_log("Meridiana: Restore - Archive metadata OK, file exists at: $archived_path");
 
     // Get current file attachment ID
     $pdf_field_key = $post->post_type === 'protocollo' ? 'field_pdf_protocollo' : 'field_pdf_modulo';
     $current_attachment_id = intval(get_field($pdf_field_key, $post_id)) ?: 0;
+    error_log("Meridiana: Restore - Current PDF field: $pdf_field_key, attachment_id: $current_attachment_id");
 
     // STEP 1: Archive current file if it exists
     if ($current_attachment_id) {
+        error_log("Meridiana: Restore - Archiving current file (attachment_id: $current_attachment_id)");
         meridiana_archive_replaced_document($post_id, $current_attachment_id, 'restore_action');
     }
 
@@ -545,19 +567,31 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
     $archived_filename = $archive_metadata['archived_filename'] ?? basename($archived_path);
     $original_filename = $archive_metadata['original_filename'] ?? $archived_filename;
 
+    error_log("Meridiana: Restore - Original filename: $original_filename");
+
     // Get uploads directory
     $upload_dir = wp_upload_dir();
+    if (is_wp_error($upload_dir)) {
+        error_log("Meridiana: Restore FAIL - Error getting uploads directory: " . $upload_dir->get_error_message());
+        return false;
+    }
     $uploads_base = trailingslashit($upload_dir['basedir']);
+
+    error_log("Meridiana: Restore - Uploads base: $uploads_base");
 
     // Generate unique filename for restored file in uploads (not in archived-files)
     $restored_filename = wp_unique_filename($uploads_base, $original_filename);
     $restored_path = $uploads_base . $restored_filename;
 
+    error_log("Meridiana: Restore - Restored path: $restored_path");
+
     // Copy archived file back to uploads
     if (!copy($archived_path, $restored_path)) {
-        error_log("Meridiana: Impossibile copiare file archiviato per restore: $archived_path");
+        error_log("Meridiana: Restore FAIL - Cannot copy file from $archived_path to $restored_path");
         return false;
     }
+
+    error_log("Meridiana: Restore - File copied successfully");
 
     // Create attachment post
     $attachment_data = [
@@ -571,27 +605,36 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
     $attachment_id = wp_insert_attachment($attachment_data);
     if (is_wp_error($attachment_id)) {
         wp_delete_file($restored_path); // Cleanup on error
-        error_log("Meridiana: Errore creazione attachment per restore: " . $attachment_id->get_error_message());
+        error_log("Meridiana: Restore FAIL - Error creating attachment: " . $attachment_id->get_error_message());
         return false;
     }
 
+    error_log("Meridiana: Restore - Attachment created, ID: $attachment_id");
+
     // Register attachment file path
-    update_attached_file($attachment_id, $restored_path);
+    $attach_file_result = update_attached_file($attachment_id, $restored_path);
+    error_log("Meridiana: Restore - update_attached_file result: " . ($attach_file_result ? 'true' : 'false'));
 
     // Generate attachment metadata
     $metadata = wp_generate_attachment_metadata($attachment_id, $restored_path);
-    wp_update_attachment_metadata($attachment_id, $metadata);
+    error_log("Meridiana: Restore - Metadata generated: " . print_r($metadata, true));
+
+    $meta_update = wp_update_attachment_metadata($attachment_id, $metadata);
+    error_log("Meridiana: Restore - update_attachment_metadata result: " . ($meta_update ? 'true' : 'false'));
 
     // STEP 3: Update ACF field with new attachment ID
     if (!function_exists('update_field')) {
         wp_delete_post($attachment_id, true); // Cleanup on error
+        error_log("Meridiana: Restore FAIL - update_field function not available");
         return false;
     }
 
     $updated = update_field($pdf_field_key, $attachment_id, $post_id);
+    error_log("Meridiana: Restore - update_field($pdf_field_key) result: " . ($updated ? 'true' : 'false'));
+
     if (!$updated) {
         wp_delete_post($attachment_id, true); // Cleanup on error
-        error_log("Meridiana: Errore aggiornamento field durante restore");
+        error_log("Meridiana: Restore FAIL - Error updating ACF field");
         return false;
     }
 
