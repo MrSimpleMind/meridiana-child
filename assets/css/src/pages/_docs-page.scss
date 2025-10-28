@@ -226,16 +226,18 @@
 
 .docs-filters {
     display: flex;
-    flex-wrap: nowrap;
+    flex-wrap: wrap;
     gap: var(--space-3);
-    overflow-x: auto;
+    overflow-x: hidden;
 
     @media (min-width: 768px) {
         flex-wrap: nowrap;
+        overflow-x: visible;
     }
 
     @media (min-width: 1024px) {
         flex-wrap: nowrap;
+        overflow-x: visible;
     }
 }
 
@@ -243,8 +245,15 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    flex-shrink: 0;
-    min-width: 180px;
+    flex-shrink: 1;
+    flex-basis: calc(50% - 8px);
+
+    @media (min-width: 768px) {
+        flex-shrink: 0;
+        min-width: 180px;
+        flex: none;
+        flex-basis: auto;
+    }
 }
 
 .filter-group__label {
@@ -254,6 +263,7 @@
 }
 
 .docs-filter-select {
+    width: 100%;
     padding: var(--space-3) var(--space-4);
     border: 1px solid var(--color-border-input);
     border-radius: var(--radius-sm);
@@ -268,17 +278,17 @@
     padding-right: 36px;
     transition: all 0.2s ease;
     min-height: 40px;
-    
+
     &:hover {
         border-color: var(--color-primary);
     }
-    
+
     &:focus {
         outline: none;
         border-color: var(--color-primary);
         box-shadow: var(--shadow-focus);
     }
-    
+
     &:disabled {
         background-color: var(--color-bg-secondary);
         color: var(--color-text-muted);
@@ -315,19 +325,20 @@
     transition: all 0.3s ease;
     text-decoration: none;
     color: inherit;
-    
+    overflow: hidden;
+
     @media (max-width: 767px) {
-        grid-template-columns: 100px 1fr;
-        gap: var(--space-3);
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
         padding: var(--space-3);
     }
-    
+
     @media (hover: hover) {
         &:hover {
             border-color: var(--color-primary);
             box-shadow: var(--shadow-md);
             transform: translateY(-2px);
-            
+
             .docs-item__thumbnail {
                 transform: scale(1.05);
             }
@@ -377,6 +388,7 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-2);
+    min-width: 0;
 }
 
 .docs-item__badge {
@@ -413,7 +425,10 @@
     line-height: var(--line-height-tight);
     color: var(--color-text-primary);
     transition: color 0.2s ease;
-    
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    hyphens: auto;
+
     @media (max-width: 767px) {
         font-size: var(--font-size-base);
     }
@@ -440,7 +455,8 @@
     gap: var(--space-1);
     font-size: var(--font-size-sm);
     color: var(--color-text-secondary);
-    
+    min-width: 0;
+
     @media (max-width: 767px) {
         font-size: var(--font-size-xs);
     }
@@ -448,11 +464,14 @@
 
 .docs-meta-tag {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     gap: var(--space-1);
-    
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+
     strong {
         color: var(--color-text-primary);
+        flex-shrink: 0;
     }
 }
 
@@ -550,10 +569,14 @@
 // DOCUMENTAZIONE PAGE SPECIFICS - Nascondi thumbnail
 // =============================================================================
 
+.documentazione-page {
+    overflow-x: hidden;
+}
+
 .documentazione-page .docs-item {
     // Rimuovi la colonna thumbnail dal grid
     grid-template-columns: 1fr auto;
-    
+
     @media (max-width: 767px) {
         grid-template-columns: 1fr;
     }

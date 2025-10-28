@@ -1104,7 +1104,7 @@ body.admin-bar {
     gap: var(--space-3);
 }
 
-.archive-item {
+.file-item {
     display: grid;
     grid-template-columns: 30px 1fr auto;
     gap: var(--space-3);
@@ -1120,20 +1120,20 @@ body.admin-bar {
     }
 }
 
-.archive-item__icon {
+.file-item__icon {
     font-size: 18px;
     text-align: center;
     flex-shrink: 0;
 }
 
-.archive-item__info {
+.file-item__info {
     display: flex;
     flex-direction: column;
     gap: 2px;
     min-width: 0; // Per far funzionare l'ellipsis
 }
 
-.archive-item__filename {
+.file-item__filename {
     font-size: 12px;
     font-weight: 600;
     color: #1F2937;
@@ -1143,12 +1143,12 @@ body.admin-bar {
     max-width: 100%;
 }
 
-.archive-item__meta {
+.file-item__meta {
     font-size: 11px;
     color: #9CA3AF;
 }
 
-.archive-item__actions {
+.file-item__actions {
     display: flex;
     align-items: center;
     gap: var(--space-3);
@@ -1156,7 +1156,7 @@ body.admin-bar {
     justify-content: flex-end;
 }
 
-.archive-item__download {
+.file-item__download {
     display: inline-flex;
     align-items: center;
     gap: 4px;
@@ -1180,7 +1180,7 @@ body.admin-bar {
     }
 }
 
-.archive-item__download-text {
+.file-item__download-text {
     display: none;
 
     @media (min-width: 768px) {
@@ -1188,29 +1188,52 @@ body.admin-bar {
     }
 }
 
-.archive-item__expiry {
+.file-item__expiry {
     font-size: 11px;
     color: #EA580C;
     font-weight: 600;
     white-space: nowrap;
 }
 
-// Responsive: Mobile stack
+// Responsive: Mobile stack - Compact layout
 @media (max-width: 480px) {
-    .archive-item {
-        grid-template-columns: 30px 1fr;
-        gap: var(--space-2);
+    .file-item {
+        grid-template-columns: 24px 1fr;
+        gap: 4px;
+        padding: 4px 8px;
+        border-radius: 3px;
 
-        .archive-item__actions {
+        .file-item__actions {
             grid-column: 1 / -1;
-            padding-top: var(--space-2);
+            padding-top: 4px;
+            margin-top: 4px;
             border-top: 1px solid #E5E7EB;
             justify-content: space-between;
+            gap: 4px;
         }
     }
 
-    .archive-item__download {
-        padding: 6px 8px;
+    .file-item__icon {
+        font-size: 14px;
+    }
+
+    .file-item__filename {
+        font-size: 11px;
+        line-height: 1.2;
+    }
+
+    .file-item__meta {
+        font-size: 10px;
+        line-height: 1.2;
+    }
+
+    .file-item__download {
+        padding: 2px 6px;
+        font-size: 10px;
+    }
+
+    .file-item__expiry {
+        font-size: 10px;
     }
 }
 

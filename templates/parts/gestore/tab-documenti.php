@@ -289,20 +289,20 @@ $area_competenza = get_terms(array(
                             ? meridiana_get_archive_download_url($post_id, $archive_num)
                             : '';
 
-                        echo '<div class="archive-item">';
-                        echo '<div class="archive-item__icon">📄</div>';
-                        echo '<div class="archive-item__info">';
-                        echo '<div class="archive-item__filename">' . esc_html($original_filename) . '</div>';
-                        echo '<div class="archive-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
+                        echo '<div class="file-item">';
+                        echo '<div class="file-item__icon">📄</div>';
+                        echo '<div class="file-item__info">';
+                        echo '<div class="file-item__filename">' . esc_html($original_filename) . '</div>';
+                        echo '<div class="file-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
                         echo '</div>';
-                        echo '<div class="archive-item__actions">';
+                        echo '<div class="file-item__actions">';
                         if ($download_url) {
-                            echo '<a href="' . esc_url($download_url) . '" class="archive-item__download" target="_blank" rel="noopener">';
+                            echo '<a href="' . esc_url($download_url) . '" class="file-item__download" target="_blank" rel="noopener">';
                             echo '<i data-lucide="download"></i>';
-                            echo '<span class="archive-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
+                            echo '<span class="file-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
                             echo '</a>';
                         }
-                        echo '<span class="archive-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
+                        echo '<span class="file-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
                         echo '</div>';
                         echo '</div>';
                     }
