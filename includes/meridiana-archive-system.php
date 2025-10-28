@@ -582,7 +582,27 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
             }
         } else {
             error_log("Meridiana: Restore FAIL - Archive directory does not exist: $archive_dir");
-            return false;
+            error_log("Meridiana: Restore - Trying aggressive fallback with correct archive directory...");
+
+            // Aggressive fallback: Get the correct archive directory and search for the archived filename
+            $correct_archive_dir = meridiana_ensure_archive_directory();
+            $archived_filename = $archive_metadata['archived_filename'] ?? '';
+
+            if ($archived_filename && is_dir($correct_archive_dir)) {
+                error_log("Meridiana: Restore - Searching for archived file: $archived_filename in: $correct_archive_dir");
+                $found_files = glob($correct_archive_dir . '/' . $archived_filename);
+
+                if (!empty($found_files)) {
+                    $archived_path = $found_files[0];
+                    error_log("Meridiana: Restore - Found archived file via aggressive fallback: $archived_path");
+                } else {
+                    error_log("Meridiana: Restore FAIL - Archived file not found: $archived_filename in $correct_archive_dir");
+                    return false;
+                }
+            } else {
+                error_log("Meridiana: Restore FAIL - Cannot use aggressive fallback, correct archive dir does not exist: $correct_archive_dir");
+                return false;
+            }
         }
     }
 
