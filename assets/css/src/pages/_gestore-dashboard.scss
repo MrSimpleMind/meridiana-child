@@ -1103,7 +1103,7 @@ body.admin-bar {
     gap: 0;
 }
 
-.archive-item {
+.file-item {
     display: grid;
     grid-template-columns: 1fr auto auto;
     gap: var(--space-2);
@@ -1113,20 +1113,20 @@ body.admin-bar {
     border: none;
     box-shadow: none;
 
-    &:hover .archive-item__filename {
+    &:hover .file-item__filename {
         text-decoration: underline;
         color: #1F2937;
     }
 }
 
-.archive-item__info {
+.file-item__info {
     display: flex;
     flex-direction: column;
     gap: 0px;
     min-width: 0;
 }
 
-.archive-item__filename {
+.file-item__filename {
     font-size: 13px;
     font-weight: 600;
     color: #374151;
@@ -1134,19 +1134,19 @@ body.admin-bar {
     line-height: 1.2;
 }
 
-.archive-item__meta {
+.file-item__meta {
     font-size: 11px;
     color: #9CA3AF;
     line-height: 1;
 }
 
-.archive-item__actions {
+.file-item__actions {
     display: flex;
     gap: 4px;
     align-items: center;
 }
 
-.archive-item__expiry {
+.file-item__expiry {
     font-size: 11px;
     color: #EA580C;
     font-weight: 600;
@@ -1156,12 +1156,12 @@ body.admin-bar {
 
 // Responsive: Mobile stack
 @media (max-width: 480px) {
-    .archive-item {
+    .file-item {
         grid-template-columns: 1fr;
         gap: var(--space-2);
 
-        .archive-item__actions,
-        .archive-item__expiry {
+        .file-item__actions,
+        .file-item__expiry {
             grid-column: 1 / -1;
         }
     }
