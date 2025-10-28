@@ -430,10 +430,11 @@
 
 ### PRIORITÀ MEDIA (Fase 7-9):
 
-6. **Prompt 15**: Single Protocollo con PDF Viewer
-   - PDF.js inline viewer
-   - Moduli allegati correlati
-   - Breadcrumb navigation
+6. **PROMPT 15 - COMPLETATO**: Template Unificato `single-documento.php`
+   - ✅ Template `single-documento.php` implementato e funzionante.
+   - ✅ Gestisce condizionalmente sia 'protocolli' che 'moduli' in un unico file.
+   - ✅ Include PDF embedder per la visualizzazione, riassunto, metadati e moduli correlati.
+   - ✅ Include navigazione breadcrumb e pulsante "indietro" come da specifiche.
 
 7. **Prompt 16**: Notifiche Push + Email Automazioni
    - OneSignal integration
