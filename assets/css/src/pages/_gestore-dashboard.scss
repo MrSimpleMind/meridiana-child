@@ -1044,7 +1044,7 @@ body.admin-bar {
 
     &.open {
         display: block;
-        max-height: 500px;
+        max-height: 2000px;
     }
 }
 
@@ -1075,194 +1075,132 @@ body.admin-bar {
     word-break: break-word;
 }
 
-// ============================================
-// ARCHIVE HISTORY SECTION STYLES (MERIDIANA DESIGN SYSTEM)
-// ============================================
+// =============================================================================
+// STORICO FILE SOSTITUITI - ULTRA COMPATTO E MINIMALISTA
+// =============================================================================
 
 .archive-history-section {
-    margin-top: 0;
-    padding-top: 0;
+    margin-top: var(--space-6);
 }
 
 .archive-history__header {
-    margin-bottom: var(--space-4);
-
-    @media (min-width: 768px) {
-        margin-bottom: var(--space-6);
-    }
+    margin-bottom: var(--space-3);
 }
 
 .archive-history__title {
-    font-size: var(--font-size-sm);
-    font-weight: var(--font-weight-bold);
-    color: var(--color-primary);
-    margin: 0;
+    font-size: 12px;
+    font-weight: 700;
     text-transform: uppercase;
-    letter-spacing: 0.5px;
-
-    @media (min-width: 768px) {
-        font-size: var(--font-size-base);
-    }
+    letter-spacing: 0.08em;
+    color: #1f2937;
+    margin: 0;
 }
 
 .archive-history__list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
-
-    @media (min-width: 768px) {
-        gap: var(--space-4);
-    }
+    gap: var(--space-1);
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
-// File Item - Responsive Layout
 .file-item {
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    background-color: var(--color-bg-secondary);
-    border-radius: var(--radius-md);
-    border-left: 4px solid var(--color-primary);
-    transition: all 0.2s ease;
-    min-height: auto;
-    box-shadow: none;
+    gap: var(--space-1);
+    padding: 8px 12px;
+    background-color: #f9fafb;
+    border-left: 2px solid #d1d5db;
 
     @media (min-width: 768px) {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
-        gap: var(--space-4);
-        padding: var(--space-4) var(--space-6);
-    }
-
-    &:hover {
-        background-color: var(--color-primary-bg-light);
-        border-left-color: var(--color-primary-dark);
-        box-shadow: var(--shadow-sm);
-
-        .file-item__filename {
-            color: var(--color-primary);
-        }
+        gap: var(--space-2);
+        padding: 10px 16px;
     }
 }
 
-// File Info (Sinistra)
 .file-item__info {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-2);
     flex: 1;
     min-width: 0;
-
-    @media (min-width: 768px) {
-        gap: var(--space-3);
-    }
 }
 
 .file-item__filename {
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-text-primary);
-    transition: color 0.2s ease;
-    line-height: var(--line-height-tight);
+    font-size: 13px;
+    font-weight: 500;
+    color: #1f2937;
+    margin: 0;
     word-break: break-word;
-
-    @media (min-width: 768px) {
-        font-size: var(--font-size-lg);
-    }
+    line-height: 1.3;
 }
 
 .file-item__meta {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-secondary);
-    line-height: var(--line-height-normal);
-
-    @media (min-width: 768px) {
-        font-size: var(--font-size-sm);
-    }
-}
-
-// File Actions (Centro/Destra)
-.file-item__actions {
+    font-size: 11px;
+    color: #6b7280;
+    margin-top: 2px;
     display: flex;
     gap: var(--space-2);
-    align-items: center;
     flex-wrap: wrap;
-
-    @media (min-width: 768px) {
-        flex-wrap: nowrap;
-        gap: var(--space-3);
-    }
 }
 
-// Download Button
+.file-item__actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    flex-shrink: 0;
+}
+
 .file-item__download,
 .file-item__restore {
     display: inline-flex;
     align-items: center;
-    gap: var(--space-1);
-    padding: var(--space-2) var(--space-3);
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    padding: 0;
     background-color: transparent;
-    color: var(--color-primary);
-    border: 1px solid var(--color-primary);
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-semibold);
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 3px;
+    font-size: 11px;
+    font-weight: 600;
     text-decoration: none;
     cursor: pointer;
-    transition: all 0.2s ease;
-
-    @media (min-width: 768px) {
-        font-size: var(--font-size-sm);
-        padding: var(--space-2) var(--space-4);
-    }
+    transition: all 0.15s ease;
 
     i, svg {
         width: 14px;
         height: 14px;
         flex-shrink: 0;
-
-        @media (min-width: 768px) {
-            width: 16px;
-            height: 16px;
-        }
     }
 
     &:hover {
-        background-color: var(--color-primary-bg-light);
-        border-color: var(--color-primary-dark);
-        color: var(--color-primary-dark);
+        color: #1f2937;
+        border-color: #9ca3af;
+        background-color: #f3f4f6;
     }
 
     &:active {
-        transform: scale(0.95);
+        transform: scale(0.92);
     }
 }
 
 .file-item__download-text,
 .file-item__restore-text {
     display: none;
-
-    @media (min-width: 768px) {
-        display: inline;
-    }
 }
 
 .file-item__expiry {
-    font-size: var(--font-size-xs);
-    color: var(--color-text-primary);
-    font-weight: var(--font-weight-semibold);
-    background-color: var(--color-warning);
-    padding: var(--space-2) var(--space-3);
-    border-radius: var(--radius-md);
+    font-size: 10px;
+    font-weight: 700;
+    color: #78350f;
+    background-color: #fcd34d;
+    padding: 3px 6px;
+    border-radius: 2px;
     white-space: nowrap;
     line-height: 1;
-
-    @media (min-width: 768px) {
-        font-size: var(--font-size-sm);
-        padding: var(--space-2) var(--space-4);
-    }
 }
 
 // Responsive: Mobile stack
