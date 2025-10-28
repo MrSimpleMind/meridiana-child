@@ -629,33 +629,6 @@ function meridiana_archive_exists($post_id, $archive_number) {
 
 
 /**
- * Genera URL di visualizzazione inline per file archiviato
- * File apre nel browser, non scarica
- *
- * @param int $post_id - ID del documento
- * @param int $archive_number - Numero archivio
- * @return string - URL completo con nonce
- */
-function meridiana_get_archive_view_url($post_id, $archive_number) {
-    $post_id = intval($post_id);
-    $archive_number = intval($archive_number);
-
-    if (!$post_id || !$archive_number) {
-        return '';
-    }
-
-    $nonce = wp_create_nonce('meridiana_archive_view_' . $post_id);
-
-    return add_query_arg([
-        'action' => 'meridiana_view_archive',
-        'post_id' => $post_id,
-        'archive_num' => $archive_number,
-        'nonce' => $nonce,
-    ], admin_url('admin-ajax.php'));
-}
-
-
-/**
  * Ripristina un file archiviato come file corrente
  * Archivia il file corrente PRIMA di rimpiazzarlo
  *
