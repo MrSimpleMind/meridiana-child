@@ -325,6 +325,17 @@ $area_competenza = get_terms(array(
                             echo '</a>';
                         }
 
+                        // Delete Button - Delete archive immediately (bypass 30 days cron)
+                        $delete_url = function_exists('meridiana_get_archive_delete_url')
+                            ? meridiana_get_archive_delete_url($post_id, $archive_num)
+                            : '';
+
+                        if ($delete_url) {
+                            echo '<button class="btn-icon file-item__delete" data-delete-url="' . esc_attr($delete_url) . '" title="' . esc_attr__('Elimina questo file', 'meridiana-child') . '">';
+                            echo '<i data-lucide="trash-2"></i>';
+                            echo '</button>';
+                        }
+
                         echo '<span class="file-item__expiry">' . esc_html(sprintf(_n('%d giorno', '%d giorni', $days_left, 'meridiana-child'), $days_left)) . '</span>';
                         echo '</div>';
                         echo '</div>';
@@ -667,6 +678,87 @@ document.addEventListener('DOMContentLoaded', function() {
             .catch(error => {
                 console.error('Restore error:', error);
                 alert('Errore durante il ripristino: ' + error.message);
+                // Restore button state
+                this.querySelector('i, svg').outerHTML = originalIcon;
+                this.disabled = false;
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            });
+        });
+    });
+
+    // =================================================================
+    // DELETE ARCHIVE FILE HANDLER
+    // =================================================================
+    document.querySelectorAll('.file-item__delete').forEach(deleteBtn => {
+        deleteBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            // Confirm via JavaScript
+            if (!confirm('Sei sicuro di voler eliminare questo file dallo storico? L\'azione è irreversibile.')) {
+                return;
+            }
+
+            const url = this.getAttribute('data-delete-url');
+            if (!url) {
+                console.error('Delete URL not found');
+                alert('Errore: URL delete non trovato');
+                return;
+            }
+
+            console.log('[DELETE DEBUG] Full URL:', url);
+
+            // Show loading state
+            const icon = this.querySelector('i, svg');
+            const originalIcon = icon ? icon.outerHTML : '';
+            if (icon) {
+                icon.outerHTML = '<i data-lucide="loader"></i>';
+            }
+            this.disabled = true;
+
+            // Make AJAX request
+            console.log('[DELETE DEBUG] Starting fetch...');
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                console.log('[DELETE DEBUG] Response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log('[DELETE DEBUG] Response data:', data);
+
+                if (data.success) {
+                    // Remove the file item from DOM
+                    const fileItem = this.closest('.file-item');
+                    if (fileItem) {
+                        fileItem.remove();
+                    }
+
+                    // Show success message
+                    alert('File eliminato con successo dallo storico.');
+                } else {
+                    // Error response
+                    const errorMsg = data.data && data.data.message
+                        ? data.data.message
+                        : 'Errore durante l\'eliminazione del file';
+                    alert(errorMsg);
+                    // Restore button state
+                    this.querySelector('i, svg').outerHTML = originalIcon;
+                    this.disabled = false;
+                    if (window.lucide) {
+                        lucide.createIcons();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error('Delete error:', error);
+                alert('Errore durante l\'eliminazione: ' + error.message);
                 // Restore button state
                 this.querySelector('i, svg').outerHTML = originalIcon;
                 this.disabled = false;
