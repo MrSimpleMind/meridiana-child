@@ -440,6 +440,118 @@ function meridiana_archive_exists($post_id, $archive_number) {
 }
 
 
+/**
+ * Genera URL di visualizzazione inline per file archiviato
+ * File apre nel browser, non scarica
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_view_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    $nonce = wp_create_nonce('meridiana_archive_view_' . $post_id);
+
+    return add_query_arg([
+        'action' => 'meridiana_view_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+}
+
+
+/**
+ * Ripristina un file archiviato come file corrente
+ * Archivia il file corrente PRIMA di rimpiazzarlo
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio da ripristinare
+ * @return bool|array - True se successo, array con dettagli, false se errore
+ */
+function meridiana_restore_archive_file($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return false;
+    }
+
+    // Validate post
+    $post = get_post($post_id);
+    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        return false;
+    }
+
+    // Get archive metadata
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_number, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        return false;
+    }
+
+    $archived_path = $archive_metadata['archived_file_path'] ?? '';
+    if (!$archived_path || !file_exists($archived_path)) {
+        return false;
+    }
+
+    // Get current file attachment ID
+    $pdf_field_key = $post->post_type === 'protocollo' ? 'field_pdf_protocollo' : 'field_pdf_modulo';
+    $current_attachment_id = intval(get_field($pdf_field_key, $post_id)) ?: 0;
+
+    // STEP 1: Archive current file if it exists
+    if ($current_attachment_id) {
+        meridiana_archive_replaced_document($post_id, $current_attachment_id, 'restore_action');
+    }
+
+    // STEP 2: Create new attachment from archived file
+    $archived_filename = $archive_metadata['archived_filename'] ?? basename($archived_path);
+    $original_filename = $archive_metadata['original_filename'] ?? $archived_filename;
+
+    // Create attachment post
+    $attachment_data = [
+        'post_title' => $original_filename,
+        'post_content' => '',
+        'post_status' => 'inherit',
+        'post_type' => 'attachment',
+        'post_mime_type' => 'application/pdf',
+    ];
+
+    $attachment_id = wp_insert_attachment($attachment_data);
+    if (is_wp_error($attachment_id)) {
+        error_log("Meridiana: Errore creazione attachment per restore: " . $attachment_id->get_error_message());
+        return false;
+    }
+
+    // STEP 3: Update ACF field with new attachment ID
+    if (!function_exists('update_field')) {
+        wp_delete_post($attachment_id, true); // Cleanup on error
+        return false;
+    }
+
+    $updated = update_field($pdf_field_key, $attachment_id, $post_id);
+    if (!$updated) {
+        wp_delete_post($attachment_id, true); // Cleanup on error
+        error_log("Meridiana: Errore aggiornamento field durante restore");
+        return false;
+    }
+
+    error_log("Meridiana: File ripristinato - Documento {$post_id}, Archivio {$archive_number}");
+
+    return [
+        'success' => true,
+        'post_id' => $post_id,
+        'new_attachment_id' => $attachment_id,
+        'restored_filename' => $original_filename,
+    ];
+}
+
+
 // ============================================
 // CRON JOB: PULIZIA ARCHIVI VECCHI (ATTIVO)
 // ============================================

@@ -154,3 +154,158 @@ function meridiana_get_file_mime_type($file_path) {
 
     return $mime_types[$file_ext] ?? 'application/octet-stream';
 }
+
+
+// ============================================
+// VIEW ARCHIVE HANDLER (INLINE - NOT ATTACHMENT)
+// ============================================
+
+add_action('wp_ajax_meridiana_view_archive', 'meridiana_handle_archive_view');
+add_action('wp_ajax_nopriv_meridiana_view_archive', 'meridiana_handle_archive_view_nopriv');
+
+/**
+ * Handler per visualizzare file archiviato inline nel browser
+ * Identico a download ma con Content-Disposition: inline
+ */
+function meridiana_handle_archive_view() {
+    // Security & Validation: Identico a download
+    $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+    $archive_num = isset($_GET['archive_num']) ? intval($_GET['archive_num']) : 0;
+    $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
+
+    if (!$post_id || !$archive_num) {
+        wp_die(__('Parametri non validi', 'meridiana-child'), 400);
+    }
+
+    if (!wp_verify_nonce($nonce, 'meridiana_archive_view_' . $post_id)) {
+        wp_die(__('Nonce non valido o scaduto', 'meridiana-child'), 403);
+    }
+
+    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+        wp_die(__('Permessi insufficienti', 'meridiana-child'), 403);
+    }
+
+    $post = get_post($post_id);
+    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        wp_die(__('Documento non trovato', 'meridiana-child'), 404);
+    }
+
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_num, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        wp_die(__('Archivio non trovato', 'meridiana-child'), 404);
+    }
+
+    $archived_path = $archive_metadata['archived_file_path'] ?? '';
+    if (!$archived_path || !file_exists($archived_path)) {
+        wp_die(__('File archiviato non trovato nel filesystem', 'meridiana-child'), 404);
+    }
+
+    // Path validation
+    $upload_dir = wp_upload_dir();
+    $upload_base = trailingslashit($upload_dir['basedir']);
+    $real_path = realpath($archived_path);
+
+    if (!$real_path || strpos($real_path, $upload_base) !== 0) {
+        error_log("Meridiana: Tentativo accesso file fuori da upload dir (view): $archived_path");
+        wp_die(__('Accesso negato', 'meridiana-child'), 403);
+    }
+
+    $original_filename = $archive_metadata['original_filename'] ?? basename($archived_path);
+    $original_filename = sanitize_file_name($original_filename);
+
+    // Serve file inline (not attachment)
+    meridiana_serve_file_view($real_path, $original_filename);
+}
+
+function meridiana_handle_archive_view_nopriv() {
+    wp_die(__('Accesso negato. Effettua il login.', 'meridiana-child'), 403);
+}
+
+/**
+ * Serve file per visualizzazione inline nel browser
+ * Identico a download ma con Content-Disposition: inline
+ *
+ * @param string $file_path - Path assoluto del file
+ * @param string $filename - Nome del file
+ */
+function meridiana_serve_file_view($file_path, $filename) {
+    if (!is_file($file_path) || !is_readable($file_path)) {
+        wp_die(__('File non leggibile', 'meridiana-child'), 403);
+    }
+
+    $file_size = filesize($file_path);
+    if ($file_size === false) {
+        wp_die(__('Errore durante la lettura del file', 'meridiana-child'), 500);
+    }
+
+    $mime_type = meridiana_get_file_mime_type($file_path);
+
+    // Headers per inline view (non attachment)
+    header('Content-Type: ' . $mime_type, true);
+    header('Content-Disposition: inline; filename="' . $filename . '"', true);
+    header('Content-Length: ' . $file_size, true);
+    header('Cache-Control: no-cache, no-store, must-revalidate', true);
+    header('Pragma: no-cache', true);
+    header('Expires: 0', true);
+
+    readfile($file_path);
+    exit();
+}
+
+
+// ============================================
+// RESTORE ARCHIVE HANDLER (AJAX POST)
+// ============================================
+
+add_action('wp_ajax_meridiana_restore_archive', 'meridiana_handle_archive_restore');
+
+/**
+ * Handler per ripristinare un file archiviato
+ * Archivia il corrente e rimpiazza con l'archiviato
+ */
+function meridiana_handle_archive_restore() {
+    // Security: Verify nonce
+    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
+        wp_send_json_error(['message' => 'Nonce non valido'], 403);
+    }
+
+    // Security: Capability check
+    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+        wp_send_json_error(['message' => 'Permessi insufficienti'], 403);
+    }
+
+    // Validate: post_id, archive_num
+    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
+    $archive_num = isset($_POST['archive_num']) ? intval($_POST['archive_num']) : 0;
+
+    if (!$post_id || !$archive_num) {
+        wp_send_json_error(['message' => 'Parametri non validi'], 400);
+    }
+
+    // Validate: post exists and is document type
+    $post = get_post($post_id);
+    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        wp_send_json_error(['message' => 'Documento non trovato'], 404);
+    }
+
+    // Get archive metadata
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_num, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        wp_send_json_error(['message' => 'Archivio non trovato'], 404);
+    }
+
+    // Call restore function (from meridiana-archive-system.php)
+    if (!function_exists('meridiana_restore_archive_file')) {
+        wp_send_json_error(['message' => 'Funzione restore non disponibile'], 500);
+    }
+
+    $result = meridiana_restore_archive_file($post_id, $archive_num);
+    if (!$result || (is_array($result) && isset($result['success']) && !$result['success'])) {
+        wp_send_json_error(['message' => 'Errore durante il ripristino'], 500);
+    }
+
+    wp_send_json_success([
+        'message' => 'File ripristinato con successo',
+        'post_id' => $post_id,
+    ]);
+}

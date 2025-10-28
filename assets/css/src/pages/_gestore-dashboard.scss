@@ -1076,13 +1076,12 @@ body.admin-bar {
 }
 
 // ============================================
-// ARCHIVE HISTORY SECTION STYLES
+// ARCHIVE HISTORY SECTION STYLES (LIGHTWEIGHT)
 // ============================================
 
 .archive-history-section {
-    margin-top: var(--space-6);
-    padding-top: var(--space-4);
-    border-top: 2px solid #E5E7EB;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .archive-history__header {
@@ -1101,139 +1100,70 @@ body.admin-bar {
 .archive-history__list {
     display: flex;
     flex-direction: column;
-    gap: var(--space-3);
+    gap: 0;
 }
 
-.file-item {
+.archive-item {
     display: grid;
-    grid-template-columns: 30px 1fr auto;
-    gap: var(--space-3);
+    grid-template-columns: 1fr auto auto;
+    gap: var(--space-2);
     align-items: center;
-    padding: var(--space-2) var(--space-3);
-    background: #F9FAFB;
-    border-radius: 4px;
-    border-left: 3px solid #D1D5DB;
+    padding: 2px 0;
+    min-height: auto;
+    border: none;
+    box-shadow: none;
 
-    &:hover {
-        background: #F3F4F6;
-        border-left-color: #9CA3AF;
+    &:hover .archive-item__filename {
+        text-decoration: underline;
+        color: #1F2937;
     }
 }
 
-.file-item__icon {
-    font-size: 18px;
-    text-align: center;
-    flex-shrink: 0;
-}
-
-.file-item__info {
+.archive-item__info {
     display: flex;
     flex-direction: column;
-    gap: 2px;
-    min-width: 0; // Per far funzionare l'ellipsis
+    gap: 0px;
+    min-width: 0;
 }
 
-.file-item__filename {
-    font-size: 12px;
+.archive-item__filename {
+    font-size: 13px;
     font-weight: 600;
-    color: #1F2937;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 100%;
+    color: #374151;
+    transition: color 0.2s;
+    line-height: 1.2;
 }
 
-.file-item__meta {
+.archive-item__meta {
     font-size: 11px;
     color: #9CA3AF;
+    line-height: 1;
 }
 
-.file-item__actions {
+.archive-item__actions {
     display: flex;
-    align-items: center;
-    gap: var(--space-3);
-    flex-wrap: wrap;
-    justify-content: flex-end;
-}
-
-.file-item__download {
-    display: inline-flex;
-    align-items: center;
     gap: 4px;
-    padding: 4px 10px;
-    background: #3B82F6;
-    color: white;
-    text-decoration: none;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    transition: background 0.2s;
-    white-space: nowrap;
-
-    &:hover {
-        background: #2563EB;
-    }
-
-    i {
-        width: 14px;
-        height: 14px;
-    }
+    align-items: center;
 }
 
-.file-item__download-text {
-    display: none;
-
-    @media (min-width: 768px) {
-        display: inline;
-    }
-}
-
-.file-item__expiry {
+.archive-item__expiry {
     font-size: 11px;
     color: #EA580C;
     font-weight: 600;
     white-space: nowrap;
+    line-height: 1;
 }
 
-// Responsive: Mobile stack - Compact layout
+// Responsive: Mobile stack
 @media (max-width: 480px) {
-    .file-item {
-        grid-template-columns: 24px 1fr;
-        gap: 4px;
-        padding: 4px 8px;
-        border-radius: 3px;
+    .archive-item {
+        grid-template-columns: 1fr;
+        gap: var(--space-2);
 
-        .file-item__actions {
+        .archive-item__actions,
+        .archive-item__expiry {
             grid-column: 1 / -1;
-            padding-top: 4px;
-            margin-top: 4px;
-            border-top: 1px solid #E5E7EB;
-            justify-content: space-between;
-            gap: 4px;
         }
-    }
-
-    .file-item__icon {
-        font-size: 14px;
-    }
-
-    .file-item__filename {
-        font-size: 11px;
-        line-height: 1.2;
-    }
-
-    .file-item__meta {
-        font-size: 10px;
-        line-height: 1.2;
-    }
-
-    .file-item__download {
-        padding: 2px 6px;
-        font-size: 10px;
-    }
-
-    .file-item__expiry {
-        font-size: 10px;
     }
 }
 
