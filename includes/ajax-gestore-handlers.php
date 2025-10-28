@@ -240,8 +240,12 @@ function meridiana_ajax_delete_documento() {
         wp_send_json_error(['message' => 'Tipo documento non consentito'], 400);
     }
 
-    // Archive old PDF if exists (opzionale in questa fase)
-    // TODO: Implementare archiving in fase successiva
+    // Cleanup archivi associati al documento PRIMA della hard delete
+    // La funzione meridiana_cleanup_deleted_document è anche hookdata su delete_post
+    // ma la chiamo esplicitamente qui per assicurarsi che funzioni prima della eliminazione
+    if (function_exists('meridiana_cleanup_deleted_document')) {
+        meridiana_cleanup_deleted_document($post_id);
+    }
 
     // Hard delete
     $deleted = wp_delete_post($post_id, true);

@@ -1,8 +1,73 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 24 Ottobre 2025 - [ROLLBACK ANALYTICS + FIX DIPENDENZE SCRIPT + PAGINA ANALITICHE CREATA] ✅ COMPLETATO
-> **Stato**: In Sviluppo - Fase 1-4 COMPLETATE | Fase 5-6 SETUP (60%)
+> **Aggiornato**: 28 Ottobre 2025 - [TAB CONVENZIONI + SALUTE COMPLETATE | ANALYTICS FUNZIONANTE | FILE ARCHIVING IN PROGRESS] ✅
+> **Stato**: In Sviluppo - Fase 1-5 COMPLETATE | Fase 6 SETUP (75%)
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+
+---
+
+## 🔧 AGGIORNAMENTI SESSION - 28 Ottobre 2025 - COMPLETAMENTO TAB + ANALYTICS + INIZIO FILE ARCHIVING
+
+### ✅ COMPLETATO: Tab Convenzioni + Salute e Benessere
+**Status**: ✅ COMPLETATO - Production Ready | Fase 5 salita a 90%
+
+**Cosa Fatto**:
+
+**✅ Tab Convenzioni**:
+- ✅ Form CRUD completo (stesso pattern Comunicazioni)
+- ✅ Tabella query (CPT: convenzione)
+- ✅ CREATE/EDIT/DELETE funzionante
+- ✅ Status tracking integrato
+
+**✅ Tab Salute e Benessere**:
+- ✅ Form CRUD completo (stesso pattern Comunicazioni)
+- ✅ Tabella query (CPT: salute_e_benessere)
+- ✅ CREATE/EDIT/DELETE funzionante
+- ✅ Status tracking integrato
+
+**File Interessati**:
+- `templates/parts/gestore/tab-convenzioni.php` - ✅ COMPLETATO
+- `templates/parts/gestore/tab-salute.php` - ✅ COMPLETATO
+- `assets/js/src/gestore-dashboard.js` - ✅ UPDATED (AJAX handlers)
+
+**Result**: Fase 5 Dashboard Gestore **100% COMPLETE** ✅🎉
+
+---
+
+### 🟢 IN PROGRESS: Analytics Dashboard - Funzionante, Miglioramento Grafico in Programma
+**Status**: 🟢 FUNZIONANTE - Grafica da migliorare | Fase 6 al 50%
+
+**Cosa Fatto**:
+- ✅ Pagina Analytics (`/analitiche/`) funzionante
+- ✅ KPI base implementati
+- ✅ Query dati funzionanti
+- ✅ Permission check OK
+
+**TODO - Miglioramento Grafico**:
+- 🔄 Styling cards KPI (design più moderno)
+- 🔄 Grafico distribuzione contenuti (Chart.js o simile)
+- 🔄 Ricerca utenti + protocolli (UI refined)
+- 🔄 Export CSV (design button + functionalità)
+- 🔄 Responsive design mobile
+
+**ETA**: ~1 sessione dopo file archiving
+
+---
+
+### 🟡 IN PROGRESS: File Archiving & Automatic Cleanup System (SESSION ODIERNA)
+**Status**: 🟡 IN PROGRESS - Sessione corrente
+
+**Obiettivi**:
+- ✅ Auto-archiviazione file quando sostituito
+- ✅ Cleanup automatico su hard delete
+- ✅ Storage: `/wp-content/uploads/archived-files/`
+- ✅ Tracking metadata (original name, replacement date, deleter)
+
+**Implementazione**:
+- Hook: `acf/save_post` + custom AJAX handler
+- Function: `meridiana_archive_replaced_document()`
+- Function: `meridiana_cleanup_deleted_document()`
+- DB Meta: Store archived file paths per post
 
 ---
 
@@ -268,23 +333,24 @@
 
 ---
 
-## 📊 Riepilogo Avanzamento Totale AGGIORNATO
+## 📊 Riepilogo Avanzamento Totale AGGIORNATO 28 Ottobre
 
 | Fase | Status | % |
 |------|--------|-----|
 | 1. Fondamenta | ✅ 100% | 100% |
 | 2. Struttura Dati | ✅ 100% | 100% |
-| 3. Sistema Utenti | 🟢 85% | 85% |
+| 3. Sistema Utenti | ✅ 100% | 100% |
 | 4. Template Pagine | ✅ 100% | 100% |
-| 5. Frontend Forms Gestore | 🟢 SETUP 75% | 75% | **(MAJOR UPDATE - 3 Main Tabs Complete)** |
-| 6. Analytics | ⬜ 0% | 0% |
-| 7. Notifiche | ⬜ 0% | 0% |
-| 8. Sicurezza/Perf | 🟡 40% | 40% |
-| 9. Accessibilità | ✅ 95% | 95% |
-| 10. Testing | ⬜ 0% | 0% |
-| 11. Contenuti | ⬜ 0% | 0% |
-| 12. Deployment | ⬜ 0% | 0% |
-| **TOTALE** | **🟢 61%** | **61%** | **(+1% Form Fixes)** |
+| 5. Frontend Forms Gestore | ✅ 100% | 100% | **(TAB CONVENZIONI + SALUTE COMPLETATE)** |
+| 6. Analytics | 🟢 50% | 50% | **(FUNZIONANTE, GRAFICA DA MIGLIORARE)** |
+| 7. File Archiving | 🟡 10% | 10% | **(IN PROGRESS - SESSIONE ODIERNA)** |
+| 8. Notifiche | ⬜ 0% | 0% |
+| 9. Sicurezza/Perf | 🟡 40% | 40% |
+| 10. Accessibilità | ✅ 95% | 95% |
+| 11. Testing | ⬜ 0% | 0% |
+| 12. Contenuti | ⬜ 0% | 0% |
+| 13. Deployment | ⬜ 0% | 0% |
+| **TOTALE** | **🟢 70%** | **70%** | **(+9% - Tab Complete + Analytics + Start Archiving)** |
 
 ---
 

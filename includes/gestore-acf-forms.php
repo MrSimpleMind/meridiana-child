@@ -2229,6 +2229,9 @@ function meridiana_save_documento_acf_fields($post_id, $post_type = 'protocollo'
 
     $pdf_field_key = $post_type === 'protocollo' ? 'field_pdf_protocollo' : 'field_pdf_modulo';
 
+    // Cattura il vecchio PDF prima di aggiornare
+    $old_pdf_value = intval(get_field($pdf_field_key, $post_id)) ?: 0;
+
     $pdf_value = 0;
     if (isset($_POST['acf'][$pdf_field_key])) {
         $pdf_raw = $_POST['acf'][$pdf_field_key];
@@ -2236,6 +2239,11 @@ function meridiana_save_documento_acf_fields($post_id, $post_type = 'protocollo'
             $pdf_raw = end($pdf_raw);
         }
         $pdf_value = intval($pdf_raw);
+    }
+
+    // Se il PDF è stato cambiato (edit) o rimosso, archivia il vecchio file
+    if ($old_pdf_value && $old_pdf_value !== $pdf_value && function_exists('meridiana_archive_replaced_document')) {
+        meridiana_archive_replaced_document($post_id, $old_pdf_value, 'edit_document');
     }
 
     if ($pdf_value > 0) {
