@@ -4,6 +4,31 @@
 
 ---
 
+## ⚠️ DOCUMENTI CRITICI - LEGGI PRIMA DI QUALSIASI MODIFICA CSS/TEMPLATE
+
+**Se lavori su CSS, Template o JavaScript, DEVI leggere questi 2 documenti:**
+
+1. **[CLAUDE_CODE_RULES.md](CLAUDE_CODE_RULES.md)** 🔴 **NORMA FONDAMENTALE**
+   - Regole di sviluppo per evitare di rompere il sito
+   - Scoping, CPT, workflow, checklist
+   - ⚠️ **LETTO 3+ VOLTE PER SVILUPPATORE - CRITICISSIMO**
+
+2. **[ELEMENTI_GLOBALI_CRITICI.md](ELEMENTI_GLOBALI_CRITICI.md)** 🔴 **MAP DEGLI ELEMENTI PERICOLOSI**
+   - Lista completa di tutti gli elementi CSS usati su più pagine
+   - Livelli di pericolosità (🔴 CRITICO, 🟡 ATTENZIONE, 🟢 SAFE)
+   - **FOCUS SPECIALE**: `.archive-item` - ROTTO 3+ VOLTE, regole rigide
+   - Quando modifichi un elemento, verifica SEMPRE qui
+
+### 📋 Workflow Essenziale:
+```
+1. Prima di QUALSIASI modifica CSS → Leggi ELEMENTI_GLOBALI_CRITICI.md
+2. Prima di modificare archive.php → Verifica che generi `.archive-*`
+3. Prima di toccare _gestore-dashboard.scss → Verifica che usi `.file-item` NON `.archive-item`
+4. Dopo OGNI modifica → Testa SUBITO tutti gli archivi (Comunicazioni, Convenzioni, Salute)
+```
+
+---
+
 ## 📚 **GLOSSARIO E NOMENCLATURE - IMPORTANTE LEGGERLO**
 
 ### Terminologia CPT e Contenuti
