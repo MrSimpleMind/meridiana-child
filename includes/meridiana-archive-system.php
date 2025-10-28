@@ -541,9 +541,23 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
         meridiana_archive_replaced_document($post_id, $current_attachment_id, 'restore_action');
     }
 
-    // STEP 2: Create new attachment from archived file
+    // STEP 2: Copy archived file to uploads directory and create attachment
     $archived_filename = $archive_metadata['archived_filename'] ?? basename($archived_path);
     $original_filename = $archive_metadata['original_filename'] ?? $archived_filename;
+
+    // Get uploads directory
+    $upload_dir = wp_upload_dir();
+    $uploads_base = trailingslashit($upload_dir['basedir']);
+
+    // Generate unique filename for restored file in uploads (not in archived-files)
+    $restored_filename = wp_unique_filename($uploads_base, $original_filename);
+    $restored_path = $uploads_base . $restored_filename;
+
+    // Copy archived file back to uploads
+    if (!copy($archived_path, $restored_path)) {
+        error_log("Meridiana: Impossibile copiare file archiviato per restore: $archived_path");
+        return false;
+    }
 
     // Create attachment post
     $attachment_data = [
@@ -556,9 +570,17 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
 
     $attachment_id = wp_insert_attachment($attachment_data);
     if (is_wp_error($attachment_id)) {
+        wp_delete_file($restored_path); // Cleanup on error
         error_log("Meridiana: Errore creazione attachment per restore: " . $attachment_id->get_error_message());
         return false;
     }
+
+    // Register attachment file path
+    update_attached_file($attachment_id, $restored_path);
+
+    // Generate attachment metadata
+    $metadata = wp_generate_attachment_metadata($attachment_id, $restored_path);
+    wp_update_attachment_metadata($attachment_id, $metadata);
 
     // STEP 3: Update ACF field with new attachment ID
     if (!function_exists('update_field')) {
