@@ -297,10 +297,10 @@ $area_competenza = get_terms(array(
                         echo '</div>';
                         echo '<div class="file-item__actions">';
                         if ($download_url) {
-                            echo '<a href="' . esc_url($download_url) . '" class="file-item__download" target="_blank" rel="noopener">';
+                            echo '<button class="file-item__download" data-download-url="' . esc_attr($download_url) . '" title="' . esc_attr__('Scarica file', 'meridiana-child') . '">';
                             echo '<i data-lucide="download"></i>';
                             echo '<span class="file-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
-                            echo '</a>';
+                            echo '</button>';
                         }
 
                         // Restore Button
@@ -521,6 +521,71 @@ document.addEventListener('DOMContentLoaded', function() {
                 content.classList.toggle('open');
                 toggle.classList.toggle('open');
             }
+        });
+    });
+
+    // =================================================================
+    // DOWNLOAD ARCHIVE FILE HANDLER
+    // =================================================================
+    document.querySelectorAll('.file-item__download').forEach(downloadBtn => {
+        downloadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+
+            const url = this.getAttribute('data-download-url');
+            if (!url) {
+                console.error('Download URL not found');
+                alert('Errore: URL download non trovato');
+                return;
+            }
+
+            console.log('[DOWNLOAD DEBUG] Full URL:', url);
+            console.log('[DOWNLOAD DEBUG] Parsed URL:', new URL(url, window.location.origin));
+
+            // Show loading state
+            const originalText = this.innerHTML;
+            this.innerHTML = '<i data-lucide="loader"></i>';
+            this.disabled = true;
+
+            // Make AJAX request
+            console.log('[DOWNLOAD DEBUG] Starting fetch...');
+            fetch(url, {
+                method: 'GET',
+                credentials: 'same-origin'
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                return response.blob();
+            })
+            .then(blob => {
+                // Create blob URL and download
+                const blobUrl = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = blobUrl;
+                a.download = ''; // Browser determines filename from Content-Disposition
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                window.URL.revokeObjectURL(blobUrl);
+
+                // Restore button state
+                this.innerHTML = originalText;
+                this.disabled = false;
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            })
+            .catch(error => {
+                console.error('Download error:', error);
+                alert('Errore durante il download: ' + error.message);
+                // Restore button state
+                this.innerHTML = originalText;
+                this.disabled = false;
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+            });
         });
     });
 

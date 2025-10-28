@@ -1169,6 +1169,7 @@ body.admin-bar {
     text-decoration: none;
     cursor: pointer;
     transition: all 0.15s ease;
+    font-family: inherit;
 
     i, svg {
         width: 14px;
@@ -1176,14 +1177,19 @@ body.admin-bar {
         flex-shrink: 0;
     }
 
-    &:hover {
+    &:hover:not(:disabled) {
         color: #1f2937;
         border-color: #9ca3af;
         background-color: #f3f4f6;
     }
 
-    &:active {
+    &:active:not(:disabled) {
         transform: scale(0.92);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
     }
 }
 

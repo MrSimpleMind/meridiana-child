@@ -12,52 +12,84 @@
 
 if (!defined('ABSPATH')) exit;
 
+// DEBUG: Log file inclusion
+error_log("=== ARCHIVE-DOWNLOAD-HANDLER.PHP LOADED ===");
+
 // ============================================
 // DOWNLOAD ARCHIVE AJAX HANDLER
 // ============================================
 
+// DEBUG: Log hook registration
+error_log("Registering AJAX hooks for meridiana_download_archive");
 add_action('wp_ajax_meridiana_download_archive', 'meridiana_handle_archive_download');
 add_action('wp_ajax_nopriv_meridiana_download_archive', 'meridiana_handle_archive_download_nopriv');
+error_log("AJAX hooks registered successfully");
 
 /**
  * Handler per download file archiviato
  * Accessibile solo agli utenti loggati con permessi
  */
 function meridiana_handle_archive_download() {
+    // DEBUG: Log handler invocation
+    error_log("=== MERIDIANA DOWNLOAD HANDLER INVOKED ===");
+
     // Security: Verify nonce
     $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
     $archive_num = isset($_GET['archive_num']) ? intval($_GET['archive_num']) : 0;
     $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
 
+    error_log("DEBUG params - post_id: $post_id, archive_num: $archive_num, nonce: " . substr($nonce, 0, 10) . "...");
+
     if (!$post_id || !$archive_num) {
+        error_log("DEBUG: Invalid parameters - post_id: $post_id, archive_num: $archive_num");
         wp_die(__('Parametri non validi', 'meridiana-child'), 400);
     }
 
     // Verify nonce with context
-    if (!wp_verify_nonce($nonce, 'meridiana_archive_download_' . $post_id)) {
+    $nonce_action = 'meridiana_archive_download_' . $post_id;
+    $nonce_verified = wp_verify_nonce($nonce, $nonce_action);
+    error_log("DEBUG nonce verification - action: $nonce_action, result: $nonce_verified");
+
+    if (!$nonce_verified) {
+        error_log("DEBUG: Nonce verification failed");
         wp_die(__('Nonce non valido o scaduto', 'meridiana-child'), 403);
     }
 
     // Security: Capability check
-    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+    $can_manage = current_user_can('manage_platform') || current_user_can('manage_options');
+    error_log("DEBUG capability check - can_manage: " . ($can_manage ? 'YES' : 'NO'));
+
+    if (!$can_manage) {
+        error_log("DEBUG: Insufficient permissions");
         wp_die(__('Permessi insufficienti', 'meridiana-child'), 403);
     }
 
     // Validate post exists and is a document type
     $post = get_post($post_id);
+    $post_type = $post ? $post->post_type : 'none';
+    error_log("DEBUG post check - exists: " . ($post ? 'YES' : 'NO') . ", type: $post_type");
+
     if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        error_log("DEBUG: Post not found or invalid type");
         wp_die(__('Documento non trovato', 'meridiana-child'), 404);
     }
 
     // Get archive metadata
     $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_num, true);
+    error_log("DEBUG archive metadata - exists: " . (!empty($archive_metadata) ? 'YES' : 'NO') . ", is_array: " . (is_array($archive_metadata) ? 'YES' : 'NO'));
+
     if (!$archive_metadata || !is_array($archive_metadata)) {
+        error_log("DEBUG: Archive metadata not found");
         wp_die(__('Archivio non trovato', 'meridiana-child'), 404);
     }
 
     // Get file path
     $archived_path = $archive_metadata['archived_file_path'] ?? '';
-    if (!$archived_path || !file_exists($archived_path)) {
+    $file_exists_check = file_exists($archived_path);
+    error_log("DEBUG file path - path: $archived_path, exists: " . ($file_exists_check ? 'YES' : 'NO'));
+
+    if (!$archived_path || !$file_exists_check) {
+        error_log("DEBUG: Archived file not found in filesystem");
         wp_die(__('File archiviato non trovato nel filesystem', 'meridiana-child'), 404);
     }
 
@@ -65,8 +97,11 @@ function meridiana_handle_archive_download() {
     $upload_dir = wp_upload_dir();
     $upload_base = trailingslashit($upload_dir['basedir']);
     $real_path = realpath($archived_path);
+    $path_valid = $real_path && strpos($real_path, $upload_base) === 0;
 
-    if (!$real_path || strpos($real_path, $upload_base) !== 0) {
+    error_log("DEBUG path validation - upload_base: $upload_base, real_path: " . ($real_path ?: 'NULL') . ", valid: " . ($path_valid ? 'YES' : 'NO'));
+
+    if (!$path_valid) {
         error_log("Meridiana: Tentativo accesso file fuori da upload dir: $archived_path");
         wp_die(__('Accesso negato', 'meridiana-child'), 403);
     }
@@ -74,6 +109,7 @@ function meridiana_handle_archive_download() {
     // Get original filename for download
     $original_filename = $archive_metadata['original_filename'] ?? basename($archived_path);
     $original_filename = sanitize_file_name($original_filename);
+    error_log("DEBUG serving file - path: $real_path, filename: $original_filename");
 
     // Serve file
     meridiana_serve_file_download($real_path, $original_filename);

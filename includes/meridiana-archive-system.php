@@ -411,12 +411,16 @@ function meridiana_get_archive_download_url($post_id, $archive_number) {
     // Crea nonce valido per 1 ora
     $nonce = wp_create_nonce('meridiana_archive_download_' . $post_id);
 
-    return add_query_arg([
+    $url = add_query_arg([
         'action' => 'meridiana_download_archive',
         'post_id' => $post_id,
         'archive_num' => $archive_number,
         'nonce' => $nonce,
     ], admin_url('admin-ajax.php'));
+
+    error_log("DEBUG meridiana_get_archive_download_url - post_id: $post_id, archive_num: $archive_number, nonce_action: meridiana_archive_download_$post_id, url: $url");
+
+    return $url;
 }
 
 
