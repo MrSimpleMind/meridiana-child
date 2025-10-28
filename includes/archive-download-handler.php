@@ -262,50 +262,65 @@ add_action('wp_ajax_meridiana_restore_archive', 'meridiana_handle_archive_restor
 /**
  * Handler per ripristinare un file archiviato
  * Archivia il corrente e rimpiazza con l'archiviato
+ *
+ * Parametri via GET (link diretto da template)
+ * - post_id: ID del documento
+ * - archive_num: Numero dell'archivio da ripristinare
+ * - nonce: Nonce security token
  */
 function meridiana_handle_archive_restore() {
-    // Security: Verify nonce
-    if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
-        wp_send_json_error(['message' => 'Nonce non valido'], 403);
-    }
-
-    // Security: Capability check
-    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
-        wp_send_json_error(['message' => 'Permessi insufficienti'], 403);
-    }
-
-    // Validate: post_id, archive_num
-    $post_id = isset($_POST['post_id']) ? intval($_POST['post_id']) : 0;
-    $archive_num = isset($_POST['archive_num']) ? intval($_POST['archive_num']) : 0;
+    // Leggi parametri da GET (come nel link dal template)
+    $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+    $archive_num = isset($_GET['archive_num']) ? intval($_GET['archive_num']) : 0;
+    $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
 
     if (!$post_id || !$archive_num) {
-        wp_send_json_error(['message' => 'Parametri non validi'], 400);
+        wp_die(__('Parametri non validi', 'meridiana-child'), 400);
+    }
+
+    // Security: Verify nonce con il contesto corretto
+    if (!wp_verify_nonce($nonce, 'meridiana_restore_archive_' . $post_id)) {
+        wp_die(__('Nonce non valido o scaduto', 'meridiana-child'), 403);
+    }
+
+    // Security: Capability check - solo admin/editor del documento
+    if (!current_user_can('edit_post', $post_id) && !current_user_can('manage_options')) {
+        wp_die(__('Permessi insufficienti', 'meridiana-child'), 403);
     }
 
     // Validate: post exists and is document type
     $post = get_post($post_id);
     if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
-        wp_send_json_error(['message' => 'Documento non trovato'], 404);
+        wp_die(__('Documento non trovato', 'meridiana-child'), 404);
     }
 
     // Get archive metadata
     $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_num, true);
     if (!$archive_metadata || !is_array($archive_metadata)) {
-        wp_send_json_error(['message' => 'Archivio non trovato'], 404);
+        wp_die(__('Archivio non trovato', 'meridiana-child'), 404);
     }
 
     // Call restore function (from meridiana-archive-system.php)
     if (!function_exists('meridiana_restore_archive_file')) {
-        wp_send_json_error(['message' => 'Funzione restore non disponibile'], 500);
+        wp_die(__('Funzione restore non disponibile', 'meridiana-child'), 500);
     }
 
     $result = meridiana_restore_archive_file($post_id, $archive_num);
     if (!$result || (is_array($result) && isset($result['success']) && !$result['success'])) {
-        wp_send_json_error(['message' => 'Errore durante il ripristino'], 500);
+        wp_die(__('Errore durante il ripristino', 'meridiana-child'), 500);
     }
 
-    wp_send_json_success([
-        'message' => 'File ripristinato con successo',
-        'post_id' => $post_id,
+    // Redirect back to document edit page after successful restore
+    $redirect_url = add_query_arg([
+        'post' => $post_id,
+        'action' => 'edit',
+        'restored' => 'true',
+    ], admin_url('post.php'));
+
+    wp_safe_remote_post($redirect_url, [
+        'blocking' => false,
     ]);
+
+    wp_redirect($redirect_url);
+    exit;
 }
