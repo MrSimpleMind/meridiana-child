@@ -1122,6 +1122,10 @@ body.admin-bar {
     }
 }
 
+.file-item__icon {
+    display: none;
+}
+
 .file-item__info {
     flex: 1;
     min-width: 0;
@@ -1147,55 +1151,14 @@ body.admin-bar {
 
 .file-item__actions {
     display: flex;
-    gap: 6px;
+    gap: var(--space-2);
     align-items: center;
     flex-shrink: 0;
 }
 
 .file-item__download,
 .file-item__restore {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 28px;
-    height: 28px;
-    padding: 0;
-    background-color: transparent;
-    color: #6b7280;
-    border: 1px solid #d1d5db;
-    border-radius: 3px;
-    font-size: 11px;
-    font-weight: 600;
-    text-decoration: none;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    font-family: inherit;
-
-    i, svg {
-        width: 14px;
-        height: 14px;
-        flex-shrink: 0;
-    }
-
-    &:hover:not(:disabled) {
-        color: #1f2937;
-        border-color: #9ca3af;
-        background-color: #f3f4f6;
-    }
-
-    &:active:not(:disabled) {
-        transform: scale(0.92);
-    }
-
-    &:disabled {
-        opacity: 0.6;
-        cursor: not-allowed;
-    }
-}
-
-.file-item__download-text,
-.file-item__restore-text {
-    display: none;
+    // Ereditati da .btn-icon - no additional styles needed
 }
 
 .file-item__expiry {

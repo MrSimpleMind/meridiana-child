@@ -290,16 +290,23 @@ $area_competenza = get_terms(array(
                             : '';
 
                         echo '<div class="file-item">';
-                        echo '<div class="file-item__icon">📄</div>';
                         echo '<div class="file-item__info">';
                         echo '<div class="file-item__filename">' . esc_html($original_filename) . '</div>';
                         echo '<div class="file-item__meta">' . esc_html($formatted_date) . ' • ' . esc_html($archived_by_user) . '</div>';
                         echo '</div>';
                         echo '<div class="file-item__actions">';
+
+                        // View Button - Open PDF in new tab
                         if ($download_url) {
-                            echo '<button class="file-item__download" data-download-url="' . esc_attr($download_url) . '" title="' . esc_attr__('Scarica file', 'meridiana-child') . '">';
+                            echo '<a href="' . esc_url($download_url) . '" class="btn-icon" title="' . esc_attr__('Visualizza file', 'meridiana-child') . '" target="_blank">';
+                            echo '<i data-lucide="eye"></i>';
+                            echo '</a>';
+                        }
+
+                        // Download Button
+                        if ($download_url) {
+                            echo '<button class="btn-icon file-item__download" data-download-url="' . esc_attr($download_url) . '" title="' . esc_attr__('Scarica file', 'meridiana-child') . '">';
                             echo '<i data-lucide="download"></i>';
-                            echo '<span class="file-item__download-text">' . esc_html__('Scarica', 'meridiana-child') . '</span>';
                             echo '</button>';
                         }
 
@@ -309,9 +316,8 @@ $area_competenza = get_terms(array(
                             : '';
 
                         if ($restore_url) {
-                            echo '<a href="' . esc_url($restore_url) . '" class="file-item__restore" title="' . esc_attr__('Ripristina questo file', 'meridiana-child') . '">';
+                            echo '<a href="' . esc_url($restore_url) . '" class="btn-icon file-item__restore" title="' . esc_attr__('Ripristina questo file', 'meridiana-child') . '">';
                             echo '<i data-lucide="rotate-ccw"></i>';
-                            echo '<span class="file-item__restore-text">' . esc_html__('Ripristina', 'meridiana-child') . '</span>';
                             echo '</a>';
                         }
 
@@ -542,8 +548,11 @@ document.addEventListener('DOMContentLoaded', function() {
             console.log('[DOWNLOAD DEBUG] Parsed URL:', new URL(url, window.location.origin));
 
             // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i data-lucide="loader"></i>';
+            const icon = this.querySelector('i, svg');
+            const originalIcon = icon ? icon.outerHTML : '';
+            if (icon) {
+                icon.outerHTML = '<i data-lucide="loader"></i>';
+            }
             this.disabled = true;
 
             // Make AJAX request
@@ -570,7 +579,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 window.URL.revokeObjectURL(blobUrl);
 
                 // Restore button state
-                this.innerHTML = originalText;
+                this.querySelector('i, svg').outerHTML = originalIcon;
                 this.disabled = false;
                 if (window.lucide) {
                     lucide.createIcons();
@@ -580,7 +589,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Download error:', error);
                 alert('Errore durante il download: ' + error.message);
                 // Restore button state
-                this.innerHTML = originalText;
+                this.querySelector('i, svg').outerHTML = originalIcon;
                 this.disabled = false;
                 if (window.lucide) {
                     lucide.createIcons();
@@ -607,8 +616,11 @@ document.addEventListener('DOMContentLoaded', function() {
             }
 
             // Show loading state
-            const originalText = this.innerHTML;
-            this.innerHTML = '<i data-lucide="loader"></i><span class="file-item__restore-text">Ripristino...</span>';
+            const icon = this.querySelector('i, svg');
+            const originalIcon = icon ? icon.outerHTML : '';
+            if (icon) {
+                icon.outerHTML = '<i data-lucide="loader"></i>';
+            }
             this.disabled = true;
 
             // Make AJAX request
@@ -641,7 +653,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         : 'Errore durante il ripristino del file';
                     alert(errorMsg);
                     // Restore button state
-                    this.innerHTML = originalText;
+                    this.querySelector('i, svg').outerHTML = originalIcon;
                     this.disabled = false;
                     if (window.lucide) {
                         lucide.createIcons();
@@ -652,7 +664,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 console.error('Restore error:', error);
                 alert('Errore durante il ripristino: ' + error.message);
                 // Restore button state
-                this.innerHTML = originalText;
+                this.querySelector('i, svg').outerHTML = originalIcon;
                 this.disabled = false;
                 if (window.lucide) {
                     lucide.createIcons();
