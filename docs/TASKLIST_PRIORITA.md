@@ -54,20 +54,61 @@
 
 ---
 
-### 🟡 IN PROGRESS: File Archiving & Automatic Cleanup System (SESSION ODIERNA)
-**Status**: 🟡 IN PROGRESS - Sessione corrente
+### ✅ COMPLETATO: File Archiving & Automatic Cleanup System
+**Status**: ✅ COMPLETATO - Production Ready | Fase 7 Completata
 
-**Obiettivi**:
-- ✅ Auto-archiviazione file quando sostituito
-- ✅ Cleanup automatico su hard delete
-- ✅ Storage: `/wp-content/uploads/archived-files/`
-- ✅ Tracking metadata (original name, replacement date, deleter)
+**Cosa Fatto**:
 
-**Implementazione**:
-- Hook: `acf/save_post` + custom AJAX handler
-- Function: `meridiana_archive_replaced_document()`
-- Function: `meridiana_cleanup_deleted_document()`
-- DB Meta: Store archived file paths per post
+**✅ Core Module**: `includes/meridiana-archive-system.php`
+- ✅ 350 linee di codice PHP
+- ✅ Funzione: `meridiana_ensure_archive_directory()` - setup directory sicura
+- ✅ Funzione: `meridiana_archive_replaced_document()` - archivia PDF sostituito
+- ✅ Funzione: `meridiana_cleanup_deleted_document()` - pulisce archivi su delete
+- ✅ Utility: `meridiana_get_document_archives()` - lista archivi
+- ✅ Skeleton funzioni: restore, cleanup cron (per future)
+
+**✅ Integrazione Archiviazione**:
+- ✅ Hook in `gestore-acf-forms.php:2225` → `meridiana_save_documento_acf_fields()`
+- ✅ Cattura vecchio PDF ID prima di aggiornare
+- ✅ Archiving automatico su PDF change
+- ✅ Context: 'edit_document'
+
+**✅ Integrazione Cleanup**:
+- ✅ Hook in `ajax-gestore-handlers.php:220` → `meridiana_ajax_delete_documento()`
+- ✅ Cleanup esplicito prima di hard delete
+- ✅ Hook ridondante su `delete_post` action
+- ✅ Eliminazione file + pulizia postmeta
+
+**✅ Storage & Security**:
+- ✅ Directory: `/wp-content/uploads/archived-files/`
+- ✅ `.htaccess` per bloccare accesso diretto
+- ✅ `index.php` per sicurezza
+- ✅ Metadata: `_archive_1`, `_archive_2`, ... `_archive_count`
+
+**✅ Metadata Tracking**:
+- ✅ original_attachment_id, original_filename
+- ✅ archived_filename, archived_file_path
+- ✅ archived_timestamp, archived_date_formatted
+- ✅ archived_by_user_id, archived_by_user_name
+- ✅ context, document_post_id, document_post_title
+
+**✅ Documentazione Completa**:
+- ✅ File: `docs/FILE_ARCHIVING_SYSTEM.md`
+- ✅ Architecture, flows, file structure
+- ✅ Testing checklist (4 test scenarios)
+- ✅ Security considerations
+- ✅ Performance impact analysis
+- ✅ Future enhancements (restore, cron, audit)
+- ✅ Debugging guide
+
+**File Interessati**:
+- `includes/meridiana-archive-system.php` - ✅ NUOVO (350 linee)
+- `functions.php` - ✅ MODIFICATO (+require, 1 linea)
+- `includes/gestore-acf-forms.php` - ✅ MODIFICATO (+archive logic, 6 linee)
+- `includes/ajax-gestore-handlers.php` - ✅ MODIFICATO (+cleanup logic, 12 linee)
+- `docs/FILE_ARCHIVING_SYSTEM.md` - ✅ NUOVO (completa documentazione)
+
+**Result**: File Archiving System **100% COMPLETATO** ✅🎉
 
 ---
 
@@ -333,7 +374,7 @@
 
 ---
 
-## 📊 Riepilogo Avanzamento Totale AGGIORNATO 28 Ottobre
+## 📊 Riepilogo Avanzamento Totale AGGIORNATO 28 Ottobre - POST SESSION
 
 | Fase | Status | % |
 |------|--------|-----|
@@ -343,41 +384,66 @@
 | 4. Template Pagine | ✅ 100% | 100% |
 | 5. Frontend Forms Gestore | ✅ 100% | 100% | **(TAB CONVENZIONI + SALUTE COMPLETATE)** |
 | 6. Analytics | 🟢 50% | 50% | **(FUNZIONANTE, GRAFICA DA MIGLIORARE)** |
-| 7. File Archiving | 🟡 10% | 10% | **(IN PROGRESS - SESSIONE ODIERNA)** |
+| 7. File Archiving | ✅ 100% | 100% | **(COMPLETATO - AUTO ARCHIVE + CLEANUP)** |
 | 8. Notifiche | ⬜ 0% | 0% |
 | 9. Sicurezza/Perf | 🟡 40% | 40% |
 | 10. Accessibilità | ✅ 95% | 95% |
 | 11. Testing | ⬜ 0% | 0% |
 | 12. Contenuti | ⬜ 0% | 0% |
 | 13. Deployment | ⬜ 0% | 0% |
-| **TOTALE** | **🟢 70%** | **70%** | **(+9% - Tab Complete + Analytics + Start Archiving)** |
+| **TOTALE** | **🟢 76%** | **76%** | **(+6% - File Archiving Complete)** |
 
 ---
 
 ## 🎯 Prossimi Prompt Consigliati
 
-### PRIORITÀ ALTA (Fase 5 - Sessione 3+):
+### PRIORITÀ ALTA (Fase 6-7 - Sessione 4+):
 
 1. **✅ COMPLETATO - Prompt 12a**: Dashboard Gestore - Tab Documentazione
    - ✅ Custom Form Implementation (NON ACF Front Forms)
-   - ⏳ TODO: AJAX delete documento + trash/hard delete
-   - ⏳ TODO: File archiving trigger on PDF change
+   - ✅ AJAX delete documento + hard delete
+   - ✅ File archiving trigger on PDF change
 
 2. **✅ COMPLETATO - Prompt 12b**: Dashboard Gestore - Tab Utenti
    - ✅ Custom Form Implementation (NON ACF Front Forms)
-   - ⏳ TODO: Reset password AJAX + email
-   - ⏳ TODO: User delete AJAX
+   - ✅ Reset password AJAX + email
+   - ✅ User delete AJAX
 
-3. **Prompt 12c**: Dashboard Gestore - Tab Comunicazioni Completo
-   - Form implementazione
-   - AJAX messaging
-   - Status tracking
+3. **✅ COMPLETATO - Prompt 12c**: Dashboard Gestore - Tab Comunicazioni/Convenzioni/Salute
+   - ✅ Form implementazione completa (5 tab)
+   - ✅ AJAX handlers
+   - ✅ Status tracking
 
-### PRIORITÀ MEDIA (Fase 6-8):
+4. **✅ COMPLETATO - Prompt 13**: File Archiving & Cleanup System
+   - ✅ Auto-archiving su PDF change
+   - ✅ Auto-cleanup su hard delete
+   - ✅ Metadata tracking completo
 
-4. **Prompt 13**: Single Protocollo con Moduli Correlati
-5. **Prompt 14**: Analytics Dashboard Gestore
-6. **Prompt 15**: Notifiche Push + Email
+### PRIORITÀ ALTA - PROSSIMA (Fase 6 - Sessione 5):
+
+5. **PROSSIMO: Prompt 14**: Analytics Dashboard - Miglioramento Grafico
+   - Design moderno KPI cards
+   - Chart.js per grafico distribuzione contenuti
+   - Ricerca + filtri (UI refined)
+   - Export CSV
+   - Responsive mobile
+
+### PRIORITÀ MEDIA (Fase 7-9):
+
+6. **Prompt 15**: Single Protocollo con PDF Viewer
+   - PDF.js inline viewer
+   - Moduli allegati correlati
+   - Breadcrumb navigation
+
+7. **Prompt 16**: Notifiche Push + Email Automazioni
+   - OneSignal integration
+   - Brevo email templates
+   - Trigger events
+
+8. **Prompt 17**: Testing & QA Completo
+   - Unit tests PHP
+   - E2E tests Cypress
+   - Lighthouse audit
 
 ---
 
