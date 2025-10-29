@@ -73,6 +73,8 @@ document.addEventListener("alpine:init", () => {
         ajaxUrl: "",
         nonce: "",
         chartInstance: null,
+        profileProtocolChartInstance: null,
+        profileModuleChartInstance: null,
         globalStatsError: "",
         userQuery: "",
         userResults: [],
@@ -89,11 +91,20 @@ document.addEventListener("alpine:init", () => {
         documentLoading: false,
         documentError: "",
         viewerSort: "recent",
+        profileProtocolsData: [],
+        profileModulesData: [],
+        profileSelectedFilter: "",
+        allProfessionalProfiles: [],
+        profileRenderTimeout: null,
+        profileProtocolMessage: "",
+        profileModuleMessage: "",
 
         init() {
             this.ajaxUrl = this.$refs.dashboard?.dataset.ajaxUrl || "";
             this.nonce = this.$refs.dashboard?.dataset.nonce || "";
             this.fetchGlobalStats();
+            this.fetchAllProfessionalProfiles();
+            this.fetchProfileViews();
             this.fetchContentDistribution();
         },
 
@@ -223,6 +234,157 @@ document.addEventListener("alpine:init", () => {
                     }
                 }
             });
+        },
+
+        // -------------------- Profili Professionali Disponibili --------------------
+        fetchAllProfessionalProfiles() {
+            this.request({ action: "meridiana_analytics_get_all_professional_profiles" })
+                .then((data) => {
+                    if (data.success) {
+                        this.allProfessionalProfiles = data.data || [];
+                    }
+                })
+                .catch((error) => {
+                    console.error("Errore caricamento profili professionali:", error);
+                });
+        },
+
+        // -------------------- Visualizzazioni per Profilo Professionale --------------------
+        fetchProfileViews() {
+            if (typeof Chart === "undefined") {
+                return;
+            }
+
+            Promise.all([
+                this.request({ action: "meridiana_analytics_get_views_by_profile_protocols" }),
+                this.request({ action: "meridiana_analytics_get_views_by_profile_modules" })
+            ])
+            .then(([protocolsResponse, modulesResponse]) => {
+                if (protocolsResponse.success) {
+                    this.profileProtocolsData = protocolsResponse.data || [];
+                }
+                if (modulesResponse.success) {
+                    this.profileModulesData = modulesResponse.data || [];
+                }
+                // Renderizza dopo che entrambi i dati sono caricati
+                this.$nextTick(() => {
+                    this.renderProfileCharts();
+                });
+            })
+            .catch((error) => {
+                console.error("Errore caricamento profili:", error);
+            });
+        },
+
+        getAllProfilesUnion() {
+            const protocolProfiles = this.profileProtocolsData.map(item => item.profilo_professionale);
+            const moduleProfiles = this.profileModulesData.map(item => item.profilo_professionale);
+            const allProfiles = [...new Set([...protocolProfiles, ...moduleProfiles])];
+            return allProfiles.sort();
+        },
+
+        renderProfileChart(canvas, dataset, type, selectedFilter = "") {
+            const chartRef = type === 'protocols' ? 'profileProtocolChartInstance' : 'profileModuleChartInstance';
+            const messageRef = type === 'protocols' ? 'profileProtocolMessage' : 'profileModuleMessage';
+
+            // DEBUG: Log dei dati
+            console.log(`[${type}] Dataset:`, dataset);
+            console.log(`[${type}] SelectedFilter:`, selectedFilter);
+
+            // Distruggi il grafico se esiste
+            if (this[chartRef]) {
+                this[chartRef].destroy();
+                this[chartRef] = null;
+            }
+
+            if (!canvas || !dataset || !dataset.length) {
+                this[messageRef] = "";
+                return;
+            }
+
+            // Filtra i dati in base al profilo selezionato
+            let filteredData = dataset;
+
+            // Se selectedFilter non è vuoto, filtra per quel profilo
+            if (selectedFilter) {
+                filteredData = dataset.filter(item => item.profilo_professionale === selectedFilter);
+                console.log(`[${type}] FilteredData:`, filteredData);
+            }
+
+            // Se non ci sono dati filtrati, mostra un messaggio
+            if (!filteredData || !filteredData.length) {
+                const typeLabel = type === 'protocols' ? 'protocolli' : 'moduli';
+                this[messageRef] = `Questo profilo professionale non ha visualizzato ${typeLabel}.`;
+                return;
+            }
+
+            const labels = filteredData.map((item) => item.profilo_professionale);
+            const data = filteredData.map((item) => Number(item.unique_users));
+
+            // Doppio controllo - se i dati sono vuoti, mostra messaggio
+            if (!labels || !labels.length || !data || !data.length) {
+                const typeLabel = type === 'protocols' ? 'protocolli' : 'moduli';
+                this[messageRef] = `Questo profilo professionale non ha visualizzato ${typeLabel}.`;
+                return;
+            }
+
+            // Resetta il messaggio
+            this[messageRef] = "";
+
+            // Crea il grafico
+            this[chartRef] = new Chart(canvas, {
+                type: "bar",
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: "Utenti unici",
+                            data: data,
+                            backgroundColor: ANALYTICS_CHART_COLORS,
+                            borderColor: ANALYTICS_CHART_BORDERS,
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    animation: false,
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    }
+                }
+            });
+        },
+
+        renderProfileCharts() {
+            // Copia il valore del filtro PRIMA di fare qualsiasi render
+            const selectedFilter = String(this.profileSelectedFilter);
+            const protocolData = Array.isArray(this.profileProtocolsData) ? this.profileProtocolsData.slice() : [];
+            const moduleData = Array.isArray(this.profileModulesData) ? this.profileModulesData.slice() : [];
+
+            // Debounce: cancella timeout precedente
+            clearTimeout(this.profileRenderTimeout);
+
+            // Esegui il render con debounce semplice (senza $nextTick per evitare loop)
+            this.profileRenderTimeout = setTimeout(() => {
+                const canvasProtocol = this.$refs.profileProtocolChart;
+                const canvasModule = this.$refs.profileModuleChart;
+
+                if (canvasProtocol && protocolData && protocolData.length) {
+                    this.renderProfileChart(canvasProtocol, protocolData, 'protocols', selectedFilter);
+                }
+                if (canvasModule && moduleData && moduleData.length) {
+                    this.renderProfileChart(canvasModule, moduleData, 'modules', selectedFilter);
+                }
+            }, 100); // Debounce di 100ms
         },
 
         // -------------------- Ricerca utente --------------------

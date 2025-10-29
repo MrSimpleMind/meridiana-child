@@ -360,3 +360,88 @@ function meridiana_ajax_analytics_get_document_insights() {
     ));
 }
 add_action('wp_ajax_meridiana_analytics_get_document_insights', 'meridiana_ajax_analytics_get_document_insights');
+
+/**
+ * AJAX: Visualizzazioni per profilo professionale (Protocolli)
+ * Action: meridiana_analytics_get_views_by_profile_protocols
+ */
+function meridiana_ajax_analytics_get_views_by_profile_protocols() {
+    try {
+        check_ajax_referer('wp_rest', 'nonce');
+
+        if (!meridiana_user_can_view_analytics()) {
+            wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+        }
+
+        $data = meridiana_get_views_by_professional_profile('protocollo');
+
+        wp_send_json_success($data);
+    } catch (Exception $e) {
+        error_log('Errore meridiana_ajax_analytics_get_views_by_profile_protocols: ' . $e->getMessage());
+        wp_send_json_error(array('message' => $e->getMessage()));
+    }
+}
+add_action('wp_ajax_meridiana_analytics_get_views_by_profile_protocols', 'meridiana_ajax_analytics_get_views_by_profile_protocols');
+
+/**
+ * AJAX: Visualizzazioni per profilo professionale (Moduli)
+ * Action: meridiana_analytics_get_views_by_profile_modules
+ */
+function meridiana_ajax_analytics_get_views_by_profile_modules() {
+    try {
+        check_ajax_referer('wp_rest', 'nonce');
+
+        if (!meridiana_user_can_view_analytics()) {
+            wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+        }
+
+        $data = meridiana_get_views_by_professional_profile('modulo');
+
+        wp_send_json_success($data);
+    } catch (Exception $e) {
+        error_log('Errore meridiana_ajax_analytics_get_views_by_profile_modules: ' . $e->getMessage());
+        wp_send_json_error(array('message' => $e->getMessage()));
+    }
+}
+add_action('wp_ajax_meridiana_analytics_get_views_by_profile_modules', 'meridiana_ajax_analytics_get_views_by_profile_modules');
+
+/**
+ * AJAX: Get all professional profiles from ACF field choices
+ * Action: meridiana_analytics_get_all_professional_profiles
+ */
+function meridiana_ajax_analytics_get_all_professional_profiles() {
+    try {
+        check_ajax_referer('wp_rest', 'nonce');
+
+        if (!meridiana_user_can_view_analytics()) {
+            wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+        }
+
+        // Profili professionali disponibili nel sistema
+        // Corrispondono ai label del campo ACF 'profilo_professionale'
+        $profiles = array(
+            'Addetto Manutenzione',
+            'ASA/OSS',
+            'Assistente Sociale',
+            'Coordinatore Unità di Offerta',
+            'Educatore',
+            'FKT',
+            'Impiegato Amministrativo',
+            'Infermiere',
+            'Logopedista',
+            'Medico',
+            'Psicologa',
+            'Receptionista',
+            'Terapista Occupazionale',
+            'Volontari'
+        );
+
+        sort($profiles);
+
+        wp_send_json_success($profiles);
+    } catch (Exception $e) {
+        error_log('Errore meridiana_ajax_analytics_get_all_professional_profiles: ' . $e->getMessage());
+        wp_send_json_error(array('message' => $e->getMessage()));
+    }
+}
+add_action('wp_ajax_meridiana_analytics_get_all_professional_profiles', 'meridiana_ajax_analytics_get_all_professional_profiles');

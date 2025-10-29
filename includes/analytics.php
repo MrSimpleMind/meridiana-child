@@ -255,6 +255,38 @@ function meridiana_get_views_per_document_type() {
 }
 
 /**
+ * Visualizzazioni per profilo professionale (Protocolli/Moduli)
+ */
+function meridiana_get_views_by_professional_profile($document_type) {
+    global $wpdb;
+
+    if (!in_array($document_type, array('protocollo', 'modulo'), true)) {
+        return array();
+    }
+
+    $table_views = $wpdb->prefix . 'document_views';
+
+    $sql = "SELECT
+                COALESCE(um.meta_value, 'Non specificato') as profilo_professionale,
+                COUNT(DISTINCT dv.user_id) as unique_users,
+                COUNT(DISTINCT dv.document_id) as unique_documents
+            FROM $table_views dv
+            LEFT JOIN {$wpdb->users} u ON dv.user_id = u.ID
+            LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'profilo_professionale'
+            WHERE dv.document_type = %s
+            GROUP BY COALESCE(um.meta_value, 'Non specificato')
+            ORDER BY unique_users DESC";
+
+    $results = $wpdb->get_results($wpdb->prepare($sql, $document_type));
+
+    if (!is_array($results)) {
+        return array();
+    }
+
+    return $results;
+}
+
+/**
  * Documenti visualizzati da un utente specifico
  */
 function meridiana_get_user_viewed_documents($user_id, $args = array()) {

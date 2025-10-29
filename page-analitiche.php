@@ -77,6 +77,44 @@ get_header();
                                 </div>
                             </div>
 
+                            <div class="analitiche-section" x-show="profileProtocolsData.length || profileModulesData.length" x-cloak>
+                                <h2 class="analitiche-section__title">Visualizzazioni per Profilo Professionale</h2>
+                                <div class="analytics-field-group" style="max-width: 300px;">
+                                    <label class="analytics-input-label" for="filter-profile-select">Filtra per profilo professionale</label>
+                                    <select id="filter-profile-select"
+                                            class="analytics-input"
+                                            x-model="profileSelectedFilter"
+                                            @change="renderProfileCharts()">
+                                        <option value="">- Selezionare -</option>
+                                        <template x-for="profile in allProfessionalProfiles" :key="profile">
+                                            <option :value="profile" x-text="profile"></option>
+                                        </template>
+                                    </select>
+                                </div>
+
+                                <div class="profile-charts-grid">
+                                    <div class="analitiche-section analitiche-section--chart">
+                                        <h3 class="analitiche-section__subtitle">Protocolli</h3>
+                                        <div class="chart-container">
+                                            <canvas id="profileProtocolChart" x-ref="profileProtocolChart" x-show="!profileProtocolMessage" x-cloak></canvas>
+                                            <template x-if="profileProtocolMessage">
+                                                <div class="analytics-empty" x-text="profileProtocolMessage"></div>
+                                            </template>
+                                        </div>
+                                    </div>
+
+                                    <div class="analitiche-section analitiche-section--chart">
+                                        <h3 class="analitiche-section__subtitle">Moduli</h3>
+                                        <div class="chart-container">
+                                            <canvas id="profileModuleChart" x-ref="profileModuleChart" x-show="!profileModuleMessage" x-cloak></canvas>
+                                            <template x-if="profileModuleMessage">
+                                                <div class="analytics-empty" x-text="profileModuleMessage"></div>
+                                            </template>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                             <div class="analitiche-section">
                                 <h2 class="analitiche-section__title">Distribuzione Contenuti</h2>
                                 <div class="chart-container">
