@@ -26,17 +26,18 @@ function meridiana_create_custom_roles() {
     $gestore_capabilities = array(
         // Lettura base
         'read' => true,
-        
+
         // Gestione contenuti frontend (via ACF forms)
         'edit_posts' => false,          // No backend
         'delete_posts' => false,        // No backend
         'publish_posts' => false,       // No backend
-        
+
         // Custom capabilities per frontend
         'gestione_frontend' => true,    // Accesso form frontend
         'view_analytics' => true,       // Visualizza analytics
         'manage_platform_users' => true, // CRUD utenti
-        
+        'manage_platform' => true,      // Accesso dashboard gestore + archiviazione/download documenti
+
         // LearnDash
         'view_all_courses' => true,
     );

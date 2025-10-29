@@ -148,6 +148,23 @@ function meridiana_archive_replaced_document($post_id, $old_attachment_id = 0, $
     // Log l'azione
     error_log("Meridiana: Documento {$post_id} - File archiviato: {$archived_filename}");
 
+    // ========================================================================
+    // BONUS: Elimina il vecchio attachment dalla Media Library
+    // ========================================================================
+    // Il file fisico è ora copiato in /archived-files/, quindi il vecchio
+    // attachment nella Media Library non serve più e occupa spazio
+    // Questa operazione è irreversibile, ma la copia in archived-files rimane come backup
+
+    if (apply_filters('meridiana_archive_delete_old_attachment', true)) {
+        // Hook: meridiana_archive_delete_old_attachment filter (default: true)
+        // Usare add_filter('meridiana_archive_delete_old_attachment', '__return_false') per disabilitare
+        if (wp_delete_attachment($old_attachment_id, true)) {
+            error_log("Meridiana: Attachment vecchio eliminato dalla Media Library - ID: {$old_attachment_id}");
+        } else {
+            error_log("Meridiana: AVVISO - Impossibile eliminare attachment dalla Media Library - ID: {$old_attachment_id}");
+        }
+    }
+
     return array(
         'success' => true,
         'archived_path' => $archived_path,
@@ -333,23 +350,118 @@ function meridiana_restore_archived_file($post_id, $archive_number) {
  * @return int - Numero di file eliminati
  */
 function meridiana_cleanup_old_archives($older_than_days = 90) {
+    global $wpdb;
+
     $archive_dir = meridiana_ensure_archive_directory();
     $cutoff_time = time() - ($older_than_days * 24 * 60 * 60);
-    $deleted_count = 0;
+    $deleted_files_count = 0;
+    $deleted_meta_count = 0;
+    $errors = [];
 
-    // Scansiona i file nella directory di archivio
-    $files = glob(trailingslashit($archive_dir) . '*.pdf');
+    // ========================================================================
+    // STEP 1: Trova tutti i metadata con timestamp vecchio nel database
+    // ========================================================================
 
-    foreach ($files as $file) {
-        if (is_file($file) && filemtime($file) < $cutoff_time) {
-            if (unlink($file)) {
-                $deleted_count++;
-                error_log("Meridiana: File archivio vecchio eliminato: $file");
+    $meta_query = "
+        SELECT post_id, meta_id, meta_key, meta_value
+        FROM {$wpdb->postmeta}
+        WHERE meta_key LIKE '_archive_%'
+        AND meta_key != '_archive_count'
+        AND post_id IN (
+            SELECT ID FROM {$wpdb->posts}
+            WHERE post_type IN ('protocollo', 'modulo')
+        )
+    ";
+
+    $archive_metas = $wpdb->get_results($meta_query);
+    error_log("Meridiana: Cleanup archivi - Trovati " . count($archive_metas) . " record di archivio");
+
+    foreach ($archive_metas as $meta_row) {
+        $archive_data = maybe_unserialize($meta_row->meta_value);
+
+        if (!is_array($archive_data)) continue;
+
+        $archived_timestamp = $archive_data['archived_timestamp'] ?? 0;
+        $archived_file_path = $archive_data['archived_file_path'] ?? '';
+
+        // Se archivio è più vecchio del cutoff
+        if ($archived_timestamp && $archived_timestamp < $cutoff_time) {
+            // Elimina file fisico se esiste
+            if ($archived_file_path && file_exists($archived_file_path)) {
+                if (wp_delete_file($archived_file_path)) {
+                    $deleted_files_count++;
+                    error_log("Meridiana: Cleanup - File eliminato: $archived_file_path");
+                } else {
+                    $error_msg = "Impossibile eliminare file: $archived_file_path";
+                    error_log("Meridiana: Cleanup ERRORE - $error_msg");
+                    $errors[] = $error_msg;
+                }
+            }
+
+            // Elimina metadata dal database
+            delete_post_meta($meta_row->post_id, $meta_row->meta_key);
+            $deleted_meta_count++;
+            error_log("Meridiana: Cleanup - Metadata eliminato: {$meta_row->meta_key} (post_id={$meta_row->post_id})");
+
+            // Decrementa il contatore di archivi per questo post
+            $current_count = intval(get_post_meta($meta_row->post_id, '_archive_count', true)) ?: 0;
+            if ($current_count > 0) {
+                $new_count = $current_count - 1;
+                update_post_meta($meta_row->post_id, '_archive_count', $new_count);
+                error_log("Meridiana: Cleanup - Archive count aggiornato: post_id={$meta_row->post_id}, da $current_count a $new_count");
             }
         }
     }
 
-    return $deleted_count;
+    // ========================================================================
+    // STEP 2: Cleanup file orfani (file fisici senza metadata corrispondente)
+    // ========================================================================
+
+    $files = glob(trailingslashit($archive_dir) . '*.pdf');
+
+    foreach ($files as $file) {
+        if (!is_file($file)) continue;
+
+        if (filemtime($file) < $cutoff_time) {
+            // Verifica che non esista metadata per questo file nel database
+            $file_normalized = wp_normalize_path($file);
+            $has_metadata = $wpdb->get_var($wpdb->prepare(
+                "SELECT COUNT(*) FROM {$wpdb->postmeta}
+                 WHERE meta_key LIKE '_archive_%'
+                 AND meta_key != '_archive_count'
+                 AND meta_value LIKE %s",
+                '%' . $wpdb->esc_like($file_normalized) . '%'
+            ));
+
+            if ($has_metadata == 0) {
+                // File orfano (non ha metadata), eliminalo
+                if (wp_delete_file($file)) {
+                    $deleted_files_count++;
+                    error_log("Meridiana: Cleanup - File orfano eliminato: $file");
+                } else {
+                    $error_msg = "Impossibile eliminare file orfano: $file";
+                    error_log("Meridiana: Cleanup ERRORE - $error_msg");
+                    $errors[] = $error_msg;
+                }
+            }
+        }
+    }
+
+    // ========================================================================
+    // SUMMARY LOG
+    // ========================================================================
+
+    $summary = "Meridiana: Cleanup archivi completato - File eliminati: $deleted_files_count, Metadata eliminati: $deleted_meta_count";
+    if (!empty($errors)) {
+        $summary .= ", Errori: " . count($errors);
+    }
+    error_log($summary);
+
+    return [
+        'deleted_files' => $deleted_files_count,
+        'deleted_metadata' => $deleted_meta_count,
+        'errors' => $errors,
+    ];
 }
 
 // ============================================
@@ -425,6 +537,68 @@ function meridiana_get_archive_download_url($post_id, $archive_number) {
 
 
 /**
+ * Genera URL per visualizzare un file archiviato inline nel browser
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio (1, 2, 3, etc)
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_view_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    // Crea nonce valido per 1 ora
+    $nonce = wp_create_nonce('meridiana_archive_view_' . $post_id);
+
+    $url = add_query_arg([
+        'action' => 'meridiana_view_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+
+    error_log("DEBUG meridiana_get_archive_view_url - post_id: $post_id, archive_num: $archive_number, nonce_action: meridiana_archive_view_$post_id, url: $url");
+
+    return $url;
+}
+
+
+/**
+ * Genera URL per eliminare un file archiviato
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio da eliminare
+ * @return string - URL completo con nonce
+ */
+function meridiana_get_archive_delete_url($post_id, $archive_number) {
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        return '';
+    }
+
+    // Crea nonce valido
+    $nonce = wp_create_nonce('meridiana_delete_archive_' . $post_id);
+
+    $url = add_query_arg([
+        'action' => 'meridiana_delete_archive',
+        'post_id' => $post_id,
+        'archive_num' => $archive_number,
+        'nonce' => $nonce,
+    ], admin_url('admin-ajax.php'));
+
+    error_log("DEBUG meridiana_get_archive_delete_url - post_id: $post_id, archive_num: $archive_number, nonce_action: meridiana_delete_archive_$post_id, url: $url");
+
+    return $url;
+}
+
+
+/**
  * Genera URL per ripristinare un file archiviato
  *
  * @param int $post_id - ID del documento
@@ -482,33 +656,6 @@ function meridiana_archive_exists($post_id, $archive_number) {
     }
 
     return true;
-}
-
-
-/**
- * Genera URL di visualizzazione inline per file archiviato
- * File apre nel browser, non scarica
- *
- * @param int $post_id - ID del documento
- * @param int $archive_number - Numero archivio
- * @return string - URL completo con nonce
- */
-function meridiana_get_archive_view_url($post_id, $archive_number) {
-    $post_id = intval($post_id);
-    $archive_number = intval($archive_number);
-
-    if (!$post_id || !$archive_number) {
-        return '';
-    }
-
-    $nonce = wp_create_nonce('meridiana_archive_view_' . $post_id);
-
-    return add_query_arg([
-        'action' => 'meridiana_view_archive',
-        'post_id' => $post_id,
-        'archive_num' => $archive_number,
-        'nonce' => $nonce,
-    ], admin_url('admin-ajax.php'));
 }
 
 
@@ -701,11 +848,152 @@ function meridiana_restore_archive_file($post_id, $archive_number) {
 
     error_log("Meridiana: File ripristinato - Documento {$post_id}, Archivio {$archive_number}");
 
+    // ========================================================================
+    // STEP 4: CLEANUP - Rimuovere il file ripristinato dallo storico
+    // ========================================================================
+
+    // Elimina il file fisico da /archived-files/ (ora è una copia non necessaria)
+    if (file_exists($archived_path)) {
+        if (wp_delete_file($archived_path)) {
+            error_log("Meridiana: File archiviato eliminato da archived-files: $archived_path");
+        } else {
+            error_log("Meridiana: ERRORE - Impossibile eliminare file archiviato: $archived_path");
+        }
+    }
+
+    // Elimina il metadata dell'archivio dal database
+    delete_post_meta($post_id, '_archive_' . $archive_number);
+    error_log("Meridiana: Metadata archivio eliminato - post_id=$post_id, archive_number=$archive_number");
+
+    // Ricompatta gli archivi rimanenti per evitare "buchi" nella numerazione
+    // Esempio: se ripristini _archive_2 e hai _archive_1,2,3 → diventa _archive_1,2
+    $archive_count = intval(get_post_meta($post_id, '_archive_count', true)) ?: 0;
+    $remaining_archives = [];
+
+    for ($i = 1; $i <= $archive_count; $i++) {
+        if ($i === $archive_number) continue; // Skip quello appena ripristinato
+        $archive_meta = get_post_meta($post_id, '_archive_' . $i, true);
+        if ($archive_meta) {
+            $remaining_archives[] = $archive_meta;
+        }
+    }
+
+    // Re-indicizza gli archivi da 1
+    foreach ($remaining_archives as $index => $archive_meta) {
+        $new_number = $index + 1;
+        update_post_meta($post_id, '_archive_' . $new_number, $archive_meta);
+    }
+
+    // Elimina eventuali archivi extra oltre il nuovo count
+    $new_count = count($remaining_archives);
+    for ($i = $new_count + 1; $i <= $archive_count; $i++) {
+        delete_post_meta($post_id, '_archive_' . $i);
+    }
+
+    // Aggiorna il contatore
+    update_post_meta($post_id, '_archive_count', $new_count);
+
+    error_log("Meridiana: Cleanup archivi completato - Archivi rimanenti: $new_count (prima erano $archive_count)");
+
     return [
         'success' => true,
         'post_id' => $post_id,
         'new_attachment_id' => $attachment_id,
         'restored_filename' => $original_filename,
+    ];
+}
+
+
+// ============================================
+// FUNZIONE: ELIMINAZIONE MANUALE SINGOLO ARCHIVIO
+// ============================================
+
+/**
+ * Elimina un singolo file archiviato (bypass del cron di 30 giorni)
+ *
+ * @param int $post_id - ID del documento
+ * @param int $archive_number - Numero archivio da eliminare
+ * @return bool|array - True se eliminazione riuscita, array con error altrimenti
+ */
+function meridiana_delete_single_archive($post_id, $archive_number) {
+    // Validazione
+    $post_id = intval($post_id);
+    $archive_number = intval($archive_number);
+
+    if (!$post_id || !$archive_number) {
+        error_log("Meridiana: Delete archive FAIL - Invalid parameters");
+        return ['success' => false, 'message' => 'Parametri non validi'];
+    }
+
+    // Validazione post
+    $post = get_post($post_id);
+    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        error_log("Meridiana: Delete archive FAIL - Post not found or invalid type");
+        return ['success' => false, 'message' => 'Documento non trovato'];
+    }
+
+    // Get archive metadata
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_number, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        error_log("Meridiana: Delete archive FAIL - Archive metadata not found");
+        return ['success' => false, 'message' => 'Archivio non trovato'];
+    }
+
+    // Get file path
+    $archived_path = $archive_metadata['archived_file_path'] ?? '';
+    error_log("Meridiana: Deleting archive - post_id=$post_id, archive_num=$archive_number, path=$archived_path");
+
+    // Delete physical file
+    $file_deleted = true;
+    if ($archived_path && file_exists($archived_path)) {
+        if (!wp_delete_file($archived_path)) {
+            error_log("Meridiana: WARNING - Impossibile eliminare file archiviato: $archived_path");
+            $file_deleted = false;
+        } else {
+            error_log("Meridiana: File archiviato eliminato: $archived_path");
+        }
+    } elseif ($archived_path) {
+        error_log("Meridiana: WARNING - File archiviato non trovato su disco: $archived_path");
+    }
+
+    // Delete metadata
+    delete_post_meta($post_id, '_archive_' . $archive_number);
+    error_log("Meridiana: Metadata archivio eliminato - post_id=$post_id, archive_number=$archive_number");
+
+    // Ricompatta gli archivi rimanenti per evitare "buchi" nella numerazione
+    $archive_count = intval(get_post_meta($post_id, '_archive_count', true)) ?: 0;
+    $remaining_archives = [];
+
+    for ($i = 1; $i <= $archive_count; $i++) {
+        if ($i === $archive_number) continue; // Skip quello appena eliminato
+        $archive_meta = get_post_meta($post_id, '_archive_' . $i, true);
+        if ($archive_meta) {
+            $remaining_archives[] = $archive_meta;
+        }
+    }
+
+    // Re-indicizza gli archivi da 1
+    foreach ($remaining_archives as $index => $archive_meta) {
+        $new_number = $index + 1;
+        update_post_meta($post_id, '_archive_' . $new_number, $archive_meta);
+    }
+
+    // Elimina eventuali archivi extra oltre il nuovo count
+    $new_count = count($remaining_archives);
+    for ($i = $new_count + 1; $i <= $archive_count; $i++) {
+        delete_post_meta($post_id, '_archive_' . $i);
+    }
+
+    // Aggiorna il contatore
+    update_post_meta($post_id, '_archive_count', $new_count);
+
+    error_log("Meridiana: Eliminazione archivio completata - post_id=$post_id, archive_number=$archive_number, archivi_rimanenti=$new_count");
+
+    return [
+        'success' => true,
+        'post_id' => $post_id,
+        'archive_number' => $archive_number,
+        'message' => 'File eliminato dallo storico',
     ];
 }
 

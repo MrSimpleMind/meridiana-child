@@ -354,3 +354,70 @@ function meridiana_handle_archive_restore() {
         'redirect' => home_url('/dashboard-gestore/'),
     ]);
 }
+
+
+// ============================================
+// DELETE ARCHIVE HANDLER (AJAX GET)
+// ============================================
+
+add_action('wp_ajax_meridiana_delete_archive', 'meridiana_handle_archive_delete');
+
+/**
+ * Handler per eliminare un file archiviato manualmente
+ * Bypass del cron di 30 giorni
+ *
+ * Parametri via GET:
+ * - post_id: ID del documento
+ * - archive_num: Numero dell'archivio da eliminare
+ * - nonce: Nonce security token
+ */
+function meridiana_handle_archive_delete() {
+    // Leggi parametri da GET
+    $post_id = isset($_GET['post_id']) ? intval($_GET['post_id']) : 0;
+    $archive_num = isset($_GET['archive_num']) ? intval($_GET['archive_num']) : 0;
+    $nonce = isset($_GET['nonce']) ? sanitize_text_field($_GET['nonce']) : '';
+
+    if (!$post_id || !$archive_num) {
+        wp_send_json_error(['message' => __('Parametri non validi', 'meridiana-child')], 400);
+    }
+
+    // Security: Verify nonce
+    if (!wp_verify_nonce($nonce, 'meridiana_delete_archive_' . $post_id)) {
+        wp_send_json_error(['message' => __('Nonce non valido o scaduto', 'meridiana-child')], 403);
+    }
+
+    // Security: Capability check - solo manage_platform o admin
+    if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+        wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
+    }
+
+    // Validate: post exists and is document type
+    $post = get_post($post_id);
+    if (!$post || !in_array($post->post_type, ['protocollo', 'modulo'])) {
+        wp_send_json_error(['message' => __('Documento non trovato', 'meridiana-child')], 404);
+    }
+
+    // Check archive exists
+    $archive_metadata = get_post_meta($post_id, '_archive_' . $archive_num, true);
+    if (!$archive_metadata || !is_array($archive_metadata)) {
+        wp_send_json_error(['message' => __('Archivio non trovato', 'meridiana-child')], 404);
+    }
+
+    // Call delete function
+    if (!function_exists('meridiana_delete_single_archive')) {
+        wp_send_json_error(['message' => __('Funzione delete non disponibile', 'meridiana-child')], 500);
+    }
+
+    $result = meridiana_delete_single_archive($post_id, $archive_num);
+    if (!$result || (is_array($result) && isset($result['success']) && !$result['success'])) {
+        error_log("Meridiana Delete Error: " . print_r($result, true));
+        wp_send_json_error(['message' => $result['message'] ?? __('Errore durante l\'eliminazione', 'meridiana-child')], 500);
+    }
+
+    // Success response
+    wp_send_json_success([
+        'message' => __('File eliminato dallo storico', 'meridiana-child'),
+        'post_id' => $post_id,
+        'archive_num' => $archive_num,
+    ]);
+}
