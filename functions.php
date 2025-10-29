@@ -533,6 +533,8 @@ require_once MERIDIANA_CHILD_DIR . '/includes/ajax-analytics.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-media-fix.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/notification-system.php';
+require_once MERIDIANA_CHILD_DIR . '/includes/notification-frontend.php';
 require_once MERIDIANA_CHILD_DIR . '/api/analytics-api.php';
 
 /**

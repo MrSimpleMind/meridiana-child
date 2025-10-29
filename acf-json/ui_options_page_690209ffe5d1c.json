@@ -1,0 +1,26 @@
+{
+    "key": "ui_options_page_690209ffe5d1c",
+    "title": "Configurazione Notifiche",
+    "active": true,
+    "menu_order": 0,
+    "page_title": "Configurazione Notifiche",
+    "menu_slug": "configurazione-notifiche",
+    "parent_slug": "none",
+    "advanced_configuration": 1,
+    "icon_url": "",
+    "menu_title": "Notifiche",
+    "position": 75,
+    "redirect": 0,
+    "description": "",
+    "menu_icon": {
+        "type": "dashicons",
+        "value": "dashicons-bell"
+    },
+    "update_button": "Aggiorna",
+    "updated_message": "Opzioni Aggiornate",
+    "capability": "manage_options",
+    "data_storage": "options",
+    "post_id": "",
+    "autoload": 0,
+    "modified": 1761742132
+}

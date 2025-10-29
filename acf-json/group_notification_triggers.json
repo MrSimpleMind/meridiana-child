@@ -1,0 +1,208 @@
+{
+    "key": "group_notification_triggers",
+    "title": "Trigger Notifiche",
+    "fields": [
+        {
+            "key": "field_notification_triggers",
+            "label": "Trigger Notifiche",
+            "name": "notification_triggers",
+            "aria-label": "",
+            "type": "repeater",
+            "instructions": "Configura i trigger per inviare notifiche automaticamente quando vengono pubblicati contenuti",
+            "required": false,
+            "conditional_logic": false,
+            "wrapper": {
+                "width": "",
+                "class": "",
+                "id": ""
+            },
+            "button_label": "Aggiungi Trigger",
+            "layout": "table",
+            "min": 0,
+            "max": 0,
+            "collapsed": "",
+            "rows_per_page": 20,
+            "sub_fields": [
+                {
+                    "key": "field_trigger_id",
+                    "label": "Trigger ID",
+                    "name": "trigger_id",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Identificatore univoco (Es: trigger_new_protocol)",
+                    "required": 1,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "20",
+                        "class": "",
+                        "id": ""
+                    },
+                    "placeholder": "trigger_new_protocol",
+                    "default_value": "",
+                    "maxlength": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_post_type",
+                    "label": "Tipo Post",
+                    "name": "trigger_post_type",
+                    "aria-label": "",
+                    "type": "select",
+                    "instructions": "Il post type che attiva il trigger",
+                    "required": 1,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "20",
+                        "class": "",
+                        "id": ""
+                    },
+                    "choices": {
+                        "post": "Articolo",
+                        "protocollo": "Protocollo",
+                        "modulo": "Modulo",
+                        "convenzione": "Convenzione",
+                        "comunicazione": "Comunicazione"
+                    },
+                    "default_value": "post",
+                    "allow_null": 0,
+                    "multiple": 0,
+                    "ui": 1,
+                    "return_format": "value",
+                    "ajax": 0,
+                    "placeholder": "",
+                    "create_options": 0,
+                    "save_options": 0,
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_enabled",
+                    "label": "Abilitato",
+                    "name": "trigger_enabled",
+                    "aria-label": "",
+                    "type": "true_false",
+                    "instructions": "Abilita o disabilita questo trigger",
+                    "required": false,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "10",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": 1,
+                    "ui": 1,
+                    "message": "",
+                    "ui_on_text": "",
+                    "ui_off_text": "",
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_title_template",
+                    "label": "Titolo Template",
+                    "name": "trigger_title_template",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "Template: {{post_type}}, {{title}}, {{author}}, {{date}}, {{excerpt}}",
+                    "required": false,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "rows": 2,
+                    "placeholder": "Nuovo {{post_type}}: {{title}}",
+                    "default_value": "",
+                    "new_lines": "",
+                    "maxlength": "",
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_message_template",
+                    "label": "Messaggio Template",
+                    "name": "trigger_message_template",
+                    "aria-label": "",
+                    "type": "textarea",
+                    "instructions": "Template: {{post_type}}, {{title}}, {{author}}, {{date}}, {{excerpt}}",
+                    "required": false,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "50",
+                        "class": "",
+                        "id": ""
+                    },
+                    "rows": 2,
+                    "placeholder": "{{excerpt}}",
+                    "default_value": "",
+                    "new_lines": "",
+                    "maxlength": "",
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_icon_emoji",
+                    "label": "Emoji\/Icon",
+                    "name": "trigger_icon_emoji",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Emoji per la notifica",
+                    "required": false,
+                    "conditional_logic": false,
+                    "wrapper": {
+                        "width": "10",
+                        "class": "",
+                        "id": ""
+                    },
+                    "placeholder": "📬",
+                    "default_value": "",
+                    "maxlength": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_notification_triggers"
+                },
+                {
+                    "key": "field_trigger_segmentation_rule",
+                    "label": "Regola Segmentazione",
+                    "name": "trigger_segmentation_rule",
+                    "aria-label": "",
+                    "type": "text",
+                    "instructions": "Seleziona la segmentazione per questo trigger",
+                    "required": 0,
+                    "conditional_logic": 0,
+                    "wrapper": {
+                        "width": "30",
+                        "class": "",
+                        "id": ""
+                    },
+                    "default_value": "",
+                    "maxlength": "",
+                    "allow_in_bindings": 0,
+                    "placeholder": "",
+                    "prepend": "",
+                    "append": "",
+                    "parent_repeater": "field_notification_triggers"
+                }
+            ]
+        }
+    ],
+    "location": [
+        [
+            {
+                "param": "options_page",
+                "operator": "==",
+                "value": "configurazione-notifiche"
+            }
+        ]
+    ],
+    "menu_order": 0,
+    "position": "normal",
+    "style": "default",
+    "label_placement": "top",
+    "instruction_placement": "label",
+    "hide_on_screen": "",
+    "active": true,
+    "description": "Configura i trigger per le notifiche push",
+    "show_in_rest": 0,
+    "display_title": "",
+    "modified": 1761743497
+}
