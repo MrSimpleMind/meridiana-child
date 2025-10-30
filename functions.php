@@ -15,6 +15,8 @@ if (!defined('WP_MEMORY_LIMIT')) {
 define('MERIDIANA_CHILD_VERSION', '1.0.1');
 define('MERIDIANA_CHILD_DIR', get_stylesheet_directory());
 define('MERIDIANA_CHILD_URI', get_stylesheet_directory_uri());
+// Database setup
+require_once MERIDIANA_CHILD_DIR . '/includes/db-setup.php';
 
 /**
  * ENQUEUE STYLES & SCRIPTS
