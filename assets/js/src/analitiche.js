@@ -18,6 +18,31 @@ const ANALYTICS_CHART_BORDERS = [
 
 const ANALYTICS_DATA = window.meridianaAnalyticsData || {};
 
+// Mapping tra nomi lunghi (dropdown) e nomi brevi (database)
+const PROFILE_NAME_MAPPING = {
+    'coordinatore unità di offerta': 'coordinatore',
+    'coordinatore': 'coordinatore',
+    'addetto manutenzione': 'addetto_manutenzione',
+    'asa/oss': 'asa_oss',
+    'assistente sociale': 'assistente_sociale',
+    'educatore': 'educatore',
+    'fkt': 'fkt',
+    'impiegato amministrativo': 'impiegato_amministrativo',
+    'infermiere': 'infermiere',
+    'logopedista': 'logopedista',
+    'medico': 'medico',
+    'psicologa': 'psicologa',
+    'receptionista': 'receptionista',
+    'terapista occupazionale': 'terapista_occupazionale',
+    'volontari': 'volontari'
+};
+
+function normalizeProfileName(profileName) {
+    if (!profileName) return '';
+    const normalized = profileName.toLowerCase().replace(/_/g, ' ').trim();
+    return PROFILE_NAME_MAPPING[normalized] || normalized;
+}
+
 function normalizeDate(value) {
     if (!value) {
         return null;
@@ -67,7 +92,10 @@ function downloadDataset(rows, columns, filename, format = 'csv') {
     URL.revokeObjectURL(link.href);
 }
 
+console.log("[ANALITICHE.JS] File loaded and executing");
+
 document.addEventListener("alpine:init", () => {
+    console.log("[ANALITICHE.JS] alpine:init event fired - registering analyticsDashboard component");
     Alpine.data("analyticsDashboard", () => ({
         activeTab: "overview",
         ajaxUrl: "",
@@ -98,13 +126,23 @@ document.addEventListener("alpine:init", () => {
         profileRenderTimeout: null,
         profileProtocolMessage: "",
         profileModuleMessage: "",
+        // Memoria: dati aggregati di TUTTI i profili, caricati una sola volta
+        allProfilesProtocolsMemory: {},
+        allProfilesModulesMemory: {},
+        profilesDataLoaded: false,
 
         init() {
-            this.ajaxUrl = this.$refs.dashboard?.dataset.ajaxUrl || "";
-            this.nonce = this.$refs.dashboard?.dataset.nonce || "";
+            // Leggi gli attributi data-* direttamente da this.$el (elemento con x-data)
+            this.ajaxUrl = this.$el?.dataset?.ajaxUrl || "";
+            this.nonce = this.$el?.dataset?.nonce || "";
+
+            console.log("[analyticsDashboard.init] ajaxUrl:", this.ajaxUrl);
+            console.log("[analyticsDashboard.init] nonce:", this.nonce);
+
             this.fetchGlobalStats();
             this.fetchAllProfessionalProfiles();
-            this.fetchProfileViews();
+            // Carica i dati di TUTTI i profili in memoria (una sola volta)
+            this.loadAllProfilesDataInMemory();
             this.fetchContentDistribution();
         },
 
@@ -276,6 +314,123 @@ document.addEventListener("alpine:init", () => {
             });
         },
 
+        // Carica i dati aggregati di TUTTI i profili e li salva in memoria (una sola volta)
+        loadAllProfilesDataInMemory() {
+            console.log("[loadAllProfilesDataInMemory] START - Caricamento dati...");
+
+            if (typeof Chart === "undefined") {
+                console.warn("[loadAllProfilesDataInMemory] Chart non definito, uscita");
+                return;
+            }
+
+            console.log("[loadAllProfilesDataInMemory] Ajax URL:", this.ajaxUrl);
+            console.log("[loadAllProfilesDataInMemory] Nonce:", this.nonce);
+
+            Promise.all([
+                this.request({ action: "meridiana_analytics_get_views_by_profile_protocols" }),
+                this.request({ action: "meridiana_analytics_get_views_by_profile_modules" })
+            ])
+            .then(([protocolsResponse, modulesResponse]) => {
+                console.log("[loadAllProfilesDataInMemory] Responses ricevute");
+                console.log("Protocols Response:", protocolsResponse);
+                console.log("Modules Response:", modulesResponse);
+
+                // Salva in memoria i dati di TUTTI i profili
+                if (protocolsResponse.success) {
+                    // Crea un oggetto con chiave = profilo NORMALIZZATO A MINUSCOLO, valore = dati
+                    const protocolsMap = {};
+                    (protocolsResponse.data || []).forEach(item => {
+                        console.log("[loadAllProfilesDataInMemory] Protocolo item:", item);
+                        // Normalizza a minuscolo e converti underscore in spazi per la ricerca case-insensitive
+                        const keyLower = item.profilo_professionale.toLowerCase().replace(/_/g, ' ');
+                        protocolsMap[keyLower] = item;
+                    });
+                    this.allProfilesProtocolsMemory = protocolsMap;
+                    console.log("[loadAllProfilesDataInMemory] Protocols map:", this.allProfilesProtocolsMemory);
+                } else {
+                    console.error("[loadAllProfilesDataInMemory] Protocols response error:", protocolsResponse.data);
+                }
+
+                if (modulesResponse.success) {
+                    // Crea un oggetto con chiave = profilo NORMALIZZATO A MINUSCOLO, valore = dati
+                    const modulesMap = {};
+                    (modulesResponse.data || []).forEach(item => {
+                        console.log("[loadAllProfilesDataInMemory] Module item:", item);
+                        // Normalizza a minuscolo e converti underscore in spazi per la ricerca case-insensitive
+                        const keyLower = item.profilo_professionale.toLowerCase().replace(/_/g, ' ');
+                        modulesMap[keyLower] = item;
+                    });
+                    this.allProfilesModulesMemory = modulesMap;
+                    console.log("[loadAllProfilesDataInMemory] Modules map:", this.allProfilesModulesMemory);
+                } else {
+                    console.error("[loadAllProfilesDataInMemory] Modules response error:", modulesResponse.data);
+                }
+
+                this.profilesDataLoaded = true;
+                console.log("[loadAllProfilesDataInMemory] COMPLETE - Dati caricati in memoria");
+            })
+            .catch((error) => {
+                console.error("[loadAllProfilesDataInMemory] CATCH ERROR:", error);
+            });
+        },
+
+        // Legge il profilo selezionato dalla memoria e aggiorna i grafici
+        fetchProfileViewsWithFilter() {
+            console.log("[fetchProfileViewsWithFilter] START");
+
+            if (typeof Chart === "undefined") {
+                console.warn("[fetchProfileViewsWithFilter] Chart non definito, uscita");
+                return;
+            }
+
+            const selectedProfile = String(this.profileSelectedFilter);
+            console.log("[fetchProfileViewsWithFilter] selectedProfile:", selectedProfile);
+            console.log("[fetchProfileViewsWithFilter] allProfilesProtocolsMemory:", this.allProfilesProtocolsMemory);
+            console.log("[fetchProfileViewsWithFilter] allProfilesModulesMemory:", this.allProfilesModulesMemory);
+
+            // Se il selettore è vuoto, mostra il messaggio
+            if (!selectedProfile) {
+                console.log("[fetchProfileViewsWithFilter] Profile empty, showing message");
+                this.profileProtocolsData = [];
+                this.profileModulesData = [];
+                this.renderProfileCharts();
+                return;
+            }
+
+            // Legge dalla memoria (dati già caricati all'init)
+            // Normalizza il nome del profilo convertendo i nomi lunghi ai nomi brevi
+            const selectedProfileLower = normalizeProfileName(selectedProfile);
+            console.log("[fetchProfileViewsWithFilter] selectedProfileNormalized:", selectedProfileLower);
+
+            // Se il profilo non ha dati, crea un oggetto con 0
+            const protocolData = this.allProfilesProtocolsMemory[selectedProfileLower] || {
+                profilo_professionale: selectedProfile,
+                unique_users: 0,
+                unique_documents: 0
+            };
+
+            const moduleData = this.allProfilesModulesMemory[selectedProfileLower] || {
+                profilo_professionale: selectedProfile,
+                unique_users: 0,
+                unique_documents: 0
+            };
+
+            // Metti i dati nella memoria locale per il rendering
+            this.profileProtocolsData = [protocolData];
+            this.profileModulesData = [moduleData];
+
+            console.log("[fetchProfileViewsWithFilter] protocolData:", protocolData);
+            console.log("[fetchProfileViewsWithFilter] moduleData:", moduleData);
+            console.log("[fetchProfileViewsWithFilter] profileProtocolsData:", this.profileProtocolsData);
+            console.log("[fetchProfileViewsWithFilter] profileModulesData:", this.profileModulesData);
+
+            // Renderizza con i dati dalla memoria
+            this.$nextTick(() => {
+                console.log("[fetchProfileViewsWithFilter] Calling renderProfileCharts");
+                this.renderProfileCharts();
+            });
+        },
+
         getAllProfilesUnion() {
             const protocolProfiles = this.profileProtocolsData.map(item => item.profilo_professionale);
             const moduleProfiles = this.profileModulesData.map(item => item.profilo_professionale);
@@ -284,46 +439,65 @@ document.addEventListener("alpine:init", () => {
         },
 
         renderProfileChart(canvas, dataset, type, selectedFilter = "") {
+            console.log(`[renderProfileChart] START - type: ${type}, selectedFilter: ${selectedFilter}`);
+            console.log(`[renderProfileChart] canvas:`, canvas);
+            console.log(`[renderProfileChart] dataset:`, dataset);
+
             const chartRef = type === 'protocols' ? 'profileProtocolChartInstance' : 'profileModuleChartInstance';
             const messageRef = type === 'protocols' ? 'profileProtocolMessage' : 'profileModuleMessage';
 
-            // DEBUG: Log dei dati
-            console.log(`[${type}] Dataset:`, dataset);
-            console.log(`[${type}] SelectedFilter:`, selectedFilter);
+            console.log(`[renderProfileChart] chartRef: ${chartRef}, messageRef: ${messageRef}`);
 
             // Distruggi il grafico se esiste
             if (this[chartRef]) {
+                console.log(`[renderProfileChart] Destroying existing chart`);
                 this[chartRef].destroy();
                 this[chartRef] = null;
             }
 
             if (!canvas || !dataset || !dataset.length) {
+                console.warn(`[renderProfileChart] Canvas o dataset vuoto, uscita`);
                 this[messageRef] = "";
                 return;
             }
 
-            // Filtra i dati in base al profilo selezionato
+            // Filtra i dati in base al profilo selezionato (solo se selectedFilter è presente)
             let filteredData = dataset;
 
-            // Se selectedFilter non è vuoto, filtra per quel profilo
             if (selectedFilter) {
-                filteredData = dataset.filter(item => item.profilo_professionale === selectedFilter);
-                console.log(`[${type}] FilteredData:`, filteredData);
+                console.log(`[renderProfileChart] Filtrando per profilo: ${selectedFilter}`);
+                // Normalizza il nome del profilo convertendo i nomi lunghi ai nomi brevi
+                const selectedFilterNormalized = normalizeProfileName(selectedFilter);
+                // Anche i dati del database devono essere normalizzati allo stesso modo
+                const itemNormalized = normalizeProfileName(dataset[0]?.profilo_professionale || '');
+                filteredData = dataset.filter(item => normalizeProfileName(item.profilo_professionale || '') === selectedFilterNormalized);
+                console.log(`[renderProfileChart] selectedFilterNormalized: ${selectedFilterNormalized}`);
+                console.log(`[renderProfileChart] Filtered data:`, filteredData);
             }
 
             // Se non ci sono dati filtrati, mostra un messaggio
             if (!filteredData || !filteredData.length) {
                 const typeLabel = type === 'protocols' ? 'protocolli' : 'moduli';
+                console.warn(`[renderProfileChart] No filtered data, showing message`);
                 this[messageRef] = `Questo profilo professionale non ha visualizzato ${typeLabel}.`;
                 return;
             }
 
-            const labels = filteredData.map((item) => item.profilo_professionale);
+            // Determina se i dati contengono post_title (dati per documento) o no (dati aggregati per profilo)
+            const hasPostTitle = filteredData.some(item => item.post_title);
+            console.log(`[renderProfileChart] hasPostTitle: ${hasPostTitle}`);
+
+            // Genera labels: usa post_title se disponibile, altrimenti usa profilo_professionale
+            const labels = filteredData.map((item) => hasPostTitle ? item.post_title : item.profilo_professionale);
             const data = filteredData.map((item) => Number(item.unique_users));
+
+            console.log(`[renderProfileChart] labels:`, labels);
+            console.log(`[renderProfileChart] data:`, data);
 
             // Doppio controllo - se i dati sono vuoti, mostra messaggio
             if (!labels || !labels.length || !data || !data.length) {
                 const typeLabel = type === 'protocols' ? 'protocolli' : 'moduli';
+                console.warn(`[renderProfileChart] Labels o data vuoti, showing message`);
                 this[messageRef] = `Questo profilo professionale non ha visualizzato ${typeLabel}.`;
                 return;
             }
@@ -332,6 +506,7 @@ document.addEventListener("alpine:init", () => {
             this[messageRef] = "";
 
             // Crea il grafico
+            console.log(`[renderProfileChart] Creating new chart...`);
             this[chartRef] = new Chart(canvas, {
                 type: "bar",
                 data: {
@@ -362,6 +537,8 @@ document.addEventListener("alpine:init", () => {
                     }
                 }
             });
+
+            console.log(`[renderProfileChart] COMPLETE - Chart created`);
         },
 
         renderProfileCharts() {
@@ -369,6 +546,24 @@ document.addEventListener("alpine:init", () => {
             const selectedFilter = String(this.profileSelectedFilter);
             const protocolData = Array.isArray(this.profileProtocolsData) ? this.profileProtocolsData.slice() : [];
             const moduleData = Array.isArray(this.profileModulesData) ? this.profileModulesData.slice() : [];
+
+            // Se nessun profilo è selezionato, mostra messaggio
+            if (!selectedFilter) {
+                this.profileProtocolMessage = "Per favore seleziona un profilo professionale";
+                this.profileModuleMessage = "Per favore seleziona un profilo professionale";
+
+                // Distruggi i grafici se esistono
+                if (this.profileProtocolChartInstance) {
+                    this.profileProtocolChartInstance.destroy();
+                    this.profileProtocolChartInstance = null;
+                }
+                if (this.profileModuleChartInstance) {
+                    this.profileModuleChartInstance.destroy();
+                    this.profileModuleChartInstance = null;
+                }
+
+                return;
+            }
 
             // Debounce: cancella timeout precedente
             clearTimeout(this.profileRenderTimeout);

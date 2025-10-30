@@ -1,9 +1,14 @@
 export default (documentId) => ({
     startTime: null,
     documentId: documentId,
+    documentType: null,
 
     init() {
         this.startTime = Date.now();
+
+        // Ricava il document_type dal body o dal post_type del WordPress
+        this.documentType = document.body.getAttribute('data-post-type') ||
+                           (window.meridiana && window.meridiana.postType) || 'unknown';
 
         window.addEventListener('beforeunload', () => {
             this.sendView();
@@ -40,6 +45,7 @@ export default (documentId) => ({
                 },
                 body: JSON.stringify({
                     document_id: this.documentId,
+                    document_type: this.documentType,
                     duration: duration,
                 }),
                 keepalive: true,

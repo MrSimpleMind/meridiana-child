@@ -45,7 +45,7 @@ $type_label = $is_protocollo ? 'Protocollo' : 'Modulo';
 
 ?>
 
-<div class="content-wrapper">
+<div class="content-wrapper" data-post-type="<?php echo esc_attr($post_type); ?>">
     <div class="container">
         <div class="single-documento">
             

@@ -233,6 +233,8 @@ function meridiana_ajax_track_document_view() {
 
     $user_id = get_current_user_id();
     $document_id = isset($_POST['document_id']) ? intval($_POST['document_id']) : 0;
+    $document_type = isset($_POST['document_type']) ? sanitize_text_field(wp_unslash($_POST['document_type'])) : 'unknown';
+    $view_duration = isset($_POST['duration']) ? intval($_POST['duration']) : 0;
 
     if (!$document_id) {
         wp_send_json_error('Invalid document ID');
@@ -247,9 +249,11 @@ function meridiana_ajax_track_document_view() {
         array(
             'user_id' => $user_id,
             'document_id' => $document_id,
+            'document_type' => $document_type,
             'view_timestamp' => current_time('mysql'),
+            'view_duration' => $view_duration,
         ),
-        array('%d', '%d', '%s')
+        array('%d', '%d', '%s', '%s', '%d')
     );
 
     if ($inserted) {

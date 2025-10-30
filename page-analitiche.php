@@ -77,14 +77,14 @@ get_header();
                                 </div>
                             </div>
 
-                            <div class="analitiche-section" x-show="profileProtocolsData.length || profileModulesData.length" x-cloak>
+                            <div class="analitiche-section">
                                 <h2 class="analitiche-section__title">Visualizzazioni per Profilo Professionale</h2>
                                 <div class="analytics-field-group" style="max-width: 300px;">
                                     <label class="analytics-input-label" for="filter-profile-select">Filtra per profilo professionale</label>
                                     <select id="filter-profile-select"
                                             class="analytics-input"
                                             x-model="profileSelectedFilter"
-                                            @change="renderProfileCharts()">
+                                            @change="fetchProfileViewsWithFilter()">
                                         <option value="">- Selezionare -</option>
                                         <template x-for="profile in allProfessionalProfiles" :key="profile">
                                             <option :value="profile" x-text="profile"></option>

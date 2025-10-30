@@ -29,17 +29,25 @@ function meridiana_create_analytics_table() {
         user_id BIGINT NOT NULL,
         document_id BIGINT NOT NULL,
         document_type VARCHAR(50) NOT NULL,
+        user_profile VARCHAR(100) DEFAULT NULL COMMENT 'Profilo professionale al momento della visualizzazione',
         view_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         view_duration INT DEFAULT NULL COMMENT 'Secondi',
         ip_address VARCHAR(45),
         user_agent VARCHAR(255),
         INDEX user_doc_idx (user_id, document_id),
         INDEX timestamp_idx (view_timestamp),
-        INDEX document_idx (document_id, document_type)
+        INDEX document_idx (document_id, document_type),
+        INDEX profile_idx (user_profile)
     ) $charset_collate;";
-    
+
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
+
+    // Aggiungi la colonna user_profile se non esiste già
+    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'user_profile'") === null) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN user_profile VARCHAR(100) DEFAULT NULL COMMENT 'Profilo professionale al momento della visualizzazione' AFTER document_type");
+        $wpdb->query("ALTER TABLE $table_name ADD INDEX profile_idx (user_profile)");
+    }
 }
 
 // Hook su activation del tema
@@ -267,14 +275,12 @@ function meridiana_get_views_by_professional_profile($document_type) {
     $table_views = $wpdb->prefix . 'document_views';
 
     $sql = "SELECT
-                COALESCE(um.meta_value, 'Non specificato') as profilo_professionale,
+                COALESCE(dv.user_profile, 'Non specificato') as profilo_professionale,
                 COUNT(DISTINCT dv.user_id) as unique_users,
                 COUNT(DISTINCT dv.document_id) as unique_documents
             FROM $table_views dv
-            LEFT JOIN {$wpdb->users} u ON dv.user_id = u.ID
-            LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'profilo_professionale'
             WHERE dv.document_type = %s
-            GROUP BY COALESCE(um.meta_value, 'Non specificato')
+            GROUP BY COALESCE(dv.user_profile, 'Non specificato')
             ORDER BY unique_users DESC";
 
     $results = $wpdb->get_results($wpdb->prepare($sql, $document_type));
