@@ -24,30 +24,25 @@ function api_track_view($request) {
     $document_id = intval($request->get_param('document_id'));
     $duration = intval($request->get_param('duration')); // Secondi
     $document_type = get_post_type($document_id);
-    $user_id = get_current_user_id();
 
     // Validate document exists
     if (!$document_id || !in_array($document_type, ['protocollo', 'modulo'])) {
         return new WP_Error('invalid_document', 'Documento non valido', array('status' => 400));
     }
 
-    // Recupera il profilo professionale dell'utente al momento della visualizzazione
-    $user_profile = get_user_meta($user_id, 'profilo_professionale', true) ?: null;
-
     // Insert view
     $result = $wpdb->insert(
         $wpdb->prefix . 'document_views',
         array(
-            'user_id' => $user_id,
+            'user_id' => get_current_user_id(),
             'document_id' => $document_id,
             'document_type' => $document_type,
-            'user_profile' => $user_profile,
             'view_timestamp' => current_time('mysql'),
             'view_duration' => $duration,
             'ip_address' => $_SERVER['REMOTE_ADDR'],
             'user_agent' => $_SERVER['HTTP_USER_AGENT'],
         ),
-        array('%d', '%d', '%s', '%s', '%s', '%d', '%s', '%s')
+        array('%d', '%d', '%s', '%s', '%d', '%s', '%s')
     );
 
     if ($result === false) {
