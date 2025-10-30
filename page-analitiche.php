@@ -31,6 +31,10 @@ get_header();
                             <i data-lucide="activity"></i>
                             <span>Panoramica</span>
                         </button>
+                        <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'matrix' }" @click="setTab('matrix')">
+                            <i data-lucide="grid-3x3"></i>
+                            <span>Matrice</span>
+                        </button>
                         <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'users' }" @click="setTab('users')">
                             <i data-lucide="user"></i>
                             <span>Analisi utenti</span>
@@ -47,13 +51,57 @@ get_header();
                 <div class="container">
                     <div class="dashboard-content">
                         <div class="dashboard-tab-pane" x-show="activeTab === 'overview'" x-cloak>
-                            <div class="analitiche-section">
-                                <h2 class="analitiche-section__title">Statistiche Globali</h2>
-                                <div class="stats-cards-grid stats-cards-grid--compact" id="globalStatsCards" x-ref="globalStats">
-                                    <div class="stat-card loading">
-                                        <span class="stat-card__value">...</span>
-                                        <span class="stat-card__label">Caricamento Utenti</span>
+                            <!-- HERO SECTION: Utenti Totali + Breakdown -->
+                            <div class="analitiche-users-hero">
+                                <div class="analitiche-users-hero__left">
+                                    <div class="analitiche-users-hero__number" x-text="globalStatsTotalUsers || '—'"></div>
+                                    <p class="analitiche-users-hero__subtitle">Utenti attivi</p>
+
+                                    <div class="analitiche-users-hero__status-breakdown">
+                                        <div class="status-item">
+                                            <span class="status-item__icon" style="background-color: #10b981;"></span>
+                                            <span class="status-item__label">Attivi</span>
+                                            <span class="status-item__count" x-text="usersStatusBreakdown?.attivo || '0'"></span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item__icon" style="background-color: #f59e0b;"></span>
+                                            <span class="status-item__label">Sospesi</span>
+                                            <span class="status-item__count" x-text="usersStatusBreakdown?.sospeso || '0'"></span>
+                                        </div>
+                                        <div class="status-item">
+                                            <span class="status-item__icon" style="background-color: #ef4444;"></span>
+                                            <span class="status-item__label">Licenziati</span>
+                                            <span class="status-item__count" x-text="usersStatusBreakdown?.licenziato || '0'"></span>
+                                        </div>
                                     </div>
+                                </div>
+
+                                <div class="analitiche-users-hero__center">
+                                    <div class="analytics-loading" x-show="usersBreakdownLoading" x-cloak>
+                                        <span class="loading-spinner"><i data-lucide="loader"></i> Caricamento...</span>
+                                    </div>
+                                    <div class="analitiche-users-hero__chart-container" x-show="!usersBreakdownLoading" x-cloak>
+                                        <canvas id="usersBreakdownChart" x-ref="usersBreakdownChart"></canvas>
+                                    </div>
+                                </div>
+
+                                <div class="analitiche-users-hero__right">
+                                    <div class="analitiche-users-hero__legend" x-show="!usersBreakdownLoading" x-cloak>
+                                        <template x-for="profile in usersBreakdownProfiles" :key="profile.key">
+                                            <div class="legend-item">
+                                                <span class="legend-item__dot" :style="'background-color: ' + getProfileColor(profile.key)"></span>
+                                                <span class="legend-item__label" x-text="profile.label"></span>
+                                                <span class="legend-item__count" x-text="profile.count"></span>
+                                            </div>
+                                        </template>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- GRID DI STATISTICHE SECONDARIE -->
+                            <div class="analitiche-section analitiche-section--no-shadow">
+                                <h2 class="analitiche-section__title">Altre Statistiche</h2>
+                                <div class="stats-cards-grid stats-cards-grid--compact" id="globalStatsCards" x-ref="globalStats">
                                     <div class="stat-card loading">
                                         <span class="stat-card__value">...</span>
                                         <span class="stat-card__label">Caricamento Protocolli</span>
@@ -76,49 +124,20 @@ get_header();
                                     </div>
                                 </div>
                             </div>
+                        </div>
 
+                        <div class="dashboard-tab-pane" x-show="activeTab === 'matrix'" x-cloak>
                             <div class="analitiche-section">
-                                <h2 class="analitiche-section__title">Visualizzazioni per Profilo Professionale</h2>
-                                <div class="analytics-field-group" style="max-width: 300px;">
-                                    <label class="analytics-input-label" for="filter-profile-select">Filtra per profilo professionale</label>
-                                    <select id="filter-profile-select"
-                                            class="analytics-input"
-                                            x-model="profileSelectedFilter"
-                                            @change="fetchProfileViewsWithFilter()">
-                                        <option value="">- Selezionare -</option>
-                                        <template x-for="profile in allProfessionalProfiles" :key="profile">
-                                            <option :value="profile" x-text="profile"></option>
-                                        </template>
-                                    </select>
+                                <h2 class="analitiche-section__title">Matrice Protocolli × Profili Professionali</h2>
+                                <p class="analitiche-section__description">Visualizzazioni uniche per combinazione protocollo/profilo con percentuale di engagement</p>
+                                <div class="protocol-grid-container" x-ref="protocolGrid" x-show="!gridLoading" x-cloak>
+                                    <!-- Caricato dinamicamente da Alpine.js -->
                                 </div>
-
-                                <div class="profile-charts-grid">
-                                    <div class="analitiche-section analitiche-section--chart">
-                                        <h3 class="analitiche-section__subtitle">Protocolli</h3>
-                                        <div class="chart-container">
-                                            <canvas id="profileProtocolChart" x-ref="profileProtocolChart" x-show="!profileProtocolMessage" x-cloak></canvas>
-                                            <template x-if="profileProtocolMessage">
-                                                <div class="analytics-empty" x-text="profileProtocolMessage"></div>
-                                            </template>
-                                        </div>
-                                    </div>
-
-                                    <div class="analitiche-section analitiche-section--chart">
-                                        <h3 class="analitiche-section__subtitle">Moduli</h3>
-                                        <div class="chart-container">
-                                            <canvas id="profileModuleChart" x-ref="profileModuleChart" x-show="!profileModuleMessage" x-cloak></canvas>
-                                            <template x-if="profileModuleMessage">
-                                                <div class="analytics-empty" x-text="profileModuleMessage"></div>
-                                            </template>
-                                        </div>
-                                    </div>
+                                <div class="analytics-loading" x-show="gridLoading" x-cloak>
+                                    <span class="loading-spinner"><i data-lucide="loader"></i> Caricamento griglia...</span>
                                 </div>
-                            </div>
-
-                            <div class="analitiche-section">
-                                <h2 class="analitiche-section__title">Distribuzione Contenuti</h2>
-                                <div class="chart-container">
-                                    <canvas id="contentDistributionChart" x-ref="contentChart"></canvas>
+                                <div class="analytics-error" x-show="gridError" x-cloak>
+                                    <p x-text="gridError"></p>
                                 </div>
                             </div>
                         </div>
@@ -211,7 +230,7 @@ get_header();
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                    <template x-for="view in sortedUserViews()" :key="view.document_id">
+                                                    <template x-for="view in sortedUserViews()" :key="view.document_id + '-' + view.document_version">
                                                         <tr>
                                                             <td>
                                                                 <span class="analytics-table__title" x-text="view.post_title"></span>

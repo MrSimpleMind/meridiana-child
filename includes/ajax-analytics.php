@@ -46,16 +46,15 @@ function meridiana_ajax_analytics_search_users() {
     $results = array();
     foreach ($users as $user) {
         // Recupera il valore UDO (è una stringa key, non un term ID)
-        $udo_value = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
+        $udo_label = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
         
-        // Se la funzione ACF non è disponibile, fallback a get_user_meta
-        if (!$udo_value) {
-            $udo_value = get_user_meta($user->ID, 'udo_riferimento', true);
+        // Se la funzione ACF non è disponibile o il campo è vuoto, fallback a get_user_meta
+        if (!$udo_label) {
+            $udo_label = get_user_meta($user->ID, 'udo_riferimento', true);
         }
         
-        // Mappa il valore alla label UDO
-        $udo_label = null;
-        if ($udo_value) {
+        // Se il valore è ancora una chiave (es. 'ambulatori'), mappalo alla label
+        if ($udo_label && !in_array($udo_label, array('Ambulatori', 'AP', 'CDI', 'Cure Domiciliari', 'Hospice', 'Paese', 'R20', 'RSA', 'RSA Aperta', 'RSD'))) {
             $default_udo_choices = array(
                 'ambulatori' => 'Ambulatori',
                 'ap' => 'AP',
@@ -68,7 +67,7 @@ function meridiana_ajax_analytics_search_users() {
                 'rsa_aperta' => 'RSA Aperta',
                 'rsd' => 'RSD',
             );
-            $udo_label = isset($default_udo_choices[$udo_value]) ? $default_udo_choices[$udo_value] : $udo_value;
+            $udo_label = isset($default_udo_choices[$udo_label]) ? $default_udo_choices[$udo_label] : $udo_label;
         }
         
         $results[] = array(
@@ -149,32 +148,30 @@ function register_analytics_rest_routes() {
             
             $results = array();
             foreach ($users as $user) {
-                // Recupera il valore UDO (è una stringa key, non un term ID)
-                $udo_value = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
-                
-                // Se la funzione ACF non è disponibile, fallback a get_user_meta
-                if (!$udo_value) {
-                    $udo_value = get_user_meta($user->ID, 'udo_riferimento', true);
-                }
-                
-                // Mappa il valore alla label UDO
-                $udo_label = null;
-                if ($udo_value) {
-                    $default_udo_choices = array(
-                        'ambulatori' => 'Ambulatori',
-                        'ap' => 'AP',
-                        'cdi' => 'CDI',
-                        'cure_domiciliari' => 'Cure Domiciliari',
-                        'hospice' => 'Hospice',
-                        'paese' => 'Paese',
-                        'r20' => 'R20',
-                        'rsa' => 'RSA',
-                        'rsa_aperta' => 'RSA Aperta',
-                        'rsd' => 'RSD',
-                    );
-                    $udo_label = isset($default_udo_choices[$udo_value]) ? $default_udo_choices[$udo_value] : $udo_value;
-                }
-                
+                            // Recupera il valore UDO (è una stringa key, non un term ID)
+                            $udo_label = get_field('field_udo_riferimento_user', 'user_' . $user->ID);
+                            
+                            // Se la funzione ACF non è disponibile o il campo è vuoto, fallback a get_user_meta
+                            if (!$udo_label) {
+                                $udo_label = get_user_meta($user->ID, 'udo_riferimento', true);
+                            }
+                            
+                            // Se il valore è ancora una chiave (es. 'ambulatori'), mappalo alla label
+                            if ($udo_label && !in_array($udo_label, array('Ambulatori', 'AP', 'CDI', 'Cure Domiciliari', 'Hospice', 'Paese', 'R20', 'RSA', 'RSA Aperta', 'RSD'))) {
+                                $default_udo_choices = array(
+                                    'ambulatori' => 'Ambulatori',
+                                    'ap' => 'AP',
+                                    'cdi' => 'CDI',
+                                    'cure_domiciliari' => 'Cure Domiciliari',
+                                    'hospice' => 'Hospice',
+                                    'paese' => 'Paese',
+                                    'r20' => 'R20',
+                                    'rsa' => 'RSA',
+                                    'rsa_aperta' => 'RSA Aperta',
+                                    'rsd' => 'RSD',
+                                );
+                                $udo_label = isset($default_udo_choices[$udo_label]) ? $default_udo_choices[$udo_label] : $udo_label;
+                            }                
                 $results[] = array(
                     'ID' => $user->ID,
                     'display_name' => $user->display_name,
@@ -218,6 +215,101 @@ function meridiana_ajax_get_global_stats() {
 add_action('wp_ajax_meridiana_analytics_get_global_stats', 'meridiana_ajax_get_global_stats');
 
 /**
+ * AJAX: Get Users Breakdown by Professional Profile
+ * Action: meridiana_analytics_get_users_by_profile
+ *
+ * Restituisce:
+ * - Conteggio utenti per profilo professionale (con label)
+ * - Conteggio totale per stato (attivo, sospeso, licenziato)
+ */
+function meridiana_ajax_get_users_by_profile() {
+    check_ajax_referer('wp_rest', 'nonce');
+
+    if (!meridiana_user_can_view_analytics()) {
+        wp_send_json_error(array('message' => 'Permessi insufficienti.'));
+    }
+
+    global $wpdb;
+
+    // Mappa delle label dei profili (da ACF)
+    $profile_labels = array(
+        'addetto_manutenzione' => 'Addetto Manutenzione',
+        'asa_oss' => 'ASA/OSS',
+        'assistente_sociale' => 'Assistente Sociale',
+        'coordinatore' => 'Coordinatore Unità di Offerta',
+        'educatore' => 'Educatore',
+        'fkt' => 'FKT',
+        'impiegato_amministrativo' => 'Impiegato Amministrativo',
+        'infermiere' => 'Infermiere',
+        'logopedista' => 'Logopedista',
+        'medico' => 'Medico',
+        'psicologa' => 'Psicologa',
+        'receptionista' => 'Receptionista',
+        'terapista_occupazionale' => 'Terapista Occupazionale',
+        'volontari' => 'Volontari',
+    );
+
+    // Query 1: Conta utenti per profilo professionale
+    $users_by_profile = $wpdb->get_results("
+        SELECT
+            um.meta_value as profile_key,
+            COUNT(DISTINCT um.user_id) as user_count
+        FROM {$wpdb->usermeta} um
+        WHERE um.meta_key = 'profilo_professionale'
+            AND um.meta_value IS NOT NULL
+            AND um.meta_value != ''
+        GROUP BY um.meta_value
+        ORDER BY user_count DESC
+    ");
+
+    if (!is_array($users_by_profile)) {
+        $users_by_profile = array();
+    }
+
+    // Formatta i dati per il chart (con label)
+    $profiles_breakdown = array();
+    foreach ($users_by_profile as $item) {
+        $label = isset($profile_labels[$item->profile_key]) ? $profile_labels[$item->profile_key] : $item->profile_key;
+        $profiles_breakdown[] = array(
+            'key' => $item->profile_key,
+            'label' => $label,
+            'count' => intval($item->user_count),
+        );
+    }
+
+    // Query 2: Conta utenti per stato
+    $users_by_status = $wpdb->get_results("
+        SELECT
+            COALESCE(um.meta_value, 'attivo') as status,
+            COUNT(DISTINCT um.user_id) as user_count
+        FROM {$wpdb->users} u
+        LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'stato_utente'
+        WHERE u.user_login NOT IN ('admin')
+        GROUP BY COALESCE(um.meta_value, 'attivo')
+    ");
+
+    $status_breakdown = array(
+        'attivo' => 0,
+        'sospeso' => 0,
+        'licenziato' => 0,
+    );
+
+    if (is_array($users_by_status)) {
+        foreach ($users_by_status as $item) {
+            if (isset($status_breakdown[$item->status])) {
+                $status_breakdown[$item->status] = intval($item->user_count);
+            }
+        }
+    }
+
+    wp_send_json_success(array(
+        'profiles' => $profiles_breakdown,
+        'status' => $status_breakdown,
+    ));
+}
+add_action('wp_ajax_meridiana_analytics_get_users_by_profile', 'meridiana_ajax_get_users_by_profile');
+
+/**
  * AJAX: Track Document View
  * Action: meridiana_track_document_view
  */
@@ -240,20 +332,47 @@ function meridiana_ajax_track_document_view() {
         wp_send_json_error('Invalid document ID');
     }
 
+    // Recupera il profilo professionale dell'utente AL MOMENTO DELLA VISUALIZZAZIONE
+    $user_profile = get_user_meta($user_id, 'profilo_professionale', true) ?: null;
+    // Recupera l'UDO dell'utente AL MOMENTO DELLA VISUALIZZAZIONE
+    $user_udo = get_user_meta($user_id, 'udo_riferimento', true) ?: null;
+
+    // Recupera il timestamp di ultima modifica del documento (document_version)
+    $document_post = get_post($document_id);
+    $document_version = ($document_post && $document_post->post_modified_gmt !== '0000-00-00 00:00:00') ? $document_post->post_modified_gmt : current_time('mysql', true);
+
     global $wpdb;
     $table_name = $wpdb->prefix . 'document_views';
 
-    // Insert view into database
+    // Verifica se esiste già una visualizzazione unica per questo utente, documento e versione
+    $existing_view = $wpdb->get_row($wpdb->prepare(
+        "SELECT id FROM $table_name WHERE user_id = %d AND document_id = %d AND document_version = %s",
+        $user_id,
+        $document_id,
+        $document_version
+    ));
+
+    if ($existing_view) {
+        // Se la visualizzazione unica esiste già, non fare nulla
+        wp_send_json_success('Visualizzazione unica già registrata.');
+    }
+
+    // Inserisci nuova visualizzazione
     $inserted = $wpdb->insert(
         $table_name,
         array(
             'user_id' => $user_id,
             'document_id' => $document_id,
             'document_type' => $document_type,
+            'user_profile' => $user_profile,
+            'user_udo' => $user_udo,
+            'document_version' => $document_version,
             'view_timestamp' => current_time('mysql'),
             'view_duration' => $view_duration,
+            'ip_address' => $_SERVER['REMOTE_ADDR'],
+            'user_agent' => $_SERVER['HTTP_USER_AGENT'],
         ),
-        array('%d', '%d', '%s', '%s', '%d')
+        array('%d', '%d', '%s', '%s', '%s', '%s', '%s', '%d', '%s', '%s')
     );
 
     if ($inserted) {
@@ -440,9 +559,26 @@ function meridiana_ajax_analytics_get_all_professional_profiles() {
             'Volontari'
         );
 
-        sort($profiles);
+        $udos = array(
+            'Ambulatori',
+            'AP',
+            'CDI',
+            'Cure Domiciliari',
+            'Hospice',
+            'Paese',
+            'R20',
+            'RSA',
+            'RSA Aperta',
+            'RSD'
+        );
 
-        wp_send_json_success($profiles);
+        sort($profiles);
+        sort($udos);
+
+        wp_send_json_success(array(
+            'profiles' => $profiles,
+            'udos' => $udos,
+        ));
     } catch (Exception $e) {
         error_log('Errore meridiana_ajax_analytics_get_all_professional_profiles: ' . $e->getMessage());
         wp_send_json_error(array('message' => $e->getMessage()));

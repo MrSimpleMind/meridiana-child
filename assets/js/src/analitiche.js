@@ -100,10 +100,35 @@ document.addEventListener("alpine:init", () => {
         activeTab: "overview",
         ajaxUrl: "",
         nonce: "",
+        gridLoading: false,
+        gridError: "",
+        protocolGridData: null,
         chartInstance: null,
         profileProtocolChartInstance: null,
         profileModuleChartInstance: null,
+        usersBreakdownChartInstance: null,
+        usersBreakdownLoading: false,
+        usersBreakdownProfiles: [],
+        usersStatusBreakdown: { attivo: 0, sospeso: 0, licenziato: 0 },
+        globalStatsTotalUsers: 0,
         globalStatsError: "",
+        // Colori per i profili
+        profileColors: [
+            'rgba(6, 182, 212, 0.8)',      // Cyan
+            'rgba(34, 197, 94, 0.8)',      // Green
+            'rgba(249, 115, 22, 0.8)',     // Orange
+            'rgba(168, 85, 247, 0.8)',     // Purple
+            'rgba(59, 130, 246, 0.8)',     // Blue
+            'rgba(239, 68, 68, 0.8)',      // Red
+            'rgba(236, 72, 153, 0.8)',     // Pink
+            'rgba(30, 144, 255, 0.8)',     // DodgerBlue
+            'rgba(255, 165, 0, 0.8)',      // Orange
+            'rgba(72, 219, 251, 0.8)',     // LightBlue
+            'rgba(156, 39, 176, 0.8)',     // Purple
+            'rgba(0, 188, 212, 0.8)',      // Cyan
+            'rgba(76, 175, 80, 0.8)',      // Green
+            'rgba(244, 67, 54, 0.8)',      // Red
+        ],
         userQuery: "",
         userResults: [],
         userSelected: null,
@@ -140,10 +165,172 @@ document.addEventListener("alpine:init", () => {
             console.log("[analyticsDashboard.init] nonce:", this.nonce);
 
             this.fetchGlobalStats();
+            this.fetchUsersBreakdown();
             this.fetchAllProfessionalProfiles();
             // Carica i dati di TUTTI i profili in memoria (una sola volta)
             this.loadAllProfilesDataInMemory();
             this.fetchContentDistribution();
+            // Carica la griglia protocolli × profili
+            this.fetchProtocolGrid();
+        },
+
+        // -------------------- Griglia Protocolli × Profili --------------------
+        fetchProtocolGrid() {
+            console.log("[fetchProtocolGrid] START");
+            console.log("[fetchProtocolGrid] nonce:", this.nonce);
+
+            this.gridLoading = true;
+            this.gridError = "";
+
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+
+            // Aggiungi nonce se disponibile
+            if (this.nonce) {
+                headers['X-WP-Nonce'] = this.nonce;
+            }
+
+            console.log("[fetchProtocolGrid] headers:", headers);
+
+            fetch('/wp-json/piattaforma/v1/analytics/protocol-grid', {
+                method: 'GET',
+                headers: headers
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log("[fetchProtocolGrid] Response:", data);
+
+                if (!data.success) {
+                    throw new Error(data.data?.message || 'Errore nel caricamento della griglia');
+                }
+
+                this.protocolGridData = data.data;
+                this.$nextTick(() => {
+                    this.renderProtocolGrid();
+                });
+            })
+            .catch(error => {
+                console.error("[fetchProtocolGrid] Error:", error);
+                this.gridError = error.message || 'Errore nel caricamento della griglia';
+            })
+            .finally(() => {
+                this.gridLoading = false;
+            });
+        },
+
+        renderProtocolGrid() {
+            console.log("[renderProtocolGrid] START");
+
+            const container = this.$refs.protocolGrid;
+            if (!container || !this.protocolGridData) {
+                return;
+            }
+
+            const { protocols, profile_headers, total_protocols, total_profiles } = this.protocolGridData;
+
+            console.log("[renderProtocolGrid] Total protocols:", total_protocols);
+            console.log("[renderProtocolGrid] Total profiles:", total_profiles);
+            console.log("[renderProtocolGrid] Protocols data:", protocols);
+
+            if (!protocols || protocols.length === 0) {
+                container.innerHTML = '<div class="analytics-empty"><p>Nessun protocollo pubblicato nel sistema.</p></div>';
+                return;
+            }
+
+            // Intestazioni e contatori
+            let html = `
+                <div class="protocol-grid-info">
+                    <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
+                    <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
+                </div>
+                <div class="protocol-grid-wrapper">
+                    <table class="protocol-grid-table">
+                        <thead>
+                            <tr>
+                                <th class="protocol-grid__th-protocol">Protocollo</th>
+            `;
+
+            // Intestazioni profili
+            if (profile_headers && profile_headers.length > 0) {
+                profile_headers.forEach(header => {
+                    html += `<th class="protocol-grid__th-profile" title="${header.name} (${header.total_users} utenti)">
+                        <span class="protocol-grid__th-name">${header.name}</span>
+                        <span class="protocol-grid__th-count">(${header.total_users})</span>
+                    </th>`;
+                });
+            }
+
+            html += `
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+
+            // Righe protocolli
+            protocols.forEach(protocol => {
+                html += `<tr class="protocol-grid__row">
+                    <td class="protocol-grid__td-protocol">
+                        <strong>${protocol.document_title}</strong>
+                    </td>
+                `;
+
+                if (profile_headers && profile_headers.length > 0) {
+                    profile_headers.forEach(header => {
+                        const profileData = protocol.profiles[header.name];
+                        const cellClass = this.getGridCellClass(profileData?.percentage || 0);
+
+                        // Se unique_users è 0, mostra come "Non visto"
+                        const cellContent = profileData && profileData.unique_users > 0
+                            ? `<span class="protocol-grid__count">${profileData.unique_users}</span><span class="protocol-grid__percentage">${profileData.percentage}%</span>`
+                            : '<span class="protocol-grid__empty">—</span>';
+
+                        html += `<td class="protocol-grid__td-profile ${cellClass}" title="Visualizzazioni: ${profileData?.unique_users || 0} su ${profileData?.total_users || 0}">
+                            ${cellContent}
+                        </td>`;
+                    });
+                }
+
+                html += `</tr>`;
+            });
+
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+                <div class="protocol-grid-legend">
+                    <div class="protocol-grid-legend__item">
+                        <span class="protocol-grid-legend__color protocol-grid-legend__color--green"></span>
+                        <span>≥ 75% Eccellente</span>
+                    </div>
+                    <div class="protocol-grid-legend__item">
+                        <span class="protocol-grid-legend__color protocol-grid-legend__color--yellow"></span>
+                        <span>50-75% Buono</span>
+                    </div>
+                    <div class="protocol-grid-legend__item">
+                        <span class="protocol-grid-legend__color protocol-grid-legend__color--orange"></span>
+                        <span>25-50% Medio</span>
+                    </div>
+                    <div class="protocol-grid-legend__item">
+                        <span class="protocol-grid-legend__color protocol-grid-legend__color--red"></span>
+                        <span>&lt; 25% Scarso</span>
+                    </div>
+                    <div class="protocol-grid-legend__item">
+                        <span class="protocol-grid-legend__color protocol-grid-legend__color--empty"></span>
+                        <span>0% Non visualizzato</span>
+                    </div>
+                </div>
+            `;
+
+            container.innerHTML = html;
+            console.log("[renderProtocolGrid] COMPLETE - Rendered " + protocols.length + " protocols");
+        },
+
+        getGridCellClass(percentage) {
+            if (percentage >= 75) return 'protocol-grid__cell--excellent';
+            if (percentage >= 50) return 'protocol-grid__cell--good';
+            if (percentage >= 25) return 'protocol-grid__cell--medium';
+            return 'protocol-grid__cell--poor';
         },
 
         setTab(tab) {
@@ -185,8 +372,10 @@ document.addEventListener("alpine:init", () => {
         },
 
         renderGlobalStats(target, stats) {
+            // Salva il totale utenti per usarlo nella hero section
+            this.globalStatsTotalUsers = stats.total_users || 0;
+
             const cards = [
-                { label: "Utenti Totali", value: stats.total_users },
                 { label: "Protocolli Pubblicati", value: stats.total_protocols },
                 { label: "Moduli Pubblicati", value: stats.total_modules },
                 { label: "Convenzioni Pubblicate", value: stats.total_convenzioni },
@@ -207,6 +396,92 @@ document.addEventListener("alpine:init", () => {
                 .join("");
 
             target.innerHTML = markup;
+        },
+
+        // -------------------- Breakdown Utenti per Profilo --------------------
+        fetchUsersBreakdown() {
+            console.log("[fetchUsersBreakdown] START");
+
+            this.usersBreakdownLoading = true;
+
+            this.request({ action: "meridiana_analytics_get_users_by_profile" })
+                .then((data) => {
+                    console.log("[fetchUsersBreakdown] Response:", data);
+                    if (!data.success) {
+                        throw data.data || "Errore nel caricamento";
+                    }
+
+                    // Estrai profili e status dall'oggetto data.data
+                    this.usersBreakdownProfiles = data.data.profiles || [];
+                    this.usersStatusBreakdown = data.data.status || { attivo: 0, sospeso: 0, licenziato: 0 };
+
+                    console.log("[fetchUsersBreakdown] Profiles:", this.usersBreakdownProfiles);
+                    console.log("[fetchUsersBreakdown] Status:", this.usersStatusBreakdown);
+
+                    this.$nextTick(() => {
+                        this.renderUsersBreakdownChart();
+                    });
+                })
+                .catch((error) => {
+                    console.error("[fetchUsersBreakdown] Error:", error);
+                })
+                .finally(() => {
+                    this.usersBreakdownLoading = false;
+                });
+        },
+
+        renderUsersBreakdownChart() {
+            console.log("[renderUsersBreakdownChart] START");
+
+            const canvas = this.$refs.usersBreakdownChart;
+            if (!canvas || typeof Chart === "undefined" || !this.usersBreakdownProfiles || this.usersBreakdownProfiles.length === 0) {
+                return;
+            }
+
+            // Prepara i dati per il chart (pie)
+            const labels = this.usersBreakdownProfiles.map(item => item.label);
+            const counts = this.usersBreakdownProfiles.map(item => item.count);
+            const colors = this.usersBreakdownProfiles.map((item, idx) => this.profileColors[idx % this.profileColors.length]);
+
+            if (this.usersBreakdownChartInstance) {
+                this.usersBreakdownChartInstance.destroy();
+            }
+
+            this.usersBreakdownChartInstance = new Chart(canvas, {
+                type: 'doughnut',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: colors,
+                        borderColor: colors.map(c => c.replace('0.8', '1')),
+                        borderWidth: 2,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            display: false  // Usiamo la legenda custom a destra
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    return context.label + ': ' + context.parsed + ' utenti';
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            console.log("[renderUsersBreakdownChart] COMPLETE");
+        },
+
+        getProfileColor(profileKey) {
+            const idx = this.usersBreakdownProfiles.findIndex(p => p.key === profileKey);
+            return idx >= 0 ? this.profileColors[idx % this.profileColors.length] : '#ccc';
         },
 
         fetchContentDistribution() {
@@ -279,7 +554,9 @@ document.addEventListener("alpine:init", () => {
             this.request({ action: "meridiana_analytics_get_all_professional_profiles" })
                 .then((data) => {
                     if (data.success) {
-                        this.allProfessionalProfiles = data.data || [];
+                        this.allProfessionalProfiles = data.data.profiles || [];
+                        // Potresti voler salvare anche le UDOs se necessario per altri filtri
+                        // this.allUdos = data.data.udos || [];
                     }
                 })
                 .catch((error) => {
@@ -659,7 +936,11 @@ document.addEventListener("alpine:init", () => {
                 views.sort((a, b) => {
                     const dateA = new Date(normalizeDate(a.last_view || ""));
                     const dateB = new Date(normalizeDate(b.last_view || ""));
-                    return dateB - dateA;
+                    if (dateB - dateA !== 0) return dateB - dateA; // Ordina per data
+                    // Se le date sono uguali, ordina per versione del documento (più recente prima)
+                    const versionA = new Date(normalizeDate(a.document_version || ""));
+                    const versionB = new Date(normalizeDate(b.document_version || ""));
+                    return versionB - versionA;
                 });
             }
 
@@ -758,7 +1039,11 @@ document.addEventListener("alpine:init", () => {
                 viewers.sort((a, b) => {
                     const dateA = new Date(normalizeDate(a.last_view || ""));
                     const dateB = new Date(normalizeDate(b.last_view || ""));
-                    return dateB - dateA;
+                    if (dateB - dateA !== 0) return dateB - dateA; // Ordina per data
+                    // Se le date sono uguali, ordina per versione del documento (più recente prima)
+                    const versionA = new Date(normalizeDate(a.document_version || ""));
+                    const versionB = new Date(normalizeDate(b.document_version || ""));
+                    return versionB - versionA;
                 });
             }
 
@@ -781,6 +1066,7 @@ document.addEventListener("alpine:init", () => {
             const rows = this.sortedUserViews();
             const columns = [
                 { key: 'post_title', label: 'Documento' },
+                { key: 'document_version', label: 'Versione Documento', formatter: (row) => formatDateValue(row.document_version) },
                 { key: 'post_type', label: 'Tipo', formatter: (row) => this.formatDocumentType(row.post_type) },
                 { key: 'view_count', label: 'Visualizzazioni' },
                 { key: 'last_view', label: 'Ultima visualizzazione', formatter: (row) => formatDateValue(row.last_view) },
@@ -799,6 +1085,7 @@ document.addEventListener("alpine:init", () => {
             const columns = [
                 { key: 'display_name', label: 'Nome' },
                 { key: 'user_email', label: 'Email' },
+                { key: 'document_version', label: 'Versione Documento', formatter: (row) => formatDateValue(row.document_version) },
                 { key: 'view_count', label: 'Visualizzazioni' },
                 { key: 'last_view', label: 'Ultima visualizzazione', formatter: (row) => formatDateValue(row.last_view) },
             ];

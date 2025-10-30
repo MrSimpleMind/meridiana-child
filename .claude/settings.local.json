@@ -13,7 +13,12 @@
       "Bash(npm run build:scss:pages:*)",
       "Bash(test:*)",
       "Bash(git check-ignore:*)",
-      "Bash(cat:*)"
+      "Bash(cat:*)",
+      "Read(//c/Users/strik/Downloads/**)",
+      "Bash(wp db query:*)",
+      "Read(//c/Users/strik/Local Sites/nuova-formazione/app/**)",
+      "Bash(npm run build:js:*)",
+      "Bash(npm run build:*)"
     ]
   },
   "outputStyle": "default"

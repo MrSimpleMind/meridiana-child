@@ -30,23 +30,47 @@ function meridiana_create_analytics_table() {
         document_id BIGINT NOT NULL,
         document_type VARCHAR(50) NOT NULL,
         user_profile VARCHAR(100) DEFAULT NULL COMMENT 'Profilo professionale al momento della visualizzazione',
+        user_udo VARCHAR(100) DEFAULT NULL COMMENT 'Unità di Offerta al momento della visualizzazione',
+        document_version DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT 'Timestamp di ultima modifica del documento al momento della visualizzazione',
         view_timestamp DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
         view_duration INT DEFAULT NULL COMMENT 'Secondi',
         ip_address VARCHAR(45),
         user_agent VARCHAR(255),
-        INDEX user_doc_idx (user_id, document_id),
+        UNIQUE KEY unique_view_idx (user_id, document_id, document_version),
         INDEX timestamp_idx (view_timestamp),
         INDEX document_idx (document_id, document_type),
-        INDEX profile_idx (user_profile)
+        INDEX profile_idx (user_profile),
+        INDEX udo_idx (user_udo)
     ) $charset_collate;";
 
     require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
     dbDelta($sql);
 
-    // Aggiungi la colonna user_profile se non esiste
+    // Aggiungi la colonna user_profile se non esiste (per compatibilità con versioni precedenti)
     if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'user_profile'") === null) {
         $wpdb->query("ALTER TABLE $table_name ADD COLUMN user_profile VARCHAR(100) DEFAULT NULL AFTER document_type");
         $wpdb->query("ALTER TABLE $table_name ADD INDEX profile_idx (user_profile)");
+    }
+
+    // Aggiungi la colonna user_udo se non esiste
+    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'user_udo'") === null) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN user_udo VARCHAR(100) DEFAULT NULL AFTER user_profile");
+        $wpdb->query("ALTER TABLE $table_name ADD INDEX udo_idx (user_udo)");
+    }
+
+    // Aggiungi la colonna document_version se non esiste
+    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'document_version'") === null) {
+        $wpdb->query("ALTER TABLE $table_name ADD COLUMN document_version DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER document_type");
+    }
+
+    // Rimuovi il vecchio indice user_doc_idx se esiste
+    if ($wpdb->get_var("SHOW INDEX FROM $table_name WHERE Key_name = 'user_doc_idx'") !== null) {
+        $wpdb->query("ALTER TABLE $table_name DROP INDEX user_doc_idx");
+    }
+
+    // Aggiungi l'indice UNIQUE unique_view_idx se non esiste
+    if ($wpdb->get_var("SHOW INDEX FROM $table_name WHERE Key_name = 'unique_view_idx'") === null) {
+        $wpdb->query("ALTER TABLE $table_name ADD UNIQUE KEY unique_view_idx (user_id, document_id, document_version)");
     }
 }
 
@@ -161,7 +185,7 @@ function meridiana_get_document_views($document_id, $args = array()) {
     $table = $wpdb->prefix . 'document_views';
     
     if ($args['unique']) {
-        $sql = "SELECT COUNT(DISTINCT user_id) as count 
+        $sql = "SELECT COUNT(DISTINCT user_id, document_version) as count 
                 FROM $table 
                 WHERE document_id = %d";
     } else {
@@ -180,6 +204,29 @@ function meridiana_get_document_views($document_id, $args = array()) {
     
     $result = $wpdb->get_var($wpdb->prepare($sql, $document_id));
     return intval($result);
+}
+
+/**
+ * Utenti che hanno visualizzato un documento (visualizzazioni uniche per versione)
+ */
+function meridiana_get_unique_document_views_by_user($document_id) {
+    global $wpdb;
+    $table = $wpdb->prefix . 'document_views';
+    
+    $sql = "SELECT 
+                dv.user_id,
+                u.display_name,
+                u.user_email,
+                dv.document_version,
+                MAX(dv.view_timestamp) as last_view,
+                COUNT(*) as view_count
+            FROM $table dv
+            LEFT JOIN {$wpdb->users} u ON dv.user_id = u.ID
+            WHERE dv.document_id = %d
+            GROUP BY dv.user_id, dv.document_version
+            ORDER BY last_view DESC";
+    
+    return $wpdb->get_results($wpdb->prepare($sql, $document_id));
 }
 
 /**
@@ -254,7 +301,7 @@ function meridiana_get_views_per_document_type() {
     $sql = "SELECT 
                 document_type,
                 COUNT(*) as view_count,
-                COUNT(DISTINCT user_id) as unique_users
+                COUNT(DISTINCT user_id, document_version) as unique_users
             FROM $table
             GROUP BY document_type
             ORDER BY view_count DESC";
@@ -278,13 +325,16 @@ function meridiana_get_views_by_professional_profile($document_type) {
     // COALESCE legge prima user_profile (salvato), poi fallback a usermeta (attuale), poi default
     $sql = "SELECT
                 COALESCE(dv.user_profile, um.meta_value, 'Non specificato') as profilo_professionale,
+                COALESCE(dv.user_udo, um_udo.meta_value, 'Non specificato') as user_udo,
                 COUNT(DISTINCT dv.user_id) as unique_users,
-                COUNT(DISTINCT dv.document_id) as unique_documents
+                COUNT(DISTINCT dv.document_id) as unique_documents,
+                dv.document_version
             FROM $table_views dv
             LEFT JOIN {$wpdb->users} u ON dv.user_id = u.ID
             LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'profilo_professionale'
+            LEFT JOIN {$wpdb->usermeta} um_udo ON u.ID = um_udo.user_id AND um_udo.meta_key = 'udo_riferimento'
             WHERE dv.document_type = %s
-            GROUP BY COALESCE(dv.user_profile, um.meta_value, 'Non specificato')
+            GROUP BY dv.document_id, dv.document_version, profilo_professionale, user_udo
             ORDER BY unique_users DESC";
 
     $results = $wpdb->get_results($wpdb->prepare($sql, $document_type));
@@ -327,14 +377,14 @@ function meridiana_get_user_viewed_documents($user_id, $args = array()) {
     }
 
     $table = $wpdb->prefix . 'document_views';
-    $sql = "SELECT dv.document_id, p.post_title, p.post_type, MAX(dv.view_timestamp) AS last_view, COUNT(*) AS view_count, SUM(COALESCE(dv.view_duration, 0)) AS total_duration
+    $sql = "SELECT dv.document_id, dv.document_version, p.post_title, p.post_type, MAX(dv.view_timestamp) AS last_view, COUNT(*) AS view_count, SUM(COALESCE(dv.view_duration, 0)) AS total_duration
             FROM $table dv
             LEFT JOIN {$wpdb->posts} p ON dv.document_id = p.ID
             WHERE dv.user_id = %d
               AND p.ID IS NOT NULL
               AND p.post_status = 'publish'
               AND p.post_type IN ($types_placeholder)
-            GROUP BY dv.document_id
+            GROUP BY dv.document_id, dv.document_version
             ORDER BY last_view DESC
             LIMIT %d";
 
@@ -405,7 +455,7 @@ function meridiana_get_document_view_details($document_id, $args = array()) {
         );
     }
 
-    $viewers = meridiana_get_users_who_viewed($document_id);
+    $viewers = meridiana_get_unique_document_views_by_user($document_id);
     $non_viewers = meridiana_get_users_who_not_viewed($document_id);
 
     $non_viewers_count = is_array($non_viewers) ? count($non_viewers) : 0;

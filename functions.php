@@ -660,5 +660,14 @@ function meridiana_theme_activation() {
 }
 add_action('after_switch_theme', 'meridiana_theme_activation');
 
+// Temporaneo: Esegui l'aggiornamento del DB una volta per le installazioni esistenti
+add_action('init', 'meridiana_run_db_update_once');
+function meridiana_run_db_update_once() {
+    if (get_option('meridiana_analytics_db_updated') !== '1') {
+        meridiana_create_analytics_table();
+        update_option('meridiana_analytics_db_updated', '1');
+    }
+}
+
 
 

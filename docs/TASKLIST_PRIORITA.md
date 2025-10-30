@@ -1,8 +1,94 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 28 Ottobre 2025 - [TAB CONVENZIONI + SALUTE COMPLETATE | ANALYTICS FUNZIONANTE | FILE ARCHIVING IN PROGRESS] ✅
-> **Stato**: In Sviluppo - Fase 1-5 COMPLETATE | Fase 6 SETUP (75%)
+> **Aggiornato**: 30 Ottobre 2025 - [ANALYTICS PANORAMICA HERO SECTION COMPLETATA | RESPONSIVE LAPTOP 1024PX OTTIMIZZATO] ✅
+> **Stato**: In Sviluppo - Fase 1-7 COMPLETATE | Fase 6 Analytics al 65%
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+
+---
+
+## 🔧 AGGIORNAMENTI SESSION - 30 Ottobre 2025 - ANALYTICS PANORAMICA HERO SECTION REDESIGN
+
+### ✅ COMPLETATO: Analytics Panoramica - Hero Section Utenti Redesign + Ottimizzazione Responsive
+**Status**: ✅ COMPLETATO - UI/UX Migliorata | Fase 6 Analytics al 65%
+
+**Cosa Fatto**:
+
+**✅ Backend AJAX Handler**:
+- ✅ Funzione: `meridiana_ajax_get_users_by_profile()` in `includes/ajax-analytics.php`
+- ✅ Restituisce: profiles breakdown (con ACF label mapping) + status breakdown (attivo/sospeso/licenziato)
+- ✅ Profile labels: 14 profili professionali mappati da ACF field keys
+- ✅ Status counts: Attivi, Sospesi, Licenziati con colori distintivi (verde/arancione/rosso)
+- ✅ Nonce verification: Check `wp_rest` nonce + permission `view_analytics` || `manage_options`
+
+**✅ HTML Template Redesign**:
+- ✅ 3-column layout: Sinistra (numero + subtitle + status) | Centro (pie chart) | Destra (legenda)
+- ✅ Left column:
+  - Grande numero utenti (72px, primary color, no background)
+  - Subtitle "Utenti attivi"
+  - Status breakdown: 3 items (Attivi/Sospesi/Licenziati) con pallini colorati
+- ✅ Center column: Canvas per doughnut chart Chart.js
+- ✅ Right column: Legend scrollable (max-height 400px) con pallini e conteggi
+- ✅ Removed: Title "Utenti totali", box-shadow, border, border-radius, padding, background-color
+
+**✅ CSS Responsive Optimization (Per Schermi ≥1024px)**:
+- ✅ Rimossi media query breakpoints a 1200px e 768px
+- ✅ Grid layout fisso: `grid-template-columns: auto minmax(200px, 1fr) auto`
+- ✅ Sempre su UNA SOLA RIGA - no responsive stack su mobile (non necessario per uso gestore da PC)
+- ✅ Grafico a torta fluid: `width: 100%; max-width: 400px; aspect-ratio: 1`
+- ✅ Chart rimpicciolisce fluidamente al diminuire della larghezza dello schermo
+- ✅ Vertical centering: `align-items: center` su hero container
+- ✅ Tutti gli elementi centrati verticalmente
+
+**✅ Alpine.js Component Implementation**:
+- ✅ Metodo: `fetchUsersBreakdown()` - Fetch AJAX dati profili + status
+- ✅ Metodo: `renderUsersBreakdownChart()` - Crea doughnut chart con Chart.js
+- ✅ Metodo: `getProfileColor(profileKey)` - Returns colore consistente per legenda
+- ✅ Data properties:
+  - `usersBreakdownProfiles`: Array {key, label, count}
+  - `usersStatusBreakdown`: Object {attivo, sospeso, licenziato}
+  - `profileColors`: Array 14 colori distintivi per profili
+  - `globalStatsTotalUsers`: Numero totale utenti
+
+**✅ Chart.js Doughnut Chart**:
+- ✅ Type: 'doughnut' (non bar)
+- ✅ Colori dinamici da array profileColors
+- ✅ Legend hidden (usiamo custom legend HTML)
+- ✅ Responsive: Mantiene aspect ratio 1:1
+- ✅ Hover effects su slices
+- ✅ Labels dentro le slice con conteggi
+
+**File Modificati**:
+- `includes/ajax-analytics.php` - ✅ AGGIUNTO `meridiana_ajax_get_users_by_profile()`
+- `page-analitiche.php` - ✅ AGGIUNTO hero section template con 3-column layout
+- `assets/js/src/analitiche.js` - ✅ AGGIUNTO data + methods per chart + legend
+- `assets/css/src/pages/_analitiche.scss` - ✅ COMPLETATO hero section styling (400+ righe)
+
+**CSS Specifiche**:
+- `.analitiche-users-hero`: Grid `auto minmax(200px, 1fr) auto` + `align-items: center`
+- `.analitiche-users-hero__number`: 72px, primary color, no background
+- `.analitiche-users-hero__center`: `width: 100%; max-width: 400px; aspect-ratio: 1`
+- `.analitiche-users-hero__legend`: Flex column, scrollable 400px, border items
+- `.legend-item`: Grid 3-col (dot | label | count), small font
+- `.status-item`: Flex + colored dot + count
+
+**Build Completed**:
+- ✅ SCSS compiled successfully
+- ✅ JavaScript minified con webpack
+- ✅ main.min.js + analitiche.min.js bundled
+
+**Result**: Analytics Panoramica Hero Section + Responsive Optimization **100% COMPLETATO** ✅🎉
+
+**Design Finale - Hero Section**:
+```
+┌─────────────────────────────────────────────────────────┐
+│  42          │    [Pie Chart]     │  • ASA/OSS      15  │
+│  Utenti attivi     Distribuzione        • Medico       8  │
+│               │                   │  • Infermiere    12  │
+│  • Attivi    30 │                   │  • Logopedista   5  │
+│  • Sospesi    8 │                   │  • ... (scrollable) │
+│  • Licenziati  4 │                   │                   │
+└─────────────────────────────────────────────────────────┘
+```
 
 ---
 
@@ -225,26 +311,25 @@
 
 ## 🎯 Prossimi Step Immediati
 
-### PRIORITÀ ALTA (Fase 5 Completion - 1-2 sessioni):
+### PRIORITÀ ALTA (Fase 6 Completion - 1-2 sessioni):
 
-1. **PROSSIMO: Tab Convenzioni + Salute e Benessere**
-   - Tab Convenzioni: Form + CRUD completo
-   - Tab Salute e Benessere: Form + CRUD completo
-   - Entrambi: Stesso pattern di Comunicazioni (custom form handler)
-   - ETA: ~1-2 sessioni
+1. **✅ COMPLETATO: Analytics Panoramica - Hero Section + Responsive 1024px**
+   - ✅ Hero section con numero utenti + breakdown status + pie chart + legenda
+   - ✅ Responsive fluid per schermi ≥1024px (sempre su una riga)
+   - ✅ Grafico rimpicciolisce fluidamente al diminuire schermo
+   - ✅ Tutti elementi centrati verticalmente
 
-2. **POI: File Archiving & Automatic Cleanup System** (Fase 5 finale)
-   - **Quando**: File documento sostituito via form frontend
-   - **Azione**: Automatica archiviazione del file precedente
-   - **Cleanup**: Eliminazione file su hard delete documento
-   - **Storage**: Directory: `/wp-content/uploads/archived-files/`
-   - **Log**: Tracking metadata (original name, replacement date, deleter)
-   - **Implementazione**:
-     * Hook: `acf/save_post` + custom AJAX handler
-     * Function: `meridiana_archive_replaced_document()`
-     * Function: `meridiana_cleanup_deleted_document()`
-     * DB Meta: Store archived file paths per post
-   - **ETA**: ~1 sessione dopo convenzioni/salute
+2. **PROSSIMO: Analytics - Matrice Tab + Grafici Restanti** (Fase 6 - 1 sessione)
+   - Completamento Matrice tab (protocol grid - già implementato in sessione precedente)
+   - Completamento sezione Statistiche Globali
+   - Miglioramento responsive altri elementi
+   - ETA: ~1 sessione
+
+3. **POI: Notifiche Push + Email Automazioni** (Fase 8 - 2 sessioni)
+   - OneSignal integration
+   - Brevo email templates
+   - Trigger events per comunicazioni
+   - ETA: ~2 sessioni dopo analytics
 
 ---
 
@@ -374,7 +459,7 @@
 
 ---
 
-## 📊 Riepilogo Avanzamento Totale AGGIORNATO 28 Ottobre - POST SESSION
+## 📊 Riepilogo Avanzamento Totale AGGIORNATO 30 Ottobre - POST SESSION
 
 | Fase | Status | % |
 |------|--------|-----|
@@ -382,8 +467,8 @@
 | 2. Struttura Dati | ✅ 100% | 100% |
 | 3. Sistema Utenti | ✅ 100% | 100% |
 | 4. Template Pagine | ✅ 100% | 100% |
-| 5. Frontend Forms Gestore | ✅ 100% | 100% | **(TAB CONVENZIONI + SALUTE COMPLETATE)** |
-| 6. Analytics | 🟢 50% | 50% | **(FUNZIONANTE, GRAFICA DA MIGLIORARE)** |
+| 5. Frontend Forms Gestore | ✅ 100% | 100% | **(COMPLETATO - TUTTI TAB FUNZIONANTI)** |
+| 6. Analytics | 🟢 65% | 65% | **(PANORAMICA HERO SECTION COMPLETATA + OTTIMIZZATA)** |
 | 7. File Archiving | ✅ 100% | 100% | **(COMPLETATO - AUTO ARCHIVE + CLEANUP)** |
 | 8. Notifiche | ⬜ 0% | 0% |
 | 9. Sicurezza/Perf | 🟡 40% | 40% |
@@ -391,13 +476,13 @@
 | 11. Testing | ⬜ 0% | 0% |
 | 12. Contenuti | ⬜ 0% | 0% |
 | 13. Deployment | ⬜ 0% | 0% |
-| **TOTALE** | **🟢 76%** | **76%** | **(+6% - File Archiving Complete)** |
+| **TOTALE** | **🟢 78%** | **78%** | **(+2% - Analytics Panoramica Redesign Complete)** |
 
 ---
 
 ## 🎯 Prossimi Prompt Consigliati
 
-### PRIORITÀ ALTA (Fase 6-7 - Sessione 4+):
+### ✅ COMPLETATI (Sessioni 1-5):
 
 1. **✅ COMPLETATO - Prompt 12a**: Dashboard Gestore - Tab Documentazione
    - ✅ Custom Form Implementation (NON ACF Front Forms)
@@ -419,29 +504,36 @@
    - ✅ Auto-cleanup su hard delete
    - ✅ Metadata tracking completo
 
-### PRIORITÀ ALTA - PROSSIMA (Fase 6 - Sessione 5):
+5. **✅ COMPLETATO - Prompt 14a**: Analytics Dashboard - Panoramica Hero Section
+   - ✅ Hero section con numero utenti
+   - ✅ Pie chart distribuzione profili
+   - ✅ Status breakdown (Attivi/Sospesi/Licenziati)
+   - ✅ Legend con profili + conteggi
+   - ✅ Responsive fluid 1024px+
+   - ✅ Tutti elementi centrati verticalmente
 
-5. **PROSSIMO: Prompt 14**: Analytics Dashboard - Miglioramento Grafico
-   - Design moderno KPI cards
-   - Chart.js per grafico distribuzione contenuti
-   - Ricerca + filtri (UI refined)
-   - Export CSV
-   - Responsive mobile
+### PRIORITÀ ALTA - PROSSIMA (Fase 6 - Sessione 6):
+
+6. **PROSSIMO: Prompt 14b**: Analytics Dashboard - Completamento Restante
+   - Matrice tab finalization
+   - Statistiche Globali cards
+   - Responsive miglioramento
+   - ETA: ~1 sessione
 
 ### PRIORITÀ MEDIA (Fase 7-9):
 
-6. **PROMPT 15 - COMPLETATO**: Template Unificato `single-documento.php`
+7. **Prompt 15 - COMPLETATO**: Template Unificato `single-documento.php`
    - ✅ Template `single-documento.php` implementato e funzionante.
    - ✅ Gestisce condizionalmente sia 'protocolli' che 'moduli' in un unico file.
    - ✅ Include PDF embedder per la visualizzazione, riassunto, metadati e moduli correlati.
    - ✅ Include navigazione breadcrumb e pulsante "indietro" come da specifiche.
 
-7. **Prompt 16**: Notifiche Push + Email Automazioni
+8. **Prompt 16**: Notifiche Push + Email Automazioni
    - OneSignal integration
    - Brevo email templates
    - Trigger events
 
-8. **Prompt 17**: Testing & QA Completo
+9. **Prompt 17**: Testing & QA Completo
    - Unit tests PHP
    - E2E tests Cypress
    - Lighthouse audit
