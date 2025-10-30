@@ -537,6 +537,7 @@ require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/notification-system.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/notification-frontend.php';
 require_once MERIDIANA_CHILD_DIR . '/api/analytics-api.php';
+require_once MERIDIANA_CHILD_DIR . '/api/learndash-api.php';
 
 /**
  * TEMPLATE ROUTING
