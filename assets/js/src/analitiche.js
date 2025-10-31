@@ -408,18 +408,23 @@ document.addEventListener("alpine:init", () => {
         },
 
         setupSyncScroll() {
-            const scrollableTable = document.querySelector('.protocol-grid-table-scroll');
-            const fixedTable = document.querySelector('.protocol-grid-table-fixed');
+            const scrollWrapper = document.querySelector('.protocol-grid-scroll-wrapper');
+            const fixedWrapper = document.querySelector('.protocol-grid-fixed-col');
 
-            if (!scrollableTable || !fixedTable) {
+            if (!scrollWrapper || !fixedWrapper) {
                 return;
             }
 
             console.log("[setupSyncScroll] Setting up synchronized scroll");
 
-            // Sincronizza scroll verticale della tabella fissa con quella scrollabile
-            scrollableTable.addEventListener('scroll', () => {
-                fixedTable.parentElement.scrollTop = scrollableTable.scrollTop;
+            // Sincronizza scroll verticale: quando scrolli la colonna destra, la sinistra scorre di conseguenza
+            scrollWrapper.addEventListener('scroll', () => {
+                fixedWrapper.scrollTop = scrollWrapper.scrollTop;
+            });
+
+            // Sincronizza anche l'inverso: quando scrolli la colonna sinistra, la destra segue
+            fixedWrapper.addEventListener('scroll', () => {
+                scrollWrapper.scrollTop = fixedWrapper.scrollTop;
             });
         },
 

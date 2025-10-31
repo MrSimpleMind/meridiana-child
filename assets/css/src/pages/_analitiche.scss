@@ -859,7 +859,7 @@ body.admin-bar {
 .protocol-grid-scroll-wrapper {
     flex: 1;
     overflow-x: auto;
-    overflow-y: hidden;
+    overflow-y: auto;
 }
 
 .protocol-grid-table-scroll {
@@ -870,6 +870,9 @@ body.admin-bar {
     thead {
         background-color: var(--color-bg-secondary);
         border-bottom: 2px solid var(--color-border);
+        position: sticky;
+        top: 0;
+        z-index: 15;
     }
 
     tbody tr {
