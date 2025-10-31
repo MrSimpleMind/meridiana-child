@@ -921,7 +921,7 @@ body.admin-bar {
     opacity: 0.5;
 }
 
-// Descrizione testuale della legenda (solo a < 1024px)
+// Descrizione testuale della legenda (fino a 1199px)
 .protocol-grid-legend-text {
     display: block;
     padding: 16px 0;
@@ -934,18 +934,18 @@ body.admin-bar {
         margin: 0;
     }
 
-    @media (min-width: 1024px) {
-        display: none; // Nascondi a desktop
+    @media (min-width: 1200px) {
+        display: none; // Nascondi a desktop grande
     }
 }
 
-// Legenda sticky sulla destra (solo a >= 1024px)
+// Legenda sticky sulla destra (solo a >= 1200px)
 .protocol-grid-legend-sticky {
-    // Base: nascosta (mobile/tablet)
+    // Base: nascosta (mobile/tablet/laptop 1024px)
     display: none;
 
-    @media (min-width: 1024px) {
-        // Desktop: mostra e sticky
+    @media (min-width: 1200px) {
+        // Desktop grande: mostra e sticky
         display: block;
         position: sticky;
         top: calc(var(--dashboard-tabs-offset, 0px) + 20px);
