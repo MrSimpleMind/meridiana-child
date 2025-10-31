@@ -270,11 +270,37 @@ document.addEventListener("alpine:init", () => {
                             <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
                             <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
                         </div>
-                        <div class="protocol-grid-wrapper">
-                            <table class="protocol-grid-table">
-                        <thead>
-                            <tr>
-                                <th class="protocol-grid__th-protocol">Protocollo</th>
+                        <div class="protocol-grid-container-split">
+                            <!-- TABELLA FISSA (sinistra) -->
+                            <div class="protocol-grid-fixed-col">
+                                <table class="protocol-grid-table-fixed">
+                                    <thead>
+                                        <tr>
+                                            <th class="protocol-grid__th-protocol">Protocollo</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+            `;
+
+            // Righe protocolli (solo nella tabella fissa)
+            protocols.forEach(protocol => {
+                html += `<tr class="protocol-grid__row">
+                    <td class="protocol-grid__td-protocol">
+                        <strong>${protocol.document_title}</strong>
+                    </td>
+                </tr>`;
+            });
+
+            html += `
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <!-- TABELLA SCROLLABILE (destra) -->
+                            <div class="protocol-grid-scroll-wrapper">
+                                <table class="protocol-grid-table-scroll">
+                                    <thead>
+                                        <tr>
             `;
 
             // Intestazioni profili
@@ -288,17 +314,14 @@ document.addEventListener("alpine:init", () => {
             }
 
             html += `
-                            </tr>
-                        </thead>
-                        <tbody>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
             `;
 
-            // Righe protocolli
+            // Righe protocolli (dati nella tabella scrollabile)
             protocols.forEach(protocol => {
                 html += `<tr class="protocol-grid__row">
-                    <td class="protocol-grid__td-protocol">
-                        <strong>${protocol.document_title}</strong>
-                    </td>
                 `;
 
                 if (profile_headers && profile_headers.length > 0) {
@@ -321,8 +344,9 @@ document.addEventListener("alpine:init", () => {
             });
 
             html += `
-                        </tbody>
-                    </table>
+                                    </tbody>
+                                </table>
+                            </div>
                         </div>
                         <div class="protocol-grid-legend-text">
                             <p>
@@ -377,45 +401,25 @@ document.addEventListener("alpine:init", () => {
             container.innerHTML = html;
             console.log("[renderProtocolGrid] COMPLETE - Rendered " + protocols.length + " protocols");
 
-            // Aggiungi sincronizzazione sticky per colonna protocolli su < 1200px
+            // Sincronizza scroll verticale tra tabella fissa e scrollabile
             this.$nextTick(() => {
-                this.setupProtocolColumnSticky();
+                this.setupSyncScroll();
             });
         },
 
-        setupProtocolColumnSticky() {
-            // Solo su < 1200px
-            if (window.innerWidth >= 1200) {
+        setupSyncScroll() {
+            const scrollableTable = document.querySelector('.protocol-grid-table-scroll');
+            const fixedTable = document.querySelector('.protocol-grid-table-fixed');
+
+            if (!scrollableTable || !fixedTable) {
                 return;
             }
 
-            const wrapper = document.querySelector('.protocol-grid-wrapper');
-            const table = document.querySelector('.protocol-grid-table');
+            console.log("[setupSyncScroll] Setting up synchronized scroll");
 
-            if (!wrapper || !table) {
-                return;
-            }
-
-            console.log("[setupProtocolColumnSticky] Setting up sticky protocol column");
-
-            // Aggiungi classe is-sticky a tutte le colonne protocolli
-            const headerCells = table.querySelectorAll('thead .protocol-grid__th-protocol');
-            const bodyCells = table.querySelectorAll('tbody .protocol-grid__td-protocol');
-
-            headerCells.forEach(cell => cell.classList.add('is-sticky'));
-            bodyCells.forEach(cell => cell.classList.add('is-sticky'));
-
-            // Sincronizza lo scroll orizzontale con la posizione della colonna
-            wrapper.addEventListener('scroll', () => {
-                const scrollLeft = wrapper.scrollLeft;
-
-                // Applica transform per far rimanere la colonna visibile
-                headerCells.forEach(cell => {
-                    cell.style.transform = `translateX(${scrollLeft}px)`;
-                });
-                bodyCells.forEach(cell => {
-                    cell.style.transform = `translateX(${scrollLeft}px)`;
-                });
+            // Sincronizza scroll verticale della tabella fissa con quella scrollabile
+            scrollableTable.addEventListener('scroll', () => {
+                fixedTable.parentElement.scrollTop = scrollableTable.scrollTop;
             });
         },
 
