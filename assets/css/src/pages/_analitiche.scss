@@ -939,6 +939,32 @@ body.admin-bar {
     }
 }
 
+// Colori per il testo della legenda
+.legend-text-green {
+    color: #2d5016;
+    font-weight: 600;
+}
+
+.legend-text-yellow {
+    color: #6d4c00;
+    font-weight: 600;
+}
+
+.legend-text-orange {
+    color: #e65100;
+    font-weight: 600;
+}
+
+.legend-text-red {
+    color: #b71c1c;
+    font-weight: 600;
+}
+
+.legend-text-gray {
+    color: #6b7280;
+    font-weight: 600;
+}
+
 // Legenda sticky sulla destra (solo a >= 1200px)
 .protocol-grid-legend-sticky {
     // Base: nascosta (mobile/tablet/laptop 1024px)

@@ -325,7 +325,14 @@ document.addEventListener("alpine:init", () => {
                     </table>
                         </div>
                         <div class="protocol-grid-legend-text">
-                            <p><strong>Colori:</strong> Verde ≥75% (Eccellente) | Giallo 50-75% (Buono) | Arancione 25-50% (Medio) | Rosso &lt;25% (Scarso) | Grigio 0% (Non visto)</p>
+                            <p>
+                                <strong>Colori:</strong>
+                                <span class="legend-text-green">Verde</span> ≥75% (Eccellente) |
+                                <span class="legend-text-yellow">Giallo</span> 50-75% (Buono) |
+                                <span class="legend-text-orange">Arancione</span> 25-50% (Medio) |
+                                <span class="legend-text-red">Rosso</span> &lt;25% (Scarso) |
+                                <span class="legend-text-gray">Grigio</span> 0% (Non visto)
+                            </p>
                         </div>
                     </div>
                     <div class="protocol-grid-legend-sticky">
