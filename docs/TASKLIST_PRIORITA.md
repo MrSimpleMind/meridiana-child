@@ -1,8 +1,127 @@
 # 📋 TaskList Ordinata per Priorità e Logica
 
-> **Aggiornato**: 30 Ottobre 2025 - [ANALYTICS PANORAMICA HERO SECTION COMPLETATA | RESPONSIVE LAPTOP 1024PX OTTIMIZZATO] ✅
-> **Stato**: In Sviluppo - Fase 1-7 COMPLETATE | Fase 6 Analytics al 65%
+> **Aggiornato**: 31 Ottobre 2025 - [ANALYTICS MATRICE + SIDEBAR COLLASSABILE + NAVIGAZIONE COMPLETATE] ✅
+> **Stato**: In Sviluppo - Fase 1-7 COMPLETATE | Fase 6 Analytics al 85% | Fase 9 Navigazione al 100%
 > Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+
+---
+
+## 🔧 AGGIORNAMENTI SESSION - 31 Ottobre 2025 - ANALYTICS MATRICE COMPLETA + SIDEBAR COLLASSABILE
+
+### ✅ COMPLETATO: Analytics Matrice Protocolli × Profili Professionali
+**Status**: ✅ COMPLETATO - Fully Functional | Fase 6 salita a 85%
+
+**Cosa Fatto**:
+
+**✅ PARTE 1: Rimozione Styling Card Matrice**:
+- ✅ Rimosso bordo, sfondo, padding, ombra da `.analitiche-section--matrix`
+- ✅ Griglia ora con aspetto pulito e minimalista
+
+**✅ PARTE 2: Legenda Orizzontale Sopra Matrice**:
+- ✅ Spostata legenda da destra (sticky) a sopra la griglia
+- ✅ Sviluppata in orizzontale: [🟢≥75% Eccellente] [🟡50-75% Buono] [🟠25-50% Medio] [🔴<25% Scarso] [⚪0% Non visto]
+- ✅ Accanto ai contatori "Protocolli: N | Profili: M"
+- ✅ Layout responsive con flex-wrap per schermi piccoli
+
+**✅ PARTE 3: Intestazioni Profili con Sigle Brevi**:
+- ✅ Aggiunte funzioni JavaScript per mappare sigle: MAN, OSS, ASOC, COORD, EDU, FKT, AMM, INF, LOG, MED, PSI, REC, TOCC, VOL
+- ✅ Intestazioni colonne ora mostrano solo sigle (3-4 caratteri)
+- ✅ Rimosso problema sfalzamento righe
+
+**✅ PARTE 4: Altezza Righe Fissa + Allineamento Verticale**:
+- ✅ Tutte le righe (thead + tbody) = 60px fixed height
+- ✅ Tutte le celle con `vertical-align: middle`
+- ✅ `table-layout: fixed` su entrambe le tabelle
+- ✅ Perfetto allineamento tra colonna fissa (protocolli) e scrollabile (dati)
+
+**✅ PARTE 5: Paginazione Completa**:
+- ✅ Selezione righe per pagina: 10, 20, 50, 100, 200 (default: 20)
+- ✅ Navigazione pagine: ⏮️ ◀️ Pagina N di M ▶️ ⏭️
+- ✅ Contatore: "Mostra X di Y protocolli"
+- ✅ Layout: Info sinistra + Selector righe destra (TOP) | Pulsanti centrati (BOTTOM)
+- ✅ Pulsanti disabilitati quando alla prima/ultima pagina
+
+**✅ PARTE 6: Ricerca Live Protocolli**:
+- ✅ Campo ricerca nell'intestazione "Protocollo" (prima cella header)
+- ✅ Debounce 300ms per non appesantire
+- ✅ Icona lente ingrandimento quando vuoto
+- ✅ Pulsante X per cancellare ricerca
+- ✅ ESC per resettare
+- ✅ Filtra in tempo reale per titolo protocollo (case-insensitive)
+- ✅ Resetta automaticamente alla pagina 1 quando filtri
+
+**✅ PARTE 7: Tooltip su Nomi Protocolli**:
+- ✅ Aggiunto `title="${protocol.document_title}"` alle celle protocollo
+- ✅ Al hover mostra nome completo in tooltip nativo browser
+
+**File Modificati**:
+- `assets/js/src/analitiche.js` - ✅ Paginazione + ricerca + sigle + tooltip
+- `assets/css/src/pages/_analitiche.scss` - ✅ CSS pagina + ricerca + legenda orizzontale
+- `page-analitiche.php` - ✅ HTML legenda + toggle button classe
+
+**Result**: Analytics Matrice **100% COMPLETATO** ✅🎉
+
+---
+
+### ✅ COMPLETATO: Sidebar Collassabile Desktop
+**Status**: ✅ COMPLETATO - Fully Functional | Fase 9 Navigazione al 100%
+
+**Cosa Fatto**:
+
+**✅ PARTE 1: State Management Alpine.js**:
+- ✅ Variable: `sidebarCollapsed` (booleano)
+- ✅ Auto-collapse < 1024px (default)
+- ✅ LocalStorage persistence su desktop ≥ 1024px
+- ✅ Intelligenza responsiva: torna a expand al resize > 1024px
+
+**✅ PARTE 2: Toggle Button**:
+- ✅ Pulsante circolare (32x32px) sul lato destro sidebar
+- ✅ Icona dinamica: chevron-left (espansa) ↔️ chevron-right (collassata)
+- ✅ Hover: ingrandisce (scale 1.1) e cambia colore a rosso primario
+- ✅ Posizione: `right: -16px` (sporge fuori dalla sidebar)
+- ✅ Aria-label accessibile
+
+**✅ PARTE 3: Styling Espansa/Collassata**:
+
+**Versione Espansa (240px)**:
+- Logo orizzontale 140px
+- Menu items: icone + testo fianco a fianco
+- Avatar utente: 40x40px circolare
+- Info utente: nome + ruolo visibili
+- Pulsante "Esci": icona + testo
+- Scrollbar nascosta (ma scroll funzionante)
+
+**Versione Collassata (70px)**:
+- Logo verticale girato (writing-mode + rotate)
+- Solo icone menu centrate
+- ❌ Footer completamente nascosto (display: none)
+- ❌ Avatar nascosto
+- ❌ Logout nascosto
+- ❌ Scrollbar completamente rimossa
+
+**✅ PARTE 4: Transizioni Fluide**:
+- Sidebar width: 0.3s cubic-bezier(0.4, 0, 0.2, 1)
+- Testi menu: fade out 0.3s + width 0.3s + visibility
+- Toggle button: scale hover + color transition
+- Content wrapper padding: animato per seguire sidebar
+
+**✅ PARTE 5: Content Wrapper Responsivo**:
+- Espansa: `padding-left: 240px`
+- Collassata: `padding-left: 70px`
+- Transizione: 0.3s cubic-bezier
+- ✅ Selector CSS `:has()` per auto-adjust al cambio stato
+
+**✅ PARTE 6: Bug Fixes**:
+- ✅ Avatar non più stretchato (era ovale) → `min-width: 40px; min-height: 40px; object-fit: cover`
+- ✅ Logout solo icona quando collassata
+- ✅ Scrollbar rimossa (scrollbar-width: none + -webkit-scrollbar: display none)
+- ✅ Footer nascosto completamente quando collassato
+
+**File Modificati**:
+- `templates/parts/navigation/sidebar-nav.php` - ✅ Alpine.js + toggle button + localStorage
+- `assets/css/src/layout/_navigation.scss` - ✅ Sidebar states + transizioni + responsive
+
+**Result**: Sidebar Collassabile **100% COMPLETATO** ✅🎉
 
 ---
 
@@ -311,7 +430,7 @@
 
 ## 🎯 Prossimi Step Immediati
 
-### PRIORITÀ ALTA (Fase 6 Completion - 1-2 sessioni):
+### PRIORITÀ ALTA (Fase 6 Completion - 1 sessione):
 
 1. **✅ COMPLETATO: Analytics Panoramica - Hero Section + Responsive 1024px**
    - ✅ Hero section con numero utenti + breakdown status + pie chart + legenda
@@ -319,13 +438,29 @@
    - ✅ Grafico rimpicciolisce fluidamente al diminuire schermo
    - ✅ Tutti elementi centrati verticalmente
 
-2. **PROSSIMO: Analytics - Matrice Tab + Grafici Restanti** (Fase 6 - 1 sessione)
-   - Completamento Matrice tab (protocol grid - già implementato in sessione precedente)
-   - Completamento sezione Statistiche Globali
-   - Miglioramento responsive altri elementi
+2. **✅ COMPLETATO: Analytics - Matrice Tab + Paginazione + Ricerca**
+   - ✅ Matrice protocolli × profili con sigle brevi
+   - ✅ Paginazione completa (10/20/50/100/200 righe per pagina)
+   - ✅ Ricerca live nel campo intestazione
+   - ✅ Tooltip su nomi protocolli
+   - ✅ Legenda orizzontale sopra griglia
+
+3. **✅ COMPLETATO: Sidebar Collassabile Desktop**
+   - ✅ Toggle button circolare (32x32px)
+   - ✅ Auto-collapse < 1024px
+   - ✅ LocalStorage persistence
+   - ✅ Transizioni fluide 0.3s
+   - ✅ Footer nascosto quando collassata
+   - ✅ Scrollbar rimossa
+
+4. **PROSSIMO: Completamento Analytics Restante** (Fase 6 - 1 sessione)
+   - Sezione Analisi Utenti (già parzialmente implementata)
+   - Sezione Analisi Documenti (già parzialmente implementata)
+   - Completamento statistiche globali
+   - Miglioramento responsive mobile
    - ETA: ~1 sessione
 
-3. **POI: Notifiche Push + Email Automazioni** (Fase 8 - 2 sessioni)
+5. **POI: Notifiche Push + Email Automazioni** (Fase 8 - 2 sessioni)
    - OneSignal integration
    - Brevo email templates
    - Trigger events per comunicazioni
@@ -459,7 +594,7 @@
 
 ---
 
-## 📊 Riepilogo Avanzamento Totale AGGIORNATO 30 Ottobre - POST SESSION
+## 📊 Riepilogo Avanzamento Totale AGGIORNATO 31 Ottobre - POST SESSION
 
 | Fase | Status | % |
 |------|--------|-----|
@@ -468,21 +603,22 @@
 | 3. Sistema Utenti | ✅ 100% | 100% |
 | 4. Template Pagine | ✅ 100% | 100% |
 | 5. Frontend Forms Gestore | ✅ 100% | 100% | **(COMPLETATO - TUTTI TAB FUNZIONANTI)** |
-| 6. Analytics | 🟢 65% | 65% | **(PANORAMICA HERO SECTION COMPLETATA + OTTIMIZZATA)** |
+| 6. Analytics | 🟢 85% | 85% | **(MATRICE COMPLETA - PAGINAZIONE + RICERCA + TOOLTIP)** |
 | 7. File Archiving | ✅ 100% | 100% | **(COMPLETATO - AUTO ARCHIVE + CLEANUP)** |
 | 8. Notifiche | ⬜ 0% | 0% |
-| 9. Sicurezza/Perf | 🟡 40% | 40% |
-| 10. Accessibilità | ✅ 95% | 95% |
-| 11. Testing | ⬜ 0% | 0% |
-| 12. Contenuti | ⬜ 0% | 0% |
-| 13. Deployment | ⬜ 0% | 0% |
-| **TOTALE** | **🟢 78%** | **78%** | **(+2% - Analytics Panoramica Redesign Complete)** |
+| 9. Navigazione Desktop | ✅ 100% | 100% | **(SIDEBAR COLLASSABILE COMPLETATA)** |
+| 10. Sicurezza/Perf | 🟡 40% | 40% |
+| 11. Accessibilità | ✅ 95% | 95% |
+| 12. Testing | ⬜ 0% | 0% |
+| 13. Contenuti | ⬜ 0% | 0% |
+| 14. Deployment | ⬜ 0% | 0% |
+| **TOTALE** | **🟢 82%** | **82%** | **(+4% - Analytics Matrice Complete + Sidebar Collassabile)** |
 
 ---
 
 ## 🎯 Prossimi Prompt Consigliati
 
-### ✅ COMPLETATI (Sessioni 1-5):
+### ✅ COMPLETATI (Sessioni 1-6):
 
 1. **✅ COMPLETATO - Prompt 12a**: Dashboard Gestore - Tab Documentazione
    - ✅ Custom Form Implementation (NON ACF Front Forms)
@@ -512,12 +648,28 @@
    - ✅ Responsive fluid 1024px+
    - ✅ Tutti elementi centrati verticalmente
 
-### PRIORITÀ ALTA - PROSSIMA (Fase 6 - Sessione 6):
+6. **✅ COMPLETATO - Prompt 14b**: Analytics Dashboard - Matrice Completa
+   - ✅ Matrice protocolli × profili con sigle brevi
+   - ✅ Paginazione (10/20/50/100/200 righe)
+   - ✅ Ricerca live con debounce
+   - ✅ Tooltip su nomi protocolli
+   - ✅ Legenda orizzontale
+   - ✅ Intestazioni allineate perfettamente
 
-6. **PROSSIMO: Prompt 14b**: Analytics Dashboard - Completamento Restante
-   - Matrice tab finalization
+7. **✅ COMPLETATO - Prompt 15**: Sidebar Collassabile Desktop
+   - ✅ Toggle button con icona dinamica
+   - ✅ Auto-collapse < 1024px
+   - ✅ LocalStorage persistence
+   - ✅ Transizioni fluide
+   - ✅ Footer nascosto quando collassata
+   - ✅ Scrollbar rimossa
+
+### PRIORITÀ ALTA - PROSSIMA (Fase 6-7 - Sessione 7):
+
+8. **PROSSIMO: Prompt 16**: Analytics Dashboard - Completamento Restante
+   - Sezione Analisi Utenti + Analisi Documenti
    - Statistiche Globali cards
-   - Responsive miglioramento
+   - Responsive miglioramento mobile
    - ETA: ~1 sessione
 
 ### PRIORITÀ MEDIA (Fase 7-9):
