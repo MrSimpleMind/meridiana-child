@@ -35,13 +35,13 @@ get_header();
                             <i data-lucide="grid-3x3"></i>
                             <span>Matrice</span>
                         </button>
-                        <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'users' }" @click="setTab('users')">
-                            <i data-lucide="user"></i>
-                            <span>Analisi utenti</span>
-                        </button>
                         <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'documents' }" @click="setTab('documents')">
                             <i data-lucide="file-text"></i>
                             <span>Analisi documenti</span>
+                        </button>
+                        <button type="button" class="dashboard-tabs__item" :class="{ 'active': activeTab === 'users' }" @click="setTab('users')">
+                            <i data-lucide="user"></i>
+                            <span>Analisi utenti</span>
                         </button>
                     </div>
                 </div>
