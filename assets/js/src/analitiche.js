@@ -43,6 +43,30 @@ function normalizeProfileName(profileName) {
     return PROFILE_NAME_MAPPING[normalized] || normalized;
 }
 
+/**
+ * Abbrevia i nomi dei profili per la visualizzazione nella griglia
+ * Solo per UI, non cambia il DB
+ */
+function abbreviateProfileName(fullName) {
+    const abbreviations = {
+        'Addetto Manutenzione': 'Add. Manutenzione',
+        'ASA/OSS': 'ASA/OSS',
+        'Assistente Sociale': 'Ass. Sociale',
+        'Coordinatore Unità di Offerta': 'Cood. Unità di Offerta',
+        'Educatore': 'Educatore',
+        'FKT': 'FKT',
+        'Impiegato Amministrativo': 'Imp. Amministrativo',
+        'Infermiere': 'Infermiere',
+        'Logopedista': 'Logopedista',
+        'Medico': 'Medico',
+        'Psicologa': 'Psicologa',
+        'Receptionista': 'Receptionista',
+        'Terapista Occupazionale': 'Ter. Occupazionale',
+        'Volontari': 'Volontari'
+    };
+    return abbreviations[fullName] || fullName;
+}
+
 function normalizeDate(value) {
     if (!value) {
         return null;
@@ -240,12 +264,14 @@ document.addEventListener("alpine:init", () => {
 
             // Intestazioni e contatori
             let html = `
-                <div class="protocol-grid-info">
-                    <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
-                    <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
-                </div>
-                <div class="protocol-grid-wrapper">
-                    <table class="protocol-grid-table">
+                <div class="protocol-grid-outer">
+                    <div class="protocol-grid-main">
+                        <div class="protocol-grid-info">
+                            <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
+                            <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
+                        </div>
+                        <div class="protocol-grid-wrapper">
+                            <table class="protocol-grid-table">
                         <thead>
                             <tr>
                                 <th class="protocol-grid__th-protocol">Protocollo</th>
@@ -255,7 +281,7 @@ document.addEventListener("alpine:init", () => {
             if (profile_headers && profile_headers.length > 0) {
                 profile_headers.forEach(header => {
                     html += `<th class="protocol-grid__th-profile" title="${header.name} (${header.total_users} utenti)">
-                        <span class="protocol-grid__th-name">${header.name}</span>
+                        <span class="protocol-grid__th-name">${abbreviateProfileName(header.name)}</span>
                         <span class="protocol-grid__th-count">(${header.total_users})</span>
                     </th>`;
                 });
@@ -297,27 +323,43 @@ document.addEventListener("alpine:init", () => {
             html += `
                         </tbody>
                     </table>
-                </div>
-                <div class="protocol-grid-legend">
-                    <div class="protocol-grid-legend__item">
-                        <span class="protocol-grid-legend__color protocol-grid-legend__color--green"></span>
-                        <span>≥ 75% Eccellente</span>
+                        </div>
                     </div>
-                    <div class="protocol-grid-legend__item">
-                        <span class="protocol-grid-legend__color protocol-grid-legend__color--yellow"></span>
-                        <span>50-75% Buono</span>
-                    </div>
-                    <div class="protocol-grid-legend__item">
-                        <span class="protocol-grid-legend__color protocol-grid-legend__color--orange"></span>
-                        <span>25-50% Medio</span>
-                    </div>
-                    <div class="protocol-grid-legend__item">
-                        <span class="protocol-grid-legend__color protocol-grid-legend__color--red"></span>
-                        <span>&lt; 25% Scarso</span>
-                    </div>
-                    <div class="protocol-grid-legend__item">
-                        <span class="protocol-grid-legend__color protocol-grid-legend__color--empty"></span>
-                        <span>0% Non visualizzato</span>
+                    <div class="protocol-grid-legend-sticky">
+                        <div class="protocol-grid-legend-card">
+                            <h4 class="protocol-grid-legend-title">Legenda</h4>
+                            <div class="protocol-grid-legend">
+                                <div class="protocol-grid-legend__item">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--green"></span>
+                                    <span>≥ 75%</span>
+                                </div>
+                                <span class="protocol-grid-legend__sublabel">Eccellente</span>
+
+                                <div class="protocol-grid-legend__item">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--yellow"></span>
+                                    <span>50-75%</span>
+                                </div>
+                                <span class="protocol-grid-legend__sublabel">Buono</span>
+
+                                <div class="protocol-grid-legend__item">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--orange"></span>
+                                    <span>25-50%</span>
+                                </div>
+                                <span class="protocol-grid-legend__sublabel">Medio</span>
+
+                                <div class="protocol-grid-legend__item">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--red"></span>
+                                    <span>&lt; 25%</span>
+                                </div>
+                                <span class="protocol-grid-legend__sublabel">Scarso</span>
+
+                                <div class="protocol-grid-legend__item">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--empty"></span>
+                                    <span>0%</span>
+                                </div>
+                                <span class="protocol-grid-legend__sublabel">Non visto</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;

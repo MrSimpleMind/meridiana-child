@@ -102,6 +102,8 @@ function api_get_protocol_grid($request) {
         return new WP_Error('forbidden', 'Permessi insufficienti', array('status' => 403));
     }
 
+    error_log('[api_get_protocol_grid] START - Caricamento matrice protocolli × profili');
+
     $table_name = $wpdb->prefix . 'document_views';
 
     // 1. Query: Prendi TUTTI i protocolli pubblicati (ordinati per titolo)
@@ -117,43 +119,123 @@ function api_get_protocol_grid($request) {
         $all_protocols = array();
     }
 
-    // 2. Query: Prendi TUTTI i profili professionali unici dal sistema
-    // (da usermeta, non solo da chi ha visualizzazioni)
-    $profile_totals = $wpdb->get_results("
-        SELECT DISTINCT
-            um.meta_value as profile_name,
-            COUNT(DISTINCT um.user_id) as total_users
-        FROM {$wpdb->usermeta} um
-        WHERE um.meta_key = 'profilo_professionale'
-            AND um.meta_value IS NOT NULL
-            AND um.meta_value != ''
-        GROUP BY um.meta_value
-        ORDER BY um.meta_value ASC
+    // 2. Definisci TUTTI i profili professionali disponibili (da ACF field choices)
+    // Usa le KEY come sono salvate nel DB, con mapping ai LABEL per visualizzazione
+    $all_profiles_keys = array(
+        'addetto_manutenzione',
+        'asa_oss',
+        'assistente_sociale',
+        'coordinatore',
+        'educatore',
+        'fkt',
+        'impiegato_amministrativo',
+        'infermiere',
+        'logopedista',
+        'medico',
+        'psicologa',
+        'receptionista',
+        'terapista_occupazionale',
+        'volontari'
+    );
+
+    // Mapping da KEY a LABEL per visualizzazione
+    $profile_key_to_label = array(
+        'addetto_manutenzione' => 'Addetto Manutenzione',
+        'asa_oss' => 'ASA/OSS',
+        'assistente_sociale' => 'Assistente Sociale',
+        'coordinatore' => 'Coordinatore Unità di Offerta',
+        'educatore' => 'Educatore',
+        'fkt' => 'FKT',
+        'impiegato_amministrativo' => 'Impiegato Amministrativo',
+        'infermiere' => 'Infermiere',
+        'logopedista' => 'Logopedista',
+        'medico' => 'Medico',
+        'psicologa' => 'Psicologa',
+        'receptionista' => 'Receptionista',
+        'terapista_occupazionale' => 'Terapista Occupazionale',
+        'volontari' => 'Volontari'
+    );
+
+    $all_profiles = $all_profiles_keys;
+
+    // Query: Conta quanti utenti hanno assegnato ogni profilo (anche 0)
+    $profile_counts = $wpdb->get_results("
+        SELECT
+            meta_value as profile_name,
+            COUNT(DISTINCT user_id) as total_users
+        FROM {$wpdb->usermeta}
+        WHERE meta_key = 'profilo_professionale'
+            AND meta_value IS NOT NULL
+            AND meta_value != ''
+        GROUP BY meta_value
     ");
 
-    // Crea una mappa veloce dei totali per profilo
-    $profile_totals_map = array();
-    if (is_array($profile_totals)) {
-        foreach ($profile_totals as $total) {
-            $profile_totals_map[$total->profile_name] = intval($total->total_users);
+    // Crea una mappa veloce dei conteggi effettivi
+    $profile_counts_map = array();
+    if (is_array($profile_counts)) {
+        foreach ($profile_counts as $profile) {
+            $profile_counts_map[$profile->profile_name] = intval($profile->total_users);
         }
     }
 
-    // Estrai nomi profili ordinati
-    $all_profiles = array_keys($profile_totals_map);
-    sort($all_profiles);
+    // Costruisci mappa completa con TUTTI i 14 profili (anche con 0 utenti)
+    $profile_totals_map = array();
+    foreach ($all_profiles as $profile_name) {
+        $profile_totals_map[$profile_name] = isset($profile_counts_map[$profile_name]) ? $profile_counts_map[$profile_name] : 0;
+    }
 
-    // 3. Query: Prendi TUTTE le visualizzazioni aggregate per (protocollo, profilo)
-    $views_data = $wpdb->get_results("
-        SELECT
+    // 3. Query: Prendi gli utenti che hanno visto ogni protocollo
+    // Ogni utente una sola volta per documento (indipendentemente da quante volte ha visto)
+    // NOTA: Non filtriamo per versione attuale perché potrebbe escludere visualizzazioni
+    // se il documento è stato modificato dopo la visualizzazione
+    $views_users = $wpdb->get_results("
+        SELECT DISTINCT
             dv.document_id,
-            dv.user_profile,
-            COUNT(DISTINCT dv.user_id) as unique_users
+            dv.user_id
         FROM {$table_name} dv
+        INNER JOIN {$wpdb->posts} p ON dv.document_id = p.ID
         WHERE dv.document_type = 'protocollo'
             AND dv.document_id IS NOT NULL
-        GROUP BY dv.document_id, dv.user_profile
     ");
+
+    error_log('[api_get_protocol_grid] Views found: ' . ($views_users ? count($views_users) : 0));
+
+    // Aggreghiamo per profilo ATTUALE di ogni utente
+    $views_data = array();
+    $profile_users_by_doc = array(); // [doc_id][profile] = [user_ids]
+
+    if (!empty($views_users)) {
+        foreach ($views_users as $view) {
+            $doc_id = intval($view->document_id);
+            $user_id = intval($view->user_id);
+
+            // Recupera profilo ATTUALE dell'utente
+            $profile_key = get_user_meta($user_id, 'profilo_professionale', true) ?: 'Non specificato';
+
+            if (!isset($profile_users_by_doc[$doc_id])) {
+                $profile_users_by_doc[$doc_id] = array();
+            }
+            if (!isset($profile_users_by_doc[$doc_id][$profile_key])) {
+                $profile_users_by_doc[$doc_id][$profile_key] = array();
+            }
+
+            // Aggiungi utente se non già presente (evita duplicati se ha visto più volte)
+            if (!in_array($user_id, $profile_users_by_doc[$doc_id][$profile_key])) {
+                $profile_users_by_doc[$doc_id][$profile_key][] = $user_id;
+            }
+        }
+
+        // Converti in formato per la query
+        foreach ($profile_users_by_doc as $doc_id => $profiles) {
+            foreach ($profiles as $profile_key => $users) {
+                $views_data[] = (object) array(
+                    'document_id' => $doc_id,
+                    'user_profile' => $profile_key,
+                    'unique_users' => count($users)
+                );
+            }
+        }
+    }
 
     // Crea una mappa veloce: [doc_id][profile] = unique_users
     $views_map = array();
@@ -184,13 +266,16 @@ function api_get_protocol_grid($request) {
         );
 
         // Per ogni profilo possibile, aggiungi i dati (o 0 se non ha visualizzazioni)
-        foreach ($all_profiles as $profile_name) {
-            $unique_users = isset($views_map[$doc_id][$profile_name]) ? $views_map[$doc_id][$profile_name] : 0;
-            $total_profile_users = $profile_totals_map[$profile_name];
+        foreach ($all_profiles as $profile_key) {
+            $unique_users = isset($views_map[$doc_id][$profile_key]) ? $views_map[$doc_id][$profile_key] : 0;
+            $total_profile_users = $profile_totals_map[$profile_key];
             $percentage = $total_profile_users > 0 ? round(($unique_users / $total_profile_users) * 100, 1) : 0;
 
-            $protocol_row['profiles'][$profile_name] = array(
-                'profile_name' => $profile_name,
+            // Converti la KEY al LABEL per visualizzazione
+            $profile_label = isset($profile_key_to_label[$profile_key]) ? $profile_key_to_label[$profile_key] : $profile_key;
+
+            $protocol_row['profiles'][$profile_label] = array(
+                'profile_name' => $profile_label,
                 'unique_users' => $unique_users,
                 'total_users' => $total_profile_users,
                 'percentage' => $percentage,
@@ -200,11 +285,12 @@ function api_get_protocol_grid($request) {
         $grid_structure[] = $protocol_row;
     }
 
-    // 5. Prepara le intestazioni delle colonne
-    $profile_headers = array_map(function($profile) use ($profile_totals_map) {
+    // 5. Prepara le intestazioni delle colonne (converti da KEY a LABEL)
+    $profile_headers = array_map(function($profile_key) use ($profile_totals_map, $profile_key_to_label) {
+        $profile_label = isset($profile_key_to_label[$profile_key]) ? $profile_key_to_label[$profile_key] : $profile_key;
         return array(
-            'name' => $profile,
-            'total_users' => $profile_totals_map[$profile],
+            'name' => $profile_label,
+            'total_users' => $profile_totals_map[$profile_key],
         );
     }, $all_profiles);
 
