@@ -93,11 +93,20 @@
 .content-wrapper {
     min-height: 100vh;
     padding-bottom: 80px; // Spazio per bottom nav mobile
-    
+
     @media (min-width: 768px) {
         padding-bottom: 0;
         padding-top: 0;
-        padding-left: 240px; // Spazio per sidebar desktop
+        padding-left: 240px; // Spazio per sidebar desktop espansa
+        transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+}
+
+// Content wrapper con sidebar collassata
+.sidebar-nav--collapsed ~ .content-wrapper,
+body:has(.sidebar-nav--collapsed) .content-wrapper {
+    @media (min-width: 768px) {
+        padding-left: 70px; // Spazio per sidebar desktop collassata
     }
 }
 
@@ -107,7 +116,7 @@
 
 .sidebar-nav {
     display: none; // Nascosto su mobile
-    
+
     @media (min-width: 768px) {
         display: flex;
         flex-direction: column;
@@ -120,6 +129,111 @@
         z-index: var(--z-fixed);
         box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
         overflow-y: auto;
+        overflow-x: hidden;
+        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+        // Nasconde scrollbar ma mantiene funzionalità scroll
+        scrollbar-width: none; // Firefox
+        -ms-overflow-style: none; // IE/Edge
+
+        &::-webkit-scrollbar {
+            display: none; // Chrome/Safari/Opera
+        }
+    }
+
+    // Stato collassato
+    &.sidebar-nav--collapsed {
+        @media (min-width: 768px) {
+            width: 70px;
+            overflow-y: hidden; // Rimuove scrollbar
+        }
+
+        // Nascondi testi nel menu
+        .sidebar-nav__item span {
+            opacity: 0;
+            visibility: hidden;
+            width: 0;
+            overflow: hidden;
+        }
+
+        // Centra icone
+        .sidebar-nav__item {
+            justify-content: center;
+            padding-left: var(--space-4);
+            padding-right: var(--space-4);
+        }
+
+        // Nascondi logo testo, mostra solo parte centrale
+        .sidebar-nav__logo {
+            img {
+                max-width: 40px;
+            }
+
+            .logo-text {
+                font-size: var(--font-size-sm);
+                writing-mode: vertical-rl;
+                transform: rotate(180deg);
+            }
+        }
+
+        // Nascondi completamente footer (user + logout)
+        .sidebar-nav__footer {
+            display: none;
+        }
+
+        // Badge count nascosto (o visible come dot)
+        .badge-count {
+            position: absolute;
+            top: 8px;
+            right: 12px;
+            min-width: 8px;
+            height: 8px;
+            padding: 0;
+            font-size: 0;
+        }
+
+        // Toggle button ruotato
+        .sidebar-nav__toggle {
+            right: -12px;
+        }
+    }
+}
+
+// Toggle button
+.sidebar-nav__toggle {
+    position: absolute;
+    top: 50%;
+    right: -16px;
+    transform: translateY(-50%);
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background-color: var(--color-sidebar-dark);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    z-index: 10;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+    i, svg {
+        width: 18px;
+        height: 18px;
+        stroke-width: 2.5;
+    }
+
+    &:hover {
+        background-color: var(--color-primary);
+        border-color: var(--color-primary);
+        transform: translateY(-50%) scale(1.1);
+    }
+
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: 2px;
     }
 }
 
@@ -130,18 +244,21 @@
     justify-content: center;
     padding: var(--space-6) var(--space-4);
     border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    
+    transition: padding 0.3s ease;
+
     img {
         max-width: 140px;
         height: auto;
+        transition: max-width 0.3s ease;
     }
-    
+
     // Se non c'è logo, mostra testo
     .logo-text {
         font-size: var(--font-size-lg);
         font-weight: var(--font-weight-bold);
         color: white;
         text-align: center;
+        transition: all 0.3s ease;
     }
 }
 
@@ -162,9 +279,9 @@
     font-size: var(--font-size-sm);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
-    transition: all 0.2s ease;
+    transition: all 0.2s ease, padding 0.3s ease;
     position: relative;
-    
+
     // Icona
     i, svg {
         width: 20px;
@@ -172,9 +289,11 @@
         stroke-width: 2;
         flex-shrink: 0;
     }
-    
+
     span {
         flex: 1;
+        white-space: nowrap;
+        transition: opacity 0.3s ease, width 0.3s ease, visibility 0.3s ease;
     }
     
     // Hover
@@ -250,7 +369,7 @@
     background-color: rgba(255, 255, 255, 0.05);
     border-radius: var(--radius-md);
     cursor: pointer;
-    transition: all 0.2s ease;
+    transition: all 0.3s ease;
     
     &:hover {
         background-color: rgba(255, 255, 255, 0.1);
@@ -259,6 +378,8 @@
     .user-avatar {
         width: 40px;
         height: 40px;
+        min-width: 40px;
+        min-height: 40px;
         border-radius: var(--radius-full);
         background-color: rgba(255, 255, 255, 0.1);
         border: 2px solid rgba(255, 255, 255, 0.2);
@@ -266,7 +387,14 @@
         align-items: center;
         justify-content: center;
         flex-shrink: 0;
-        
+        overflow: hidden;
+
+        img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
         i, svg {
             width: 20px;
             height: 20px;
@@ -277,8 +405,9 @@
     .user-info {
         flex: 1;
         min-width: 0; // Per ellipsis
+        transition: opacity 0.3s ease, width 0.3s ease, visibility 0.3s ease;
     }
-    
+
     .user-name {
         display: block;
         font-size: var(--font-size-sm);
@@ -288,7 +417,7 @@
         overflow: hidden;
         text-overflow: ellipsis;
     }
-    
+
     .user-role {
         display: block;
         font-size: var(--font-size-xs);
@@ -310,13 +439,18 @@
     font-size: var(--font-size-sm);
     text-decoration: none;
     border-radius: var(--radius-md);
-    transition: all 0.2s ease;
-    
+    transition: all 0.3s ease;
+
     i, svg {
         width: 16px;
         height: 16px;
+        flex-shrink: 0;
     }
-    
+
+    span {
+        transition: opacity 0.3s ease, width 0.3s ease, visibility 0.3s ease;
+    }
+
     &:hover {
         background-color: rgba(220, 38, 38, 0.2);
         color: white;

@@ -378,7 +378,7 @@ document.addEventListener("alpine:init", () => {
             // Righe protocolli (solo nella tabella fissa)
             paginatedProtocols.forEach(protocol => {
                 html += `<tr class="protocol-grid__row">
-                    <td class="protocol-grid__td-protocol">
+                    <td class="protocol-grid__td-protocol" title="${protocol.document_title}">
                         <strong>${protocol.document_title}</strong>
                     </td>
                 </tr>`;
@@ -444,22 +444,25 @@ document.addEventListener("alpine:init", () => {
 
                         <!-- Controlli Paginazione -->
                         <div class="protocol-pagination">
-                            <div class="protocol-pagination__info">
-                                <span>Mostra <strong>${paginatedProtocols.length}</strong> di <strong>${this.protocolFilteredData.length}</strong> protocolli</span>
+                            <div class="protocol-pagination__top">
+                                <div class="protocol-pagination__info">
+                                    <span>Mostra <strong>${paginatedProtocols.length}</strong> di <strong>${this.protocolFilteredData.length}</strong> protocolli</span>
+                                </div>
+                                <div class="protocol-pagination__size-control">
+                                    <label for="protocolPageSize" class="protocol-pagination__label">Righe per pagina:</label>
+                                    <select id="protocolPageSize"
+                                            class="protocol-pagination__select"
+                                            x-model="protocolPageSize"
+                                            @change="changeProtocolPageSize($event.target.value)">
+                                        <option value="10">10</option>
+                                        <option value="20">20</option>
+                                        <option value="50">50</option>
+                                        <option value="100">100</option>
+                                        <option value="200">200</option>
+                                    </select>
+                                </div>
                             </div>
-                            <div class="protocol-pagination__controls">
-                                <label for="protocolPageSize" class="protocol-pagination__label">Righe per pagina:</label>
-                                <select id="protocolPageSize"
-                                        class="protocol-pagination__select"
-                                        x-model="protocolPageSize"
-                                        @change="changeProtocolPageSize($event.target.value)">
-                                    <option value="10">10</option>
-                                    <option value="20">20</option>
-                                    <option value="50">50</option>
-                                    <option value="100">100</option>
-                                    <option value="200">200</option>
-                                </select>
-
+                            <div class="protocol-pagination__bottom">
                                 <div class="protocol-pagination__buttons">
                                     <button type="button"
                                             class="protocol-pagination__btn"

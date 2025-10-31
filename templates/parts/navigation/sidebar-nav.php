@@ -45,7 +45,52 @@ if (current_user_can('view_analytics') || current_user_can('gestore_piattaforma'
 error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_role);
 ?>
 
-<nav class="sidebar-nav" role="navigation" aria-label="Navigazione principale">
+<nav class="sidebar-nav"
+     x-data="{
+        sidebarCollapsed: window.innerWidth < 1024,
+        init() {
+            // Aggiorna stato al resize
+            window.addEventListener('resize', () => {
+                if (window.innerWidth < 1024) {
+                    this.sidebarCollapsed = true;
+                } else if (window.innerWidth >= 1024) {
+                    // Mantieni lo stato scelto dall'utente sopra 1024px
+                    const saved = localStorage.getItem('sidebarCollapsed');
+                    if (saved !== null) {
+                        this.sidebarCollapsed = saved === 'true';
+                    }
+                }
+            });
+
+            // Carica stato salvato (solo per desktop)
+            if (window.innerWidth >= 1024) {
+                const saved = localStorage.getItem('sidebarCollapsed');
+                if (saved !== null) {
+                    this.sidebarCollapsed = saved === 'true';
+                }
+            }
+        },
+        toggleSidebar() {
+            this.sidebarCollapsed = !this.sidebarCollapsed;
+            // Salva preferenza solo su desktop
+            if (window.innerWidth >= 1024) {
+                localStorage.setItem('sidebarCollapsed', this.sidebarCollapsed);
+            }
+        }
+     }"
+     :class="{ 'sidebar-nav--collapsed': sidebarCollapsed }"
+     role="navigation"
+     aria-label="Navigazione principale">
+
+    <!-- Toggle Button -->
+    <button type="button"
+            class="sidebar-nav__toggle"
+            @click="toggleSidebar()"
+            :aria-label="sidebarCollapsed ? 'Espandi sidebar' : 'Comprimi sidebar'"
+            :title="sidebarCollapsed ? 'Espandi sidebar' : 'Comprimi sidebar'">
+        <i :data-lucide="sidebarCollapsed ? 'chevron-right' : 'chevron-left'"></i>
+    </button>
+
     <!-- Logo -->
     <div class="sidebar-nav__logo">
         <?php 
