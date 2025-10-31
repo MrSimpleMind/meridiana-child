@@ -54,9 +54,6 @@ get_header();
                             <!-- HERO SECTION: Utenti Totali + Breakdown -->
                             <div class="analitiche-users-hero">
                                 <div class="analitiche-users-hero__left">
-                                    <div class="analitiche-users-hero__number" x-text="globalStatsTotalUsers || '—'"></div>
-                                    <p class="analitiche-users-hero__subtitle">Utenti attivi</p>
-
                                     <div class="analitiche-users-hero__status-breakdown">
                                         <div class="status-item status-item--active">
                                             <span class="status-item__icon"></span>

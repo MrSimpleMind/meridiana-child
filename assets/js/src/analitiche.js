@@ -659,11 +659,11 @@ document.addEventListener("alpine:init", () => {
             this.globalStatsTotalUsers = stats.total_users || 0;
 
             const cards = [
-                { label: "Protocolli Pubblicati", value: stats.total_protocols },
-                { label: "Moduli Pubblicati", value: stats.total_modules },
-                { label: "Convenzioni Pubblicate", value: stats.total_convenzioni },
+                { label: "Protocolli", value: stats.total_protocols },
+                { label: "Moduli", value: stats.total_modules },
+                { label: "Convenzioni", value: stats.total_convenzioni },
                 { label: "Articoli Salute", value: stats.total_salute_benessere },
-                { label: "Comunicazioni Pubblicate", value: stats.total_comunicazioni },
+                { label: "Comunicazioni", value: stats.total_comunicazioni },
                 { label: "Protocolli ATS", value: stats.total_ats_protocols }
             ];
 
@@ -730,6 +730,37 @@ document.addEventListener("alpine:init", () => {
                 this.usersBreakdownChartInstance.destroy();
             }
 
+            // Plugin per disegnare il numero al centro del doughnut
+            const centerTextPlugin = {
+                id: 'centerText',
+                afterDraw(chart) {
+                    const { ctx, chartArea: { left, top, width, height } } = chart;
+                    ctx.save();
+
+                    // Calcola il totale degli utenti
+                    const total = counts.reduce((sum, count) => sum + count, 0);
+
+                    // Impostazioni testo
+                    const centerX = left + width / 2;
+                    const centerY = top + height / 2;
+                    const fontSize = Math.floor(height / 6);
+
+                    // Disegna il numero grande
+                    ctx.font = `bold ${fontSize}px Arial`;
+                    ctx.fillStyle = '#8B1B1B'; // Color rosso scuro come nella screenshot
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(total.toString(), centerX, centerY - fontSize / 3);
+
+                    // Disegna il label piccolo sotto
+                    ctx.font = `14px Arial`;
+                    ctx.fillStyle = '#999';
+                    ctx.fillText('Utenti attivi', centerX, centerY + fontSize / 2);
+
+                    ctx.restore();
+                }
+            };
+
             this.usersBreakdownChartInstance = new Chart(canvas, {
                 type: 'doughnut',
                 data: {
@@ -756,7 +787,8 @@ document.addEventListener("alpine:init", () => {
                             }
                         }
                     }
-                }
+                },
+                plugins: [centerTextPlugin]
             });
 
             console.log("[renderUsersBreakdownChart] COMPLETE");

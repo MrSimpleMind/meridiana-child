@@ -23,7 +23,8 @@
       "mcp__mcp-local-wp__mysql_query",
       "Bash(mysql --version:*)",
       "Bash(npm run build:js:analitiche:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(find:*)"
     ]
   },
   "outputStyle": "default"
