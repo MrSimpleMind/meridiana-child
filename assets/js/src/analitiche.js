@@ -324,6 +324,9 @@ document.addEventListener("alpine:init", () => {
                         </tbody>
                     </table>
                         </div>
+                        <div class="protocol-grid-legend-text">
+                            <p><strong>Colori:</strong> Verde ≥75% (Eccellente) | Giallo 50-75% (Buono) | Arancione 25-50% (Medio) | Rosso &lt;25% (Scarso) | Grigio 0% (Non visto)</p>
+                        </div>
                     </div>
                     <div class="protocol-grid-legend-sticky">
                         <div class="protocol-grid-legend-card">
