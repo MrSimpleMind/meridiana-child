@@ -921,15 +921,18 @@ body.admin-bar {
     opacity: 0.5;
 }
 
-// Legenda sticky sulla destra
+// Legenda: sotto la tabella a < 1024px, sticky sulla destra a >= 1024px
 .protocol-grid-legend-sticky {
-    position: sticky;
-    top: calc(var(--dashboard-tabs-offset, 0px) + 20px);
-    height: fit-content;
-    display: none;
+    // Base: legenda normale sotto la tabella (mobile/tablet)
+    position: static;
+    display: block;
+    height: auto;
 
     @media (min-width: 1024px) {
-        display: block;
+        // Desktop: legenda sticky sulla destra
+        position: sticky;
+        top: calc(var(--dashboard-tabs-offset, 0px) + 20px);
+        height: fit-content;
     }
 }
 
