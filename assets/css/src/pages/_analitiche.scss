@@ -277,6 +277,16 @@ body.admin-bar {
     gap: 8px;
 }
 
+.analytics-filters-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+
+    @include sm {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
 .analytics-search-field {
     position: relative;
 }
@@ -1423,14 +1433,19 @@ body.admin-bar {
 
 .analitiche-users-hero {
     display: grid;
-    grid-template-columns: auto minmax(200px, 1fr) auto;
-    gap: 40px;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
     align-items: center;
     background-color: transparent;
     border-radius: 0;
     box-shadow: none;
     padding: 0;
     margin-bottom: 32px;
+
+    @media (max-width: 1024px) {
+        grid-template-columns: 1fr;
+        gap: 32px;
+    }
 }
 
 .analitiche-users-hero__left {
@@ -1479,6 +1494,19 @@ body.admin-bar {
     height: 10px;
     border-radius: 50%;
     flex-shrink: 0;
+    background-color: #ccc;
+}
+
+.status-item--active .status-item__icon {
+    background-color: #10b981;
+}
+
+.status-item--suspended .status-item__icon {
+    background-color: #f59e0b;
+}
+
+.status-item--fired .status-item__icon {
+    background-color: #ef4444;
 }
 
 .status-item__label {
@@ -1499,13 +1527,11 @@ body.admin-bar {
     justify-content: center;
     min-height: 320px;
     width: 100%;
-    max-width: 400px;
-    aspect-ratio: 1;
 }
 
 .analitiche-users-hero__chart-container {
-    width: 100%;
-    height: 100%;
+    width: 200px;
+    height: 200px;
     position: relative;
 }
 
@@ -1521,9 +1547,10 @@ body.admin-bar {
     display: flex;
     flex-direction: column;
     gap: 10px;
-    max-height: 400px;
+    max-height: 320px;
     overflow-y: auto;
     padding-right: 8px;
+    width: 100%;
 }
 
 .legend-item {
@@ -1556,4 +1583,61 @@ body.admin-bar {
     color: var(--color-heading);
     font-weight: 600;
     text-align: right;
+}
+
+// Profile Colors for Legend Dots
+.legend-item__dot--0 {
+    background-color: rgba(6, 182, 212, 0.8);
+}
+
+.legend-item__dot--1 {
+    background-color: rgba(34, 197, 94, 0.8);
+}
+
+.legend-item__dot--2 {
+    background-color: rgba(249, 115, 22, 0.8);
+}
+
+.legend-item__dot--3 {
+    background-color: rgba(168, 85, 247, 0.8);
+}
+
+.legend-item__dot--4 {
+    background-color: rgba(59, 130, 246, 0.8);
+}
+
+.legend-item__dot--5 {
+    background-color: rgba(239, 68, 68, 0.8);
+}
+
+.legend-item__dot--6 {
+    background-color: rgba(236, 72, 153, 0.8);
+}
+
+.legend-item__dot--7 {
+    background-color: rgba(30, 144, 255, 0.8);
+}
+
+.legend-item__dot--8 {
+    background-color: rgba(255, 165, 0, 0.8);
+}
+
+.legend-item__dot--9 {
+    background-color: rgba(72, 219, 251, 0.8);
+}
+
+.legend-item__dot--10 {
+    background-color: rgba(156, 39, 176, 0.8);
+}
+
+.legend-item__dot--11 {
+    background-color: rgba(0, 188, 212, 0.8);
+}
+
+.legend-item__dot--12 {
+    background-color: rgba(76, 175, 80, 0.8);
+}
+
+.legend-item__dot--13 {
+    background-color: rgba(244, 67, 54, 0.8);
 }

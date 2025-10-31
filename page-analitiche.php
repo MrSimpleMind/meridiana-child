@@ -58,18 +58,18 @@ get_header();
                                     <p class="analitiche-users-hero__subtitle">Utenti attivi</p>
 
                                     <div class="analitiche-users-hero__status-breakdown">
-                                        <div class="status-item">
-                                            <span class="status-item__icon" style="background-color: #10b981;"></span>
+                                        <div class="status-item status-item--active">
+                                            <span class="status-item__icon"></span>
                                             <span class="status-item__label">Attivi</span>
                                             <span class="status-item__count" x-text="usersStatusBreakdown?.attivo || '0'"></span>
                                         </div>
-                                        <div class="status-item">
-                                            <span class="status-item__icon" style="background-color: #f59e0b;"></span>
+                                        <div class="status-item status-item--suspended">
+                                            <span class="status-item__icon"></span>
                                             <span class="status-item__label">Sospesi</span>
                                             <span class="status-item__count" x-text="usersStatusBreakdown?.sospeso || '0'"></span>
                                         </div>
-                                        <div class="status-item">
-                                            <span class="status-item__icon" style="background-color: #ef4444;"></span>
+                                        <div class="status-item status-item--fired">
+                                            <span class="status-item__icon"></span>
                                             <span class="status-item__label">Licenziati</span>
                                             <span class="status-item__count" x-text="usersStatusBreakdown?.licenziato || '0'"></span>
                                         </div>
@@ -87,9 +87,9 @@ get_header();
 
                                 <div class="analitiche-users-hero__right">
                                     <div class="analitiche-users-hero__legend" x-show="!usersBreakdownLoading" x-cloak>
-                                        <template x-for="profile in usersBreakdownProfiles" :key="profile.key">
+                                        <template x-for="(profile, idx) in usersBreakdownProfiles" :key="profile.key">
                                             <div class="legend-item">
-                                                <span class="legend-item__dot" :style="'background-color: ' + getProfileColor(profile.key)"></span>
+                                                <span class="legend-item__dot" :class="'legend-item__dot--' + idx"></span>
                                                 <span class="legend-item__label" x-text="profile.label"></span>
                                                 <span class="legend-item__count" x-text="profile.count"></span>
                                             </div>
@@ -128,8 +128,6 @@ get_header();
 
                         <div class="dashboard-tab-pane" x-show="activeTab === 'matrix'" x-cloak>
                             <div class="analitiche-section analitiche-section--matrix">
-                                <h2 class="analitiche-section__title">Matrice Protocolli × Profili Professionali</h2>
-                                <p class="analitiche-section__description">Visualizzazioni uniche per combinazione protocollo/profilo con percentuale di engagement</p>
                                 <div class="protocol-grid-container" x-ref="protocolGrid" x-show="!gridLoading" x-cloak>
                                     <!-- Caricato dinamicamente da Alpine.js -->
                                 </div>
@@ -145,10 +143,6 @@ get_header();
                         <div class="dashboard-tab-pane" x-show="activeTab === 'users'" x-cloak>
                             <section class="analytics-card analytics-card--filters">
                                 <div class="analytics-card__header">
-                                    <div>
-                                        <h3>Analisi per Utente</h3>
-                                        <p>Verifica quali documenti ha consultato un collaboratore e quando.</p>
-                                    </div>
                                     <div class="analytics-card__status" x-show="userLoading" x-cloak>
                                         <span class="loading-spinner"><i data-lucide="loader"></i> Caricamento...</span>
                                     </div>
@@ -253,47 +247,45 @@ get_header();
                         <div class="dashboard-tab-pane" x-show="activeTab === 'documents'" x-cloak>
                             <section class="analytics-card analytics-card--filters">
                                 <div class="analytics-card__header">
-                                    <div>
-                                        <h3>Analisi per Documento</h3>
-                                        <p>Scopri chi ha letto ogni protocollo o modulo.</p>
-                                    </div>
                                     <div class="analytics-card__status" x-show="documentLoading" x-cloak>
                                         <span class="loading-spinner"><i data-lucide="loader"></i> Caricamento...</span>
                                     </div>
                                 </div>
 
-                                <div class="analytics-field-group">
-                                    <label class="analytics-input-label" for="analytics-document-type">Tipo di documento</label>
-                                    <select id="analytics-document-type" class="analytics-input" x-model="documentTypeFilter" @change="handleDocumentTypeChange">
-                                        <option value="all">Tutti</option>
-                                        <option value="protocollo">Protocolli</option>
-                                        <option value="modulo">Moduli</option>
-                                    </select>
-                                </div>
+                                <div class="analytics-filters-row">
+                                    <div class="analytics-field-group">
+                                        <label class="analytics-input-label" for="analytics-document-type">Tipo di documento</label>
+                                        <select id="analytics-document-type" class="analytics-input" x-model="documentTypeFilter" @change="handleDocumentTypeChange">
+                                            <option value="all">Tutti</option>
+                                            <option value="protocollo">Protocolli</option>
+                                            <option value="modulo">Moduli</option>
+                                        </select>
+                                    </div>
 
-                                <div class="analytics-field-group">
-                                    <label class="analytics-input-label" for="analytics-document-select">Documento</label>
-                                    <div class="analytics-select-field">
-                                        <select id="analytics-document-select"
-                                                class="analytics-input"
-                                                x-model="documentSelectionId"
-                                                @change="handleDocumentSelection">
-                                            <option value="">Seleziona documento</option>
-                                            <template x-for="doc in filteredDocumentOptions()" :key="doc.ID">
-                                                <option :value="doc.ID" x-text="doc.post_title"></option>
+                                    <div class="analytics-field-group">
+                                        <label class="analytics-input-label" for="analytics-document-select">Documento</label>
+                                        <div class="analytics-select-field">
+                                            <select id="analytics-document-select"
+                                                    class="analytics-input"
+                                                    x-model="documentSelectionId"
+                                                    @change="handleDocumentSelection">
+                                                <option value="">Seleziona documento</option>
+                                                <template x-for="doc in filteredDocumentOptions()" :key="doc.ID">
+                                                    <option :value="doc.ID" x-text="doc.post_title"></option>
+                                                </template>
+                                            </select>
+                                        </div>
+                                    </div>
+
+                                    <div class="analytics-field-group">
+                                        <label class="analytics-input-label" for="analytics-profile-filter">Profilo Professionale</label>
+                                        <select id="analytics-profile-filter" class="analytics-input" x-model="documentProfileFilter" @change="handleDocumentProfileChange">
+                                            <option value="">Tutti i profili</option>
+                                            <template x-for="profile in availableProfiles" :key="profile.key">
+                                                <option :value="profile.key" x-text="profile.label"></option>
                                             </template>
                                         </select>
                                     </div>
-                                </div>
-
-                                <div class="analytics-field-group">
-                                    <label class="analytics-input-label" for="analytics-profile-filter">Profilo Professionale</label>
-                                    <select id="analytics-profile-filter" class="analytics-input" x-model="documentProfileFilter" @change="handleDocumentProfileChange">
-                                        <option value="">Tutti i profili</option>
-                                        <template x-for="profile in availableProfiles" :key="profile.key">
-                                            <option :value="profile.key" x-text="profile.label"></option>
-                                        </template>
-                                    </select>
                                 </div>
 
                                 <template x-if="documentError">
