@@ -983,15 +983,15 @@ body.admin-bar {
     background-color: var(--color-white);
     border: 1px solid var(--color-border-light);
     border-radius: 8px;
-    padding: 16px;
+    padding: 12px;
     box-shadow: var(--shadow-sm);
-    width: 220px;
-    min-width: 220px;
+    width: 160px;
+    min-width: 160px;
 }
 
 .protocol-grid-legend-title {
-    margin: 0 0 14px;
-    font-size: 14px;
+    margin: 0 0 10px;
+    font-size: 12px;
     font-weight: 600;
     color: var(--color-heading);
     text-transform: uppercase;
@@ -1001,7 +1001,7 @@ body.admin-bar {
 .protocol-grid-legend {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 6px;
     padding: 0;
     margin: 0;
     border-top: none;
@@ -1010,8 +1010,8 @@ body.admin-bar {
 .protocol-grid-legend__item {
     display: flex;
     align-items: center;
-    gap: 8px;
-    font-size: 13px;
+    gap: 6px;
+    font-size: 12px;
     color: var(--color-text-secondary);
     padding: 0;
     margin: 0;
@@ -1019,18 +1019,18 @@ body.admin-bar {
 
 .protocol-grid-legend__sublabel {
     display: block;
-    font-size: 12px;
+    font-size: 11px;
     color: var(--color-text-secondary);
-    margin-left: 24px;
-    margin-top: -6px;
-    margin-bottom: 8px;
+    margin-left: 18px;
+    margin-top: -4px;
+    margin-bottom: 6px;
     font-weight: 500;
 }
 
 .protocol-grid-legend__color {
-    width: 16px;
-    height: 16px;
-    border-radius: 3px;
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
     flex-shrink: 0;
 }
 
