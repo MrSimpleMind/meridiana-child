@@ -196,11 +196,28 @@ document.addEventListener("alpine:init", () => {
         userSearchTimeout: null,
         documentTypeFilter: "all",
         documentSelectionId: "",
+        documentProfileFilter: "",
         documentOptions: Array.isArray(ANALYTICS_DATA.documents) ? ANALYTICS_DATA.documents : [],
         documentDetails: null,
         documentLoading: false,
         documentError: "",
         viewerSort: "recent",
+        availableProfiles: [
+            { key: 'addetto_manutenzione', label: 'Addetto Manutenzione' },
+            { key: 'asa_oss', label: 'ASA/OSS' },
+            { key: 'assistente_sociale', label: 'Assistente Sociale' },
+            { key: 'coordinatore', label: 'Coordinatore' },
+            { key: 'educatore', label: 'Educatore' },
+            { key: 'fkt', label: 'FKT' },
+            { key: 'impiegato_amministrativo', label: 'Impiegato Amministrativo' },
+            { key: 'infermiere', label: 'Infermiere' },
+            { key: 'logopedista', label: 'Logopedista' },
+            { key: 'medico', label: 'Medico' },
+            { key: 'psicologa', label: 'Psicologa' },
+            { key: 'receptionista', label: 'Receptionista' },
+            { key: 'terapista_occupazionale', label: 'Terapista Occupazionale' },
+            { key: 'volontari', label: 'Volontari' }
+        ],
         profileProtocolsData: [],
         profileModulesData: [],
         profileSelectedFilter: "",
@@ -1237,6 +1254,17 @@ document.addEventListener("alpine:init", () => {
             }
         },
 
+        handleDocumentProfileChange() {
+            // Quando cambia il filtro profilo, filtra i viewer e non-viewer
+            if (this.documentDetails) {
+                // I dati originali sono conservati, applichiamo il filtro al rendering
+                this.$nextTick(() => {
+                    // Force re-render della lista viewer/non-viewer
+                    this.viewerSort = this.viewerSort; // Trigger re-render
+                });
+            }
+        },
+
         filteredDocumentOptions() {
             const list = Array.isArray(this.documentOptions) ? this.documentOptions : [];
             let filtered = list;
@@ -1295,7 +1323,14 @@ document.addEventListener("alpine:init", () => {
                 return [];
             }
 
-            const viewers = this.documentDetails.viewers.slice();
+            let viewers = this.documentDetails.viewers.slice();
+
+            // Applica filtro profilo se selezionato
+            if (this.documentProfileFilter) {
+                viewers = viewers.filter((viewer) => {
+                    return viewer.user_profile === this.documentProfileFilter;
+                });
+            }
 
             if (this.viewerSort === "name") {
                 viewers.sort((a, b) => (a.display_name || "").localeCompare(b.display_name || ""));
@@ -1321,7 +1356,17 @@ document.addEventListener("alpine:init", () => {
             if (!this.documentDetails) {
                 return [];
             }
-            return this.documentDetails.non_viewers.slice(0, limit);
+
+            let nonViewers = this.documentDetails.non_viewers.slice();
+
+            // Applica filtro profilo se selezionato
+            if (this.documentProfileFilter) {
+                nonViewers = nonViewers.filter((user) => {
+                    return user.user_profile === this.documentProfileFilter;
+                });
+            }
+
+            return nonViewers.slice(0, limit);
         },
 
         exportUserViews(format = 'csv') {

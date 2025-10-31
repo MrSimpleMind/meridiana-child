@@ -18,7 +18,12 @@
       "Bash(wp db query:*)",
       "Read(//c/Users/strik/Local Sites/nuova-formazione/app/**)",
       "Bash(npm run build:js:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "mcp__mcp-local-wp__mysql_schema",
+      "mcp__mcp-local-wp__mysql_query",
+      "Bash(mysql --version:*)",
+      "Bash(npm run build:js:analitiche:*)",
+      "Bash(npm run:*)"
     ]
   },
   "outputStyle": "default"

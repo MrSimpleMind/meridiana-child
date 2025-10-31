@@ -212,11 +212,12 @@ function meridiana_get_document_views($document_id, $args = array()) {
 function meridiana_get_unique_document_views_by_user($document_id) {
     global $wpdb;
     $table = $wpdb->prefix . 'document_views';
-    
-    $sql = "SELECT 
+
+    $sql = "SELECT
                 dv.user_id,
                 u.display_name,
                 u.user_email,
+                dv.user_profile,
                 dv.document_version,
                 MAX(dv.view_timestamp) as last_view,
                 COUNT(*) as view_count
@@ -225,7 +226,7 @@ function meridiana_get_unique_document_views_by_user($document_id) {
             WHERE dv.document_id = %d
             GROUP BY dv.user_id, dv.document_version
             ORDER BY last_view DESC";
-    
+
     return $wpdb->get_results($wpdb->prepare($sql, $document_id));
 }
 
@@ -284,10 +285,13 @@ function meridiana_get_users_who_not_viewed($document_id) {
         return array();
     }
     
-    // Get user details
+    // Get user details with user_profile
     $placeholders = implode(',', array_map('intval', $not_viewed));
-    $sql = "SELECT ID, display_name, user_email FROM {$wpdb->users} WHERE ID IN ($placeholders)";
-    
+    $sql = "SELECT u.ID, u.display_name, u.user_email, um.meta_value as user_profile
+            FROM {$wpdb->users} u
+            LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'profilo_professionale'
+            WHERE u.ID IN ($placeholders)";
+
     return $wpdb->get_results($sql);
 }
 

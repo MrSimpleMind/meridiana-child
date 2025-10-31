@@ -286,6 +286,16 @@ get_header();
                                     </div>
                                 </div>
 
+                                <div class="analytics-field-group">
+                                    <label class="analytics-input-label" for="analytics-profile-filter">Profilo Professionale</label>
+                                    <select id="analytics-profile-filter" class="analytics-input" x-model="documentProfileFilter" @change="handleDocumentProfileChange">
+                                        <option value="">Tutti i profili</option>
+                                        <template x-for="profile in availableProfiles" :key="profile.key">
+                                            <option :value="profile.key" x-text="profile.label"></option>
+                                        </template>
+                                    </select>
+                                </div>
+
                                 <template x-if="documentError">
                                     <p class="analytics-error" x-text="documentError"></p>
                                 </template>
@@ -330,8 +340,7 @@ get_header();
                                                         <thead>
                                                             <tr>
                                                                 <th>Utente</th>
-                                                                <th class="is-center">Visualizzazioni</th>
-                                                                <th>Ultima visualizzazione</th>
+                                                                <th>Data visualizzazione</th>
                                                             </tr>
                                                         </thead>
                                                         <tbody>
@@ -341,7 +350,6 @@ get_header();
                                                                         <span class="analytics-table__title" x-text="viewer.display_name"></span>
                                                                         <span class="analytics-table__subtitle" x-text="viewer.user_email"></span>
                                                                     </td>
-                                                                    <td class="is-center" x-text="viewer.view_count"></td>
                                                                     <td x-text="formatDate(viewer.last_view)"></td>
                                                                 </tr>
                                                             </template>
