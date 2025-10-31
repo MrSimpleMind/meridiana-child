@@ -376,6 +376,47 @@ document.addEventListener("alpine:init", () => {
 
             container.innerHTML = html;
             console.log("[renderProtocolGrid] COMPLETE - Rendered " + protocols.length + " protocols");
+
+            // Aggiungi sincronizzazione sticky per colonna protocolli su < 1200px
+            this.$nextTick(() => {
+                this.setupProtocolColumnSticky();
+            });
+        },
+
+        setupProtocolColumnSticky() {
+            // Solo su < 1200px
+            if (window.innerWidth >= 1200) {
+                return;
+            }
+
+            const wrapper = document.querySelector('.protocol-grid-wrapper');
+            const table = document.querySelector('.protocol-grid-table');
+
+            if (!wrapper || !table) {
+                return;
+            }
+
+            console.log("[setupProtocolColumnSticky] Setting up sticky protocol column");
+
+            // Aggiungi classe is-sticky a tutte le colonne protocolli
+            const headerCells = table.querySelectorAll('thead .protocol-grid__th-protocol');
+            const bodyCells = table.querySelectorAll('tbody .protocol-grid__td-protocol');
+
+            headerCells.forEach(cell => cell.classList.add('is-sticky'));
+            bodyCells.forEach(cell => cell.classList.add('is-sticky'));
+
+            // Sincronizza lo scroll orizzontale con la posizione della colonna
+            wrapper.addEventListener('scroll', () => {
+                const scrollLeft = wrapper.scrollLeft;
+
+                // Applica transform per far rimanere la colonna visibile
+                headerCells.forEach(cell => {
+                    cell.style.transform = `translateX(${scrollLeft}px)`;
+                });
+                bodyCells.forEach(cell => {
+                    cell.style.transform = `translateX(${scrollLeft}px)`;
+                });
+            });
         },
 
         getGridCellClass(percentage) {

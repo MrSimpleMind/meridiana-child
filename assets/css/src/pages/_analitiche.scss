@@ -763,14 +763,6 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-
-    // Sticky su laptop 1024px quando c'è scorrimento
-    @media (max-width: 1199px) {
-        position: sticky;
-        left: 0;
-        background-color: var(--color-bg-secondary);
-        z-index: 10;
-    }
 }
 
 .protocol-grid__th-profile {
@@ -816,14 +808,18 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+}
 
-    // Sticky su laptop 1024px quando c'è scorrimento
-    @media (max-width: 1199px) {
-        position: sticky;
-        left: 0;
-        background-color: var(--color-white);
-        z-index: 10;
-    }
+// Sticky columns fatto con JavaScript per < 1200px
+.protocol-grid__th-protocol.is-sticky,
+.protocol-grid__td-protocol.is-sticky {
+    position: relative;
+    background-color: var(--color-white);
+    z-index: 10;
+}
+
+.protocol-grid__th-protocol.is-sticky {
+    background-color: var(--color-bg-secondary);
 }
 
 .protocol-grid__td-profile {
