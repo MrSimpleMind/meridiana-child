@@ -689,7 +689,7 @@ body.admin-bar {
     gap: 24px;
     align-items: flex-start;
 
-    @media (max-width: 1024px) {
+    @media (max-width: 1023px) {
         grid-template-columns: 1fr;
     }
 }
@@ -928,7 +928,7 @@ body.admin-bar {
     height: fit-content;
     display: none;
 
-    @media (min-width: 1025px) {
+    @media (min-width: 1024px) {
         display: block;
     }
 }
