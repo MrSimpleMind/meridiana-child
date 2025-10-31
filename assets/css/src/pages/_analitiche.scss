@@ -763,6 +763,14 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    // Sticky su laptop 1024px quando c'è scorrimento
+    @media (max-width: 1199px) {
+        position: sticky;
+        left: 0;
+        background-color: var(--color-bg-secondary);
+        z-index: 10;
+    }
 }
 
 .protocol-grid__th-profile {
@@ -808,6 +816,14 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+
+    // Sticky su laptop 1024px quando c'è scorrimento
+    @media (max-width: 1199px) {
+        position: sticky;
+        left: 0;
+        background-color: var(--color-white);
+        z-index: 10;
+    }
 }
 
 .protocol-grid__td-profile {
