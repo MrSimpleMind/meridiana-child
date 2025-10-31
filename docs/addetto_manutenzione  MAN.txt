@@ -1,0 +1,14 @@
+addetto_manutenzione : MAN
+asa_oss : OSS
+assistente_sociale : ASOC
+coordinatore : COORD
+educatore : EDU
+fkt : FKT
+impiegato_amministrativo : AMM
+infermiere : INF
+logopedista : LOG
+medico : MED
+psicologa : PSI
+receptionista : REC
+terapista_occupazionale : TOCC
+volontari : VOL

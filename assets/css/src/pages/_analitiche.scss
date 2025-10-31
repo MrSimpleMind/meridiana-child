@@ -91,6 +91,13 @@ body.admin-bar {
         box-shadow: none;
         padding: 0;
     }
+
+    &--matrix {
+        background-color: transparent;
+        border: none;
+        box-shadow: none;
+        padding: 0;
+    }
 }
 
 .stats-cards-grid {
@@ -677,10 +684,10 @@ body.admin-bar {
 // ============================================
 
 .protocol-grid-container {
-    border: 1px solid var(--color-border-light);
-    border-radius: 8px;
-    background-color: var(--color-white);
-    padding: 12px;
+    border: none;
+    border-radius: 0;
+    background-color: transparent;
+    padding: 0;
 }
 
 .protocol-grid-outer {
@@ -699,6 +706,18 @@ body.admin-bar {
     flex-direction: column;
     gap: 16px;
     min-width: 0;
+}
+
+.protocol-grid-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+    margin-bottom: 16px;
+
+    @include md {
+        align-items: center;
+    }
 }
 
 .protocol-grid-info {
@@ -763,6 +782,7 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    height: 60px;
 }
 
 .protocol-grid__th-profile {
@@ -773,21 +793,20 @@ body.admin-bar {
     min-width: 65px;
     max-width: 65px;
     width: 65px;
-    vertical-align: top;
+    vertical-align: middle;
     font-size: 12px;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    height: 60px;
 }
 
 .protocol-grid__th-name {
     display: block;
     color: var(--color-heading);
-    font-size: 11px;
-    line-height: 1.3;
-    word-wrap: break-word;
-    word-break: break-word;
-    overflow-wrap: break-word;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1.2;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .protocol-grid__th-count {
@@ -808,6 +827,8 @@ body.admin-bar {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    height: 60px;
+    vertical-align: middle;
 }
 
 // Layout a due colonne: fissa + scrollabile
@@ -834,6 +855,7 @@ body.admin-bar {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    table-layout: fixed;
 
     thead {
         background-color: var(--color-bg-secondary);
@@ -842,8 +864,13 @@ body.admin-bar {
         z-index: 20;
     }
 
+    thead tr {
+        height: 60px;
+    }
+
     tbody tr {
         border-bottom: 1px solid var(--color-border-light);
+        height: 60px;
 
         &:hover {
             background-color: rgba(6, 182, 212, 0.02);
@@ -852,6 +879,10 @@ body.admin-bar {
         &:last-child {
             border-bottom: none;
         }
+    }
+
+    th, td {
+        vertical-align: middle;
     }
 }
 
@@ -866,6 +897,7 @@ body.admin-bar {
     width: 100%;
     border-collapse: collapse;
     font-size: 14px;
+    table-layout: fixed;
 
     thead {
         background-color: var(--color-bg-secondary);
@@ -875,8 +907,13 @@ body.admin-bar {
         z-index: 15;
     }
 
+    thead tr {
+        height: 60px;
+    }
+
     tbody tr {
         border-bottom: 1px solid var(--color-border-light);
+        height: 60px;
 
         &:hover {
             background-color: rgba(6, 182, 212, 0.02);
@@ -885,6 +922,10 @@ body.admin-bar {
         &:last-child {
             border-bottom: none;
         }
+    }
+
+    th, td {
+        vertical-align: middle;
     }
 }
 
@@ -999,22 +1040,247 @@ body.admin-bar {
     opacity: 0.5;
 }
 
-// Descrizione testuale della legenda (fino a 1199px)
-.protocol-grid-legend-text {
-    display: block;
-    padding: 16px 0;
-    margin-top: 12px;
+// ============================================
+// Ricerca Protocolli (nell'intestazione)
+// ============================================
+
+.protocol-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.protocol-search-input {
+    width: 100%;
+    padding: 6px 28px 6px 8px;
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    font-size: 12px;
+    color: var(--color-text);
+    background-color: var(--color-white);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
+    }
+
+    &::placeholder {
+        color: var(--color-text-secondary);
+        font-style: italic;
+    }
+}
+
+.protocol-search-icon {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    pointer-events: none;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+
+    i, svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+.protocol-search-clear {
+    position: absolute;
+    right: 4px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: transparent;
+    border: none;
+    padding: 4px;
+    cursor: pointer;
+    color: var(--color-text-secondary);
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-error);
+    }
+
+    i, svg {
+        width: 14px;
+        height: 14px;
+    }
+}
+
+// ============================================
+// Paginazione Protocolli
+// ============================================
+
+.protocol-pagination {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding-top: 16px;
     border-top: 1px solid var(--color-border-light);
-    font-size: 13px;
+    gap: 16px;
+    flex-wrap: wrap;
+
+    @media (max-width: 768px) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+}
+
+.protocol-pagination__info {
+    font-size: 14px;
     color: var(--color-text-secondary);
 
-    p {
-        margin: 0;
+    strong {
+        color: var(--color-heading);
+        font-weight: 600;
+    }
+}
+
+.protocol-pagination__controls {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-wrap: wrap;
+}
+
+.protocol-pagination__label {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+.protocol-pagination__select {
+    padding: 6px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    font-size: 14px;
+    color: var(--color-text);
+    background-color: var(--color-white);
+    cursor: pointer;
+    transition: border-color 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(6, 182, 212, 0.1);
     }
 
-    @media (min-width: 1200px) {
-        display: none; // Nascondi a desktop grande
+    &:hover {
+        border-color: var(--color-text-secondary);
     }
+}
+
+.protocol-pagination__buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.protocol-pagination__btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background-color: var(--color-white);
+    color: var(--color-text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:hover:not(:disabled) {
+        border-color: var(--color-primary);
+        background-color: rgba(6, 182, 212, 0.05);
+        color: var(--color-primary);
+    }
+
+    &:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+        background-color: var(--color-bg-secondary);
+    }
+
+    i, svg {
+        width: 16px;
+        height: 16px;
+    }
+}
+
+.protocol-pagination__page {
+    font-size: 14px;
+    color: var(--color-text-secondary);
+    padding: 0 8px;
+    white-space: nowrap;
+
+    strong {
+        color: var(--color-heading);
+        font-weight: 600;
+    }
+}
+
+// ============================================
+// Legenda Orizzontale (sopra la griglia)
+// ============================================
+
+.protocol-grid-legend-horizontal {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+}
+
+.protocol-grid-legend-title-inline {
+    margin: 0;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-heading);
+    white-space: nowrap;
+}
+
+.protocol-grid-legend-inline {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding: 0;
+    margin: 0;
+    border-top: none;
+}
+
+.protocol-grid-legend__item-inline {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: var(--color-text-secondary);
+    padding: 0;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.protocol-grid-legend__sublabel-inline {
+    display: inline;
+    font-size: 11px;
+    color: var(--color-text-secondary);
+    font-weight: 400;
+    font-style: italic;
+}
+
+// Descrizione testuale della legenda (fino a 1199px) - NASCOSTA
+.protocol-grid-legend-text {
+    display: none;
 }
 
 // Colori per il testo della legenda
@@ -1043,18 +1309,9 @@ body.admin-bar {
     font-weight: 600;
 }
 
-// Legenda sticky sulla destra (solo a >= 1200px)
+// Legenda sticky sulla destra (solo a >= 1200px) - NASCOSTA
 .protocol-grid-legend-sticky {
-    // Base: nascosta (mobile/tablet/laptop 1024px)
     display: none;
-
-    @media (min-width: 1200px) {
-        // Desktop grande: mostra e sticky
-        display: block;
-        position: sticky;
-        top: calc(var(--dashboard-tabs-offset, 0px) + 20px);
-        height: fit-content;
-    }
 }
 
 .protocol-grid-legend-card {

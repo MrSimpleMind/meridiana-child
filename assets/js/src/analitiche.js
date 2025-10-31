@@ -67,6 +67,34 @@ function abbreviateProfileName(fullName) {
     return abbreviations[fullName] || fullName;
 }
 
+/**
+ * Converte i nomi dei profili in sigle brevi per le intestazioni della matrice
+ */
+function getProfileAcronym(fullName) {
+    // Normalizza il nome per la ricerca
+    const normalized = fullName.toLowerCase().trim();
+
+    const acronyms = {
+        'addetto manutenzione': 'MAN',
+        'asa/oss': 'OSS',
+        'assistente sociale': 'ASOC',
+        'coordinatore unità di offerta': 'COORD',
+        'coordinatore': 'COORD',
+        'educatore': 'EDU',
+        'fkt': 'FKT',
+        'impiegato amministrativo': 'AMM',
+        'infermiere': 'INF',
+        'logopedista': 'LOG',
+        'medico': 'MED',
+        'psicologa': 'PSI',
+        'receptionista': 'REC',
+        'terapista occupazionale': 'TOCC',
+        'volontari': 'VOL'
+    };
+
+    return acronyms[normalized] || fullName.substring(0, 3).toUpperCase();
+}
+
 function normalizeDate(value) {
     if (!value) {
         return null;
@@ -127,6 +155,11 @@ document.addEventListener("alpine:init", () => {
         gridLoading: false,
         gridError: "",
         protocolGridData: null,
+        protocolSearchQuery: "",
+        protocolCurrentPage: 1,
+        protocolPageSize: 20,
+        protocolTotalPages: 1,
+        protocolFilteredData: [],
         chartInstance: null,
         profileProtocolChartInstance: null,
         profileModuleChartInstance: null,
@@ -262,13 +295,54 @@ document.addEventListener("alpine:init", () => {
                 return;
             }
 
-            // Intestazioni e contatori
+            // Inizializza i dati filtrati se non sono già stati inizializzati
+            if (this.protocolFilteredData.length === 0 && !this.protocolSearchQuery) {
+                this.protocolFilteredData = protocols.slice();
+                this.calculateTotalPages();
+            }
+
+            // Ottieni i protocolli paginati
+            const paginatedProtocols = this.getPaginatedProtocols();
+
+            console.log("[renderProtocolGrid] Filtered protocols:", this.protocolFilteredData.length);
+            console.log("[renderProtocolGrid] Paginated protocols:", paginatedProtocols.length);
+            console.log("[renderProtocolGrid] Current page:", this.protocolCurrentPage);
+            console.log("[renderProtocolGrid] Total pages:", this.protocolTotalPages);
+
+            // Intestazioni e contatori + legenda
             let html = `
                 <div class="protocol-grid-outer">
                     <div class="protocol-grid-main">
-                        <div class="protocol-grid-info">
-                            <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
-                            <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
+                        <div class="protocol-grid-header">
+                            <div class="protocol-grid-info">
+                                <span class="protocol-grid-info__item">Protocolli: <strong>${total_protocols}</strong></span>
+                                <span class="protocol-grid-info__item">Profili: <strong>${total_profiles}</strong></span>
+                            </div>
+                        </div>
+                        <div class="protocol-grid-legend-horizontal">
+                            <h4 class="protocol-grid-legend-title-inline">Legenda:</h4>
+                            <div class="protocol-grid-legend-inline">
+                                <div class="protocol-grid-legend__item-inline">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--green"></span>
+                                    <span>≥ 75% <span class="protocol-grid-legend__sublabel-inline">(Eccellente)</span></span>
+                                </div>
+                                <div class="protocol-grid-legend__item-inline">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--yellow"></span>
+                                    <span>50-75% <span class="protocol-grid-legend__sublabel-inline">(Buono)</span></span>
+                                </div>
+                                <div class="protocol-grid-legend__item-inline">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--orange"></span>
+                                    <span>25-50% <span class="protocol-grid-legend__sublabel-inline">(Medio)</span></span>
+                                </div>
+                                <div class="protocol-grid-legend__item-inline">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--red"></span>
+                                    <span>&lt; 25% <span class="protocol-grid-legend__sublabel-inline">(Scarso)</span></span>
+                                </div>
+                                <div class="protocol-grid-legend__item-inline">
+                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--empty"></span>
+                                    <span>0% <span class="protocol-grid-legend__sublabel-inline">(Non visto)</span></span>
+                                </div>
+                            </div>
                         </div>
                         <div class="protocol-grid-container-split">
                             <!-- TABELLA FISSA (sinistra) -->
@@ -276,14 +350,33 @@ document.addEventListener("alpine:init", () => {
                                 <table class="protocol-grid-table-fixed">
                                     <thead>
                                         <tr>
-                                            <th class="protocol-grid__th-protocol">Protocollo</th>
+                                            <th class="protocol-grid__th-protocol">
+                                                <div class="protocol-search-wrapper">
+                                                    <input type="text"
+                                                           class="protocol-search-input"
+                                                           placeholder="Cerca protocollo..."
+                                                           x-model="protocolSearchQuery"
+                                                           @input.debounce.300ms="handleProtocolSearch()"
+                                                           @keydown.escape="protocolSearchQuery = ''; handleProtocolSearch()">
+                                                    <span class="protocol-search-icon" x-show="!protocolSearchQuery">
+                                                        <i data-lucide="search"></i>
+                                                    </span>
+                                                    <button type="button"
+                                                            class="protocol-search-clear"
+                                                            x-show="protocolSearchQuery"
+                                                            @click="protocolSearchQuery = ''; handleProtocolSearch()"
+                                                            x-cloak>
+                                                        <i data-lucide="x"></i>
+                                                    </button>
+                                                </div>
+                                            </th>
                                         </tr>
                                     </thead>
                                     <tbody>
             `;
 
             // Righe protocolli (solo nella tabella fissa)
-            protocols.forEach(protocol => {
+            paginatedProtocols.forEach(protocol => {
                 html += `<tr class="protocol-grid__row">
                     <td class="protocol-grid__td-protocol">
                         <strong>${protocol.document_title}</strong>
@@ -307,7 +400,7 @@ document.addEventListener("alpine:init", () => {
             if (profile_headers && profile_headers.length > 0) {
                 profile_headers.forEach(header => {
                     html += `<th class="protocol-grid__th-profile" title="${header.name} (${header.total_users} utenti)">
-                        <span class="protocol-grid__th-name">${abbreviateProfileName(header.name)}</span>
+                        <span class="protocol-grid__th-name">${getProfileAcronym(header.name)}</span>
                         <span class="protocol-grid__th-count">(${header.total_users})</span>
                     </th>`;
                 });
@@ -320,7 +413,7 @@ document.addEventListener("alpine:init", () => {
             `;
 
             // Righe protocolli (dati nella tabella scrollabile)
-            protocols.forEach(protocol => {
+            paginatedProtocols.forEach(protocol => {
                 html += `<tr class="protocol-grid__row">
                 `;
 
@@ -348,50 +441,54 @@ document.addEventListener("alpine:init", () => {
                                 </table>
                             </div>
                         </div>
-                        <div class="protocol-grid-legend-text">
-                            <p>
-                                <strong>Colori:</strong>
-                                <span class="legend-text-green">Verde</span> ≥75% (Eccellente) |
-                                <span class="legend-text-yellow">Giallo</span> 50-75% (Buono) |
-                                <span class="legend-text-orange">Arancione</span> 25-50% (Medio) |
-                                <span class="legend-text-red">Rosso</span> &lt;25% (Scarso) |
-                                <span class="legend-text-gray">Grigio</span> 0% (Non visto)
-                            </p>
-                        </div>
-                    </div>
-                    <div class="protocol-grid-legend-sticky">
-                        <div class="protocol-grid-legend-card">
-                            <h4 class="protocol-grid-legend-title">Legenda</h4>
-                            <div class="protocol-grid-legend">
-                                <div class="protocol-grid-legend__item">
-                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--green"></span>
-                                    <span>≥ 75%</span>
-                                </div>
-                                <span class="protocol-grid-legend__sublabel">Eccellente</span>
 
-                                <div class="protocol-grid-legend__item">
-                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--yellow"></span>
-                                    <span>50-75%</span>
-                                </div>
-                                <span class="protocol-grid-legend__sublabel">Buono</span>
+                        <!-- Controlli Paginazione -->
+                        <div class="protocol-pagination">
+                            <div class="protocol-pagination__info">
+                                <span>Mostra <strong>${paginatedProtocols.length}</strong> di <strong>${this.protocolFilteredData.length}</strong> protocolli</span>
+                            </div>
+                            <div class="protocol-pagination__controls">
+                                <label for="protocolPageSize" class="protocol-pagination__label">Righe per pagina:</label>
+                                <select id="protocolPageSize"
+                                        class="protocol-pagination__select"
+                                        x-model="protocolPageSize"
+                                        @change="changeProtocolPageSize($event.target.value)">
+                                    <option value="10">10</option>
+                                    <option value="20">20</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                    <option value="200">200</option>
+                                </select>
 
-                                <div class="protocol-grid-legend__item">
-                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--orange"></span>
-                                    <span>25-50%</span>
+                                <div class="protocol-pagination__buttons">
+                                    <button type="button"
+                                            class="protocol-pagination__btn"
+                                            @click="changeProtocolPage(1)"
+                                            :disabled="protocolCurrentPage === 1">
+                                        <i data-lucide="chevrons-left"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="protocol-pagination__btn"
+                                            @click="changeProtocolPage(protocolCurrentPage - 1)"
+                                            :disabled="protocolCurrentPage === 1">
+                                        <i data-lucide="chevron-left"></i>
+                                    </button>
+                                    <span class="protocol-pagination__page">
+                                        Pagina <strong x-text="protocolCurrentPage"></strong> di <strong x-text="protocolTotalPages"></strong>
+                                    </span>
+                                    <button type="button"
+                                            class="protocol-pagination__btn"
+                                            @click="changeProtocolPage(protocolCurrentPage + 1)"
+                                            :disabled="protocolCurrentPage === protocolTotalPages">
+                                        <i data-lucide="chevron-right"></i>
+                                    </button>
+                                    <button type="button"
+                                            class="protocol-pagination__btn"
+                                            @click="changeProtocolPage(protocolTotalPages)"
+                                            :disabled="protocolCurrentPage === protocolTotalPages">
+                                        <i data-lucide="chevrons-right"></i>
+                                    </button>
                                 </div>
-                                <span class="protocol-grid-legend__sublabel">Medio</span>
-
-                                <div class="protocol-grid-legend__item">
-                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--red"></span>
-                                    <span>&lt; 25%</span>
-                                </div>
-                                <span class="protocol-grid-legend__sublabel">Scarso</span>
-
-                                <div class="protocol-grid-legend__item">
-                                    <span class="protocol-grid-legend__color protocol-grid-legend__color--empty"></span>
-                                    <span>0%</span>
-                                </div>
-                                <span class="protocol-grid-legend__sublabel">Non visto</span>
                             </div>
                         </div>
                     </div>
@@ -433,6 +530,70 @@ document.addEventListener("alpine:init", () => {
             if (percentage >= 50) return 'protocol-grid__cell--good';
             if (percentage >= 25) return 'protocol-grid__cell--medium';
             return 'protocol-grid__cell--poor';
+        },
+
+        // -------------------- Paginazione e Ricerca Protocolli --------------------
+        filterProtocolsBySearch() {
+            if (!this.protocolGridData || !this.protocolGridData.protocols) {
+                this.protocolFilteredData = [];
+                return;
+            }
+
+            const query = this.protocolSearchQuery.toLowerCase().trim();
+
+            if (!query) {
+                this.protocolFilteredData = this.protocolGridData.protocols.slice();
+            } else {
+                this.protocolFilteredData = this.protocolGridData.protocols.filter(protocol => {
+                    return protocol.document_title.toLowerCase().includes(query);
+                });
+            }
+
+            // Resetta alla prima pagina quando si filtra
+            this.protocolCurrentPage = 1;
+            this.calculateTotalPages();
+        },
+
+        calculateTotalPages() {
+            const total = this.protocolFilteredData.length;
+            this.protocolTotalPages = Math.ceil(total / this.protocolPageSize) || 1;
+
+            // Se la pagina corrente è oltre il totale, torna all'ultima pagina valida
+            if (this.protocolCurrentPage > this.protocolTotalPages) {
+                this.protocolCurrentPage = this.protocolTotalPages;
+            }
+        },
+
+        getPaginatedProtocols() {
+            const startIndex = (this.protocolCurrentPage - 1) * this.protocolPageSize;
+            const endIndex = startIndex + this.protocolPageSize;
+            return this.protocolFilteredData.slice(startIndex, endIndex);
+        },
+
+        changeProtocolPage(newPage) {
+            if (newPage < 1 || newPage > this.protocolTotalPages) {
+                return;
+            }
+            this.protocolCurrentPage = newPage;
+            this.$nextTick(() => {
+                this.renderProtocolGrid();
+            });
+        },
+
+        changeProtocolPageSize(newSize) {
+            this.protocolPageSize = parseInt(newSize);
+            this.protocolCurrentPage = 1;
+            this.calculateTotalPages();
+            this.$nextTick(() => {
+                this.renderProtocolGrid();
+            });
+        },
+
+        handleProtocolSearch() {
+            this.filterProtocolsBySearch();
+            this.$nextTick(() => {
+                this.renderProtocolGrid();
+            });
         },
 
         setTab(tab) {

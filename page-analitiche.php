@@ -127,7 +127,7 @@ get_header();
                         </div>
 
                         <div class="dashboard-tab-pane" x-show="activeTab === 'matrix'" x-cloak>
-                            <div class="analitiche-section">
+                            <div class="analitiche-section analitiche-section--matrix">
                                 <h2 class="analitiche-section__title">Matrice Protocolli × Profili Professionali</h2>
                                 <p class="analitiche-section__description">Visualizzazioni uniche per combinazione protocollo/profilo con percentuale di engagement</p>
                                 <div class="protocol-grid-container" x-ref="protocolGrid" x-show="!gridLoading" x-cloak>
