@@ -147,9 +147,6 @@ get_header();
                                         <button type="button"
                                                 class="analytics-button analytics-button--primary"
                                                 @click="exportUserViews('csv')">Esporta CSV</button>
-                                        <button type="button"
-                                                class="analytics-button analytics-button--outline"
-                                                @click="exportUserViews('xls')">Esporta Excel</button>
                                     </div>
                                 </div>
 
@@ -160,7 +157,7 @@ get_header();
                                                type="text"
                                                class="analytics-input"
                                                placeholder="Digita nome o email"
-                                               x-model.debounce.400ms="userQuery"
+                                               x-model.debounce.100ms="userQuery"
                                                @input="handleUserQuery"
                                                autocomplete="off">
                                         <button type="button"
@@ -216,8 +213,7 @@ get_header();
                                                     <tr>
                                                         <th>Documento</th>
                                                         <th class="is-center">Tipo</th>
-                                                        <th class="is-center">Visualizzazioni</th>
-                                                        <th>Ultima visualizzazione</th>
+                                                        <th>Visualizzato il</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
@@ -229,7 +225,6 @@ get_header();
                                                             <td class="is-center">
                                                                 <span class="analytics-badge" x-text="formatDocumentType(view.post_type)"></span>
                                                             </td>
-                                                            <td class="is-center" x-text="view.view_count"></td>
                                                             <td x-text="formatDate(view.last_view)"></td>
                                                         </tr>
                                                     </template>
@@ -314,9 +309,8 @@ get_header();
                                             <div>
                                                 <div class="analytics-panel__subheader">
                                                     <h5>Utenti che hanno visualizzato</h5>
-                                                    <div class="analytics-actions" x-show="documentDetails.viewers.length" x-cloak>
+                                                    <div class="analytics-actions" x-show="hasFilteredViewers()" x-cloak>
                                                         <button type="button" class="analytics-button analytics-button--primary" @click="exportDocumentViewers('csv')">CSV</button>
-                                                        <button type="button" class="analytics-button analytics-button--outline" @click="exportDocumentViewers('xls')">Excel</button>
                                                     </div>
                                                     <select class="analytics-input analytics-input--small" x-model="viewerSort">
                                                         <option value="recent">Più recenti</option>
@@ -324,7 +318,7 @@ get_header();
                                                         <option value="views">Numero visualizzazioni</option>
                                                     </select>
                                                 </div>
-                                                <div class="analytics-table-wrapper">
+                                                <div class="analytics-table-wrapper" x-show="hasFilteredViewers()" x-cloak>
                                                     <table class="analytics-table">
                                                         <thead>
                                                             <tr>
@@ -345,33 +339,36 @@ get_header();
                                                         </tbody>
                                                     </table>
                                                 </div>
+                                                <div class="analytics-empty" x-show="!hasFilteredViewers() && documentDetails.viewers.length" x-cloak>
+                                                    <p>Nessun utente di questo profilo ha visualizzato questo documento.</p>
+                                                </div>
                                             </div>
                                             <div>
                                                 <div class="analytics-panel__subheader">
                                                     <h5>Utenti che non hanno visualizzato</h5>
-                                                    <div class="analytics-actions" x-show="documentDetails.non_viewers.length" x-cloak>
+                                                    <div class="analytics-actions" x-show="hasFilteredNonViewers()" x-cloak>
                                                         <button type="button" class="analytics-button analytics-button--primary" @click="exportDocumentNonViewers('csv')">CSV</button>
-                                                        <button type="button" class="analytics-button analytics-button--outline" @click="exportDocumentNonViewers('xls')">Excel</button>
                                                     </div>
                                                 </div>
-                                                <div class="analytics-scrollable">
-                                                    <template x-if="documentDetails.non_viewers.length">
-                                                        <ul class="analytics-list">
-                                                            <template x-for="user in limitedNonViewers()" :key="user.ID">
-                                                                <li>
-                                                                    <span class="analytics-table__title" x-text="user.display_name"></span>
-                                                                    <span class="analytics-table__subtitle" x-text="user.user_email"></span>
-                                                                </li>
-                                                            </template>
-                                                        </ul>
-                                                    </template>
-                                                    <div class="analytics-empty" x-show="!documentDetails.non_viewers.length" x-cloak>
-                                                        <p>Tutti gli utenti attivi hanno visualizzato questo documento.</p>
-                                                    </div>
-                                                    <p class="analytics-hint" x-show="documentDetails.non_viewers.length > limitedNonViewers().length" x-cloak>
-                                                        Mostrati i primi <span x-text="limitedNonViewers().length"></span> su <span x-text="documentDetails.non_viewers.length"></span> utenti.
-                                                    </p>
+                                                <template x-if="hasFilteredNonViewers()">
+                                                    <ul class="analytics-list">
+                                                        <template x-for="user in limitedNonViewers()" :key="user.ID">
+                                                            <li>
+                                                                <span class="analytics-table__title" x-text="user.display_name"></span>
+                                                                <span class="analytics-table__subtitle" x-text="user.user_email"></span>
+                                                            </li>
+                                                        </template>
+                                                    </ul>
+                                                </template>
+                                                <div class="analytics-empty" x-show="!hasFilteredNonViewers() && documentDetails.non_viewers.length" x-cloak>
+                                                    <p>Tutti gli utenti di questo profilo hanno visualizzato questo documento.</p>
                                                 </div>
+                                                <div class="analytics-empty" x-show="!documentDetails.non_viewers.length" x-cloak>
+                                                    <p>Tutti gli utenti attivi hanno visualizzato questo documento.</p>
+                                                </div>
+                                                <p class="analytics-hint" x-show="hasFilteredNonViewers() && limitedNonViewers().length < limitedNonViewers(999).length" x-cloak>
+                                                    Mostrati i primi <span x-text="limitedNonViewers().length"></span> su <span x-text="limitedNonViewers(999).length"></span> utenti.
+                                                </p>
                                             </div>
                                         </div>
                                     </div>

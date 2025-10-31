@@ -1360,7 +1360,10 @@ document.addEventListener("alpine:init", () => {
             // Applica filtro profilo se selezionato
             if (this.documentProfileFilter) {
                 viewers = viewers.filter((viewer) => {
-                    return viewer.user_profile === this.documentProfileFilter;
+                    // Normalizza il profilo dell'utente per il confronto
+                    const normalizedViewerProfile = normalizeProfileName(viewer.user_profile);
+                    const normalizedFilter = normalizeProfileName(this.documentProfileFilter);
+                    return normalizedViewerProfile === normalizedFilter;
                 });
             }
 
@@ -1394,11 +1397,28 @@ document.addEventListener("alpine:init", () => {
             // Applica filtro profilo se selezionato
             if (this.documentProfileFilter) {
                 nonViewers = nonViewers.filter((user) => {
-                    return user.user_profile === this.documentProfileFilter;
+                    // Normalizza il profilo dell'utente per il confronto
+                    const normalizedUserProfile = normalizeProfileName(user.user_profile);
+                    const normalizedFilter = normalizeProfileName(this.documentProfileFilter);
+                    return normalizedUserProfile === normalizedFilter;
                 });
             }
 
             return nonViewers.slice(0, limit);
+        },
+
+        /**
+         * Helper per controllare se ci sono viewers dopo il filtro profilo
+         */
+        hasFilteredViewers() {
+            return this.sortedDocumentViewers().length > 0;
+        },
+
+        /**
+         * Helper per controllare se ci sono non-viewers dopo il filtro profilo
+         */
+        hasFilteredNonViewers() {
+            return this.limitedNonViewers(999).length > 0;
         },
 
         exportUserViews(format = 'csv') {

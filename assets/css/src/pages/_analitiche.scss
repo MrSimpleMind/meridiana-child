@@ -383,9 +383,9 @@ body.admin-bar {
     top: calc(100% + 6px);
     left: 0;
     right: 0;
-    background-color: var(--color-white);
+    background-color: #fff;
     box-shadow: var(--shadow-lg);
-    z-index: 20;
+    z-index: 30;
 }
 
 .analytics-search-result {
