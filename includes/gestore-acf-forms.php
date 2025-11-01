@@ -1581,9 +1581,9 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
 
         'unita-offerta' => [
 
-            'label' => __('UnitÃ  di Offerta', 'meridiana-child'),
+            'label' => __('Unità di Offerta', 'meridiana-child'),
 
-            'description' => __('Seleziona una o più unità  di offerta pertinenti.', 'meridiana-child'),
+            'description' => __('Seleziona una o più unità di offerta pertinenti.', 'meridiana-child'),
 
             'multiple' => true,
 
@@ -1616,8 +1616,6 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
         ];
 
     }
-
-
 
     echo '<div class="acf-form-taxonomies">';
 
