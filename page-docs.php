@@ -203,23 +203,26 @@ error_log( 'Area: ' . count($area_competenza) );
 
                         <!-- CONTENT -->
                         <div class="docs-item__content">
-                                                                            <div class="docs-item__badge">
-                                                                                <?php
-                                                                                // Mostra sempre il badge del tipo primario (P o M)
-                                                                                if ($type === 'protocollo') {
-                                                                                    echo meridiana_get_badge('protocollo', 'P');
-                                                                                } else { // modulo
-                                                                                    echo meridiana_get_badge('modulo', 'M');
-                                                                                }
-                                                    
-                                                                                // Se è un protocollo ATS, aggiungi il badge ATS
-                                                                                if ($is_ats) {
-                                                                                    echo meridiana_get_badge('ats', 'ATS');
-                                                                                }
-                                                                                ?>
-                                                                            </div>                            <h3 class="docs-item__title">
-                                <?php echo esc_html($doc->post_title); ?>
-                            </h3>
+                            <div class="docs-item__header">
+                                <h3 class="docs-item__title">
+                                    <?php echo esc_html($doc->post_title); ?>
+                                </h3>
+                                <div class="docs-item__badge">
+                                    <?php
+                                    // Mostra sempre il badge del tipo primario (P o M)
+                                    if ($type === 'protocollo') {
+                                        echo meridiana_get_badge('protocollo', 'P');
+                                    } else { // modulo
+                                        echo meridiana_get_badge('modulo', 'M');
+                                    }
+
+                                    // Se è un protocollo ATS, aggiungi il badge ATS
+                                    if ($is_ats) {
+                                        echo meridiana_get_badge('ats', 'ATS');
+                                    }
+                                    ?>
+                                </div>
+                            </div>
 
                             <?php if ($riassunto): ?>
                             <p class="docs-item__description">
@@ -227,7 +230,7 @@ error_log( 'Area: ' . count($area_competenza) );
                             </p>
                             <?php endif; ?>
 
-                            <!-- META: Profilo + UDO -->
+                            <!-- META: Profilo + UDO + Area Competenza -->
                             <div class="docs-item__meta">
                                 <?php if (!empty($profilo_terms) && !is_wp_error($profilo_terms)): ?>
                                     <span class="docs-meta-tag">
@@ -238,6 +241,12 @@ error_log( 'Area: ' . count($area_competenza) );
                                 <?php if (!empty($udo_terms) && !is_wp_error($udo_terms)): ?>
                                     <span class="docs-meta-tag">
                                         <strong>UDO:</strong> <?php echo esc_html(implode(', ', wp_list_pluck($udo_terms, 'name'))); ?>
+                                    </span>
+                                <?php endif; ?>
+
+                                <?php if (!empty($area_competenza_terms) && !is_wp_error($area_competenza_terms)): ?>
+                                    <span class="docs-meta-tag">
+                                        <strong>Area:</strong> <?php echo esc_html(implode(', ', wp_list_pluck($area_competenza_terms, 'name'))); ?>
                                     </span>
                                 <?php endif; ?>
                             </div>
