@@ -425,18 +425,19 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    justify-content: space-between;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
 }
 
 .docs-item__badge {
     display: flex;
     gap: var(--space-1);
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
+    flex-shrink: 0;
 
     .badge {
         font-size: var(--font-size-xs);
         padding: var(--space-1) var(--space-2);
+        white-space: nowrap;
 
         &.badge-blue {
             background-color: #06B6D4;
@@ -458,6 +459,7 @@
     line-height: var(--line-height-normal);
     flex: 1;
     min-width: 0;
+    word-break: break-word;
 
     @media (min-width: 768px) {
         font-size: var(--font-size-lg);

@@ -204,9 +204,6 @@ error_log( 'Area: ' . count($area_competenza) );
                         <!-- CONTENT -->
                         <div class="docs-item__content">
                             <div class="docs-item__header">
-                                <h3 class="docs-item__title">
-                                    <?php echo esc_html($doc->post_title); ?>
-                                </h3>
                                 <div class="docs-item__badge">
                                     <?php
                                     // Mostra sempre il badge del tipo primario (P o M)
@@ -222,6 +219,9 @@ error_log( 'Area: ' . count($area_competenza) );
                                     }
                                     ?>
                                 </div>
+                                <h3 class="docs-item__title">
+                                    <?php echo esc_html($doc->post_title); ?>
+                                </h3>
                             </div>
 
                             <?php if ($riassunto): ?>
