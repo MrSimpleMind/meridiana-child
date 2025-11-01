@@ -325,7 +325,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                     <label for="moduli_allegati"><?php esc_html_e('Moduli Allegati', 'meridiana-child'); ?></label>
 
-                    <p class="description"><?php esc_html_e('Associa uno o piÃ¹ moduli a questo protocollo', 'meridiana-child'); ?></p>
+                    <p class="description"><?php esc_html_e('Associa uno o più moduli a questo protocollo', 'meridiana-child'); ?></p>
 
                 </div>
 
@@ -341,7 +341,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                         ?>
 
-                        <select id="moduli_allegati" name="acf[field_moduli_allegati][]" multiple size="<?php echo esc_attr($moduli_select_size); ?>">
+                        <select id="moduli_allegati" name="acf[field_moduli_allegati][]" class="select2-enable" multiple size="<?php echo esc_attr($moduli_select_size); ?>">
 
                             <?php foreach ($available_moduli as $modulo_id):
 
@@ -385,7 +385,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                     <label for="ats_flag"><?php esc_html_e('Pianificazione ATS', 'meridiana-child'); ?></label>
 
-                    <p class="description"><?php esc_html_e('Flagga se questo protocollo Ã¨ relativo alla pianificazione ATS', 'meridiana-child'); ?></p>
+                    <p class="description"><?php esc_html_e('Flagga se questo protocollo è relativo alla pianificazione ATS', 'meridiana-child'); ?></p>
 
                 </div>
 
@@ -411,7 +411,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                             />
 
-                            <span data-ats-label><?php echo $ats_value ? esc_html__('SÃŒ, pianificazione ATS', 'meridiana-child') : esc_html__('NO, documento standard', 'meridiana-child'); ?></span>
+                            <span data-ats-label><?php echo $ats_value ? esc_html__('Sì, pianificazione ATS', 'meridiana-child') : esc_html__('NO, documento standard', 'meridiana-child'); ?></span>
 
                         </label>
 
@@ -1051,7 +1051,7 @@ function meridiana_render_category_multiselect($selected_ids = [], $label = '', 
             </div>
             <div class="acf-input">
                 <?php if (!empty($categories) && !is_wp_error($categories)): ?>
-                    <select id="post_categories" class="taxonomy-select" name="post_categories[]" multiple size="<?php echo esc_attr($select_size); ?>">
+                    <select id="post_categories" class="taxonomy-select select2-enable" name="post_categories[]" multiple size="<?php echo esc_attr($select_size); ?>">
                         <?php foreach ($categories as $category): ?>
                             <option value="<?php echo esc_attr($category->term_id); ?>" <?php selected(in_array($category->term_id, $selected_ids, true)); ?>>
                                 <?php echo esc_html($category->name); ?>
@@ -1583,7 +1583,7 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
 
             'label' => __('UnitÃ  di Offerta', 'meridiana-child'),
 
-            'description' => __('Seleziona una o piÃ¹ unitÃ  di offerta pertinenti.', 'meridiana-child'),
+            'description' => __('Seleziona una o più unità  di offerta pertinenti.', 'meridiana-child'),
 
             'multiple' => true,
 
@@ -1697,7 +1697,7 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
 
             <div class="acf-input">
 
-                <select class="taxonomy-select" name="<?php echo esc_attr($field_name); ?>" <?php echo $select_attributes; ?>>
+                <select class="taxonomy-select select2-enable" name="<?php echo esc_attr($field_name); ?>" <?php echo $select_attributes; ?>>
 
                     <option value="">-- Seleziona --</option>
 

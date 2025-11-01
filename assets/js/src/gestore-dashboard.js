@@ -136,11 +136,31 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        initSelect2(container = null) {
+            const target = container || this.$refs.modalContent;
+            if (!target || typeof jQuery === 'undefined' || !jQuery.fn.select2) {
+                return;
+            }
+
+            target.querySelectorAll('.select2-enable').forEach((select) => {
+                if (!select.classList.contains('select2-hidden-accessible')) {
+                    jQuery(select).select2({
+                        placeholder: select.getAttribute('data-placeholder') || '-- Seleziona --',
+                        allowClear: select.hasAttribute('multiple'),
+                        width: '100%',
+                        language: 'it',
+                    });
+                }
+            });
+        },
+
         initDocumentFormEnhancements(container = null) {
             const target = container || this.$refs.modalContent;
             if (!target) {
                 return;
             }
+
+            this.initSelect2(target);
 
             target.querySelectorAll('[data-media-field]').forEach((field) => {
                 const hiddenInput = field.querySelector('input[type="hidden"]');
@@ -503,8 +523,26 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        destroySelect2(container = null) {
+            const target = container || this.$refs.modalContent;
+            if (!target || typeof jQuery === 'undefined') {
+                return;
+            }
+
+            target.querySelectorAll('.select2-enable').forEach((select) => {
+                try {
+                    if (jQuery(select).hasClass('select2-hidden-accessible')) {
+                        jQuery(select).select2('destroy');
+                    }
+                } catch (error) {
+                    // ignore
+                }
+            });
+        },
+
         closeModal() {
             this.destroyRichTextEditors();
+            this.destroySelect2();
             this.modalOpen = false;
             this.modalContent = '';
             this.selectedPostId = null;

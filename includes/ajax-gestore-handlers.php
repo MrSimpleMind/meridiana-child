@@ -315,7 +315,7 @@ function meridiana_ajax_reset_password() {
 
     // Security: Capability check
     if (!current_user_can('manage_options')) {
-        wp_send_json_error(['message' => 'Solo admin puÃ² resettare password'], 403);
+        wp_send_json_error(['message' => 'Solo admin può resettare password'], 403);
     }
 
     // Validate: User ID
@@ -344,7 +344,7 @@ function meridiana_ajax_reset_password() {
     $to = $user->user_email;
     $subject = 'Reimposta password - ' . get_bloginfo('name');
     $message = sprintf(
-        "Ciao %s,\n\nLa tua password Ã¨ stata resettata dall'amministratore.\n\nClicca qui per impostare una nuova password:\n%s\n\nLink valido per 24 ore.",
+        "Ciao %s,\n\nLa tua password è stata resettata dall'amministratore.\n\nClicca qui per impostare una nuova password:\n%s\n\nLink valido per 24 ore.",
         $user->first_name ?: $user->user_login,
         $reset_link
     );
