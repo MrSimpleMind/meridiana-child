@@ -459,7 +459,9 @@
     line-height: var(--line-height-normal);
     flex: 1;
     min-width: 0;
-    word-break: break-word;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 
     @media (min-width: 768px) {
         font-size: var(--font-size-lg);
