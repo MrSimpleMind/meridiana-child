@@ -24,7 +24,17 @@
       "Bash(mysql --version:*)",
       "Bash(npm run build:js:analitiche:*)",
       "Bash(npm run:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(php:*)",
+      "Bash(xxd:*)",
+      "Bash(perl -i -pe:*)",
+      "Bash(/tmp/before.txt)",
+      "Bash(/tmp/middle.txt)",
+      "Bash(/tmp/after.txt)",
+      "Bash(\"C:\\Users\\strik\\Local Sites\\nuova-formazione\\app\\public\\wp-content\\themes\\meridiana-child\\includes\\gestore-acf-forms.php\")",
+      "WebSearch",
+      "WebFetch(domain:documentation.onesignal.com)",
+      "WebFetch(domain:superpwa.com)"
     ]
   },
   "outputStyle": "default"

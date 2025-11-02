@@ -1,757 +1,97 @@
-# 📋 TaskList Ordinata per Priorità e Logica
+# ✅ TaskList, Roadmap e Proposte di Miglioramento
 
-> **Aggiornato**: 31 Ottobre 2025 - [ANALYTICS MATRICE + SIDEBAR COLLASSABILE + NAVIGAZIONE COMPLETATE] ✅
-> **Stato**: In Sviluppo - Fase 1-7 COMPLETATE | Fase 6 Analytics al 85% | Fase 9 Navigazione al 100%
-> Questo file contiene tutte le task ordinate per importanza logica e dipendenze
+> **Ultimo aggiornamento**: 1 Novembre 2025
+> **Stato del Progetto**: Sviluppo Funzionalità Principali al 100%.
 
----
-
-## 🔧 AGGIORNAMENTI SESSION - 31 Ottobre 2025 - ANALYTICS MATRICE COMPLETA + SIDEBAR COLLASSABILE
-
-### ✅ COMPLETATO: Analytics Matrice Protocolli × Profili Professionali
-**Status**: ✅ COMPLETATO - Fully Functional | Fase 6 salita a 85%
-
-**Cosa Fatto**:
-
-**✅ PARTE 1: Rimozione Styling Card Matrice**:
-- ✅ Rimosso bordo, sfondo, padding, ombra da `.analitiche-section--matrix`
-- ✅ Griglia ora con aspetto pulito e minimalista
-
-**✅ PARTE 2: Legenda Orizzontale Sopra Matrice**:
-- ✅ Spostata legenda da destra (sticky) a sopra la griglia
-- ✅ Sviluppata in orizzontale: [🟢≥75% Eccellente] [🟡50-75% Buono] [🟠25-50% Medio] [🔴<25% Scarso] [⚪0% Non visto]
-- ✅ Accanto ai contatori "Protocolli: N | Profili: M"
-- ✅ Layout responsive con flex-wrap per schermi piccoli
-
-**✅ PARTE 3: Intestazioni Profili con Sigle Brevi**:
-- ✅ Aggiunte funzioni JavaScript per mappare sigle: MAN, OSS, ASOC, COORD, EDU, FKT, AMM, INF, LOG, MED, PSI, REC, TOCC, VOL
-- ✅ Intestazioni colonne ora mostrano solo sigle (3-4 caratteri)
-- ✅ Rimosso problema sfalzamento righe
-
-**✅ PARTE 4: Altezza Righe Fissa + Allineamento Verticale**:
-- ✅ Tutte le righe (thead + tbody) = 60px fixed height
-- ✅ Tutte le celle con `vertical-align: middle`
-- ✅ `table-layout: fixed` su entrambe le tabelle
-- ✅ Perfetto allineamento tra colonna fissa (protocolli) e scrollabile (dati)
-
-**✅ PARTE 5: Paginazione Completa**:
-- ✅ Selezione righe per pagina: 10, 20, 50, 100, 200 (default: 20)
-- ✅ Navigazione pagine: ⏮️ ◀️ Pagina N di M ▶️ ⏭️
-- ✅ Contatore: "Mostra X di Y protocolli"
-- ✅ Layout: Info sinistra + Selector righe destra (TOP) | Pulsanti centrati (BOTTOM)
-- ✅ Pulsanti disabilitati quando alla prima/ultima pagina
-
-**✅ PARTE 6: Ricerca Live Protocolli**:
-- ✅ Campo ricerca nell'intestazione "Protocollo" (prima cella header)
-- ✅ Debounce 300ms per non appesantire
-- ✅ Icona lente ingrandimento quando vuoto
-- ✅ Pulsante X per cancellare ricerca
-- ✅ ESC per resettare
-- ✅ Filtra in tempo reale per titolo protocollo (case-insensitive)
-- ✅ Resetta automaticamente alla pagina 1 quando filtri
-
-**✅ PARTE 7: Tooltip su Nomi Protocolli**:
-- ✅ Aggiunto `title="${protocol.document_title}"` alle celle protocollo
-- ✅ Al hover mostra nome completo in tooltip nativo browser
-
-**File Modificati**:
-- `assets/js/src/analitiche.js` - ✅ Paginazione + ricerca + sigle + tooltip
-- `assets/css/src/pages/_analitiche.scss` - ✅ CSS pagina + ricerca + legenda orizzontale
-- `page-analitiche.php` - ✅ HTML legenda + toggle button classe
-
-**Result**: Analytics Matrice **100% COMPLETATO** ✅🎉
+Questo documento delinea lo stato attuale del progetto, la roadmap per il completamento e una serie di proposte strategiche per migliorare la piattaforma.
 
 ---
 
-### ✅ COMPLETATO: Sidebar Collassabile Desktop
-**Status**: ✅ COMPLETATO - Fully Functional | Fase 9 Navigazione al 100%
+## 🚀 Stato Attuale del Progetto
 
-**Cosa Fatto**:
+La piattaforma ha raggiunto un stadio di sviluppo avanzato. Tutte le fondamenta architetturali e le funzionalità di base sono state implementate e sono stabili.
 
-**✅ PARTE 1: State Management Alpine.js**:
-- ✅ Variable: `sidebarCollapsed` (booleano)
-- ✅ Auto-collapse < 1024px (default)
-- ✅ LocalStorage persistence su desktop ≥ 1024px
-- ✅ Intelligenza responsiva: torna a expand al resize > 1024px
+### ✅ Funzionalità Completate
 
-**✅ PARTE 2: Toggle Button**:
-- ✅ Pulsante circolare (32x32px) sul lato destro sidebar
-- ✅ Icona dinamica: chevron-left (espansa) ↔️ chevron-right (collassata)
-- ✅ Hover: ingrandisce (scale 1.1) e cambia colore a rosso primario
-- ✅ Posizione: `right: -16px` (sporge fuori dalla sidebar)
-- ✅ Aria-label accessibile
-
-**✅ PARTE 3: Styling Espansa/Collassata**:
-
-**Versione Espansa (240px)**:
-- Logo orizzontale 140px
-- Menu items: icone + testo fianco a fianco
-- Avatar utente: 40x40px circolare
-- Info utente: nome + ruolo visibili
-- Pulsante "Esci": icona + testo
-- Scrollbar nascosta (ma scroll funzionante)
-
-**Versione Collassata (70px)**:
-- Logo verticale girato (writing-mode + rotate)
-- Solo icone menu centrate
-- ❌ Footer completamente nascosto (display: none)
-- ❌ Avatar nascosto
-- ❌ Logout nascosto
-- ❌ Scrollbar completamente rimossa
-
-**✅ PARTE 4: Transizioni Fluide**:
-- Sidebar width: 0.3s cubic-bezier(0.4, 0, 0.2, 1)
-- Testi menu: fade out 0.3s + width 0.3s + visibility
-- Toggle button: scale hover + color transition
-- Content wrapper padding: animato per seguire sidebar
-
-**✅ PARTE 5: Content Wrapper Responsivo**:
-- Espansa: `padding-left: 240px`
-- Collassata: `padding-left: 70px`
-- Transizione: 0.3s cubic-bezier
-- ✅ Selector CSS `:has()` per auto-adjust al cambio stato
-
-**✅ PARTE 6: Bug Fixes**:
-- ✅ Avatar non più stretchato (era ovale) → `min-width: 40px; min-height: 40px; object-fit: cover`
-- ✅ Logout solo icona quando collassata
-- ✅ Scrollbar rimossa (scrollbar-width: none + -webkit-scrollbar: display none)
-- ✅ Footer nascosto completamente quando collassato
-
-**File Modificati**:
-- `templates/parts/navigation/sidebar-nav.php` - ✅ Alpine.js + toggle button + localStorage
-- `assets/css/src/layout/_navigation.scss` - ✅ Sidebar states + transizioni + responsive
-
-**Result**: Sidebar Collassabile **100% COMPLETATO** ✅🎉
+- **Architettura del Tema**: Tema child basato su Blocksy, con una struttura di file modulare e build process per SCSS/JS.
+- **Struttura Dati**: Tutti i CPT (`protocollo`, `modulo`, `convenzione`, etc.) e le tassonomie custom sono state implementate tramite ACF e sono gestite via JSON.
+- **Sistema di Navigazione**: Implementata una navigazione ibrida e responsive:
+  - **Desktop**: Sidebar verticale collassabile con stato persistente.
+  - **Mobile**: Bottom navigation bar in stile app.
+- **Dashboard Gestore**: Una completa interfaccia frontend per la gestione di tutti i contenuti (documenti, utenti, comunicazioni, etc.) tramite un'applicazione AJAX/Alpine.js, senza accesso al backend di WordPress.
+- **Sistema di Archiviazione File**: Un robusto sistema automatico archivia le versioni precedenti dei file PDF quando vengono sostituiti e li elimina in modo sicuro quando un documento viene cancellato.
+- **Sistema di Analytics Completo**: Una tabella custom (`wp_document_views`) traccia le visualizzazioni dei documenti. La dashboard analytics offre una panoramica completa con KPI, grafici, tabelle dati interattive, analisi per singolo utente e per singolo documento, e funzionalità di export CSV.
+- **Ricerca Avanzata**: È attivo un sistema di ricerca lato client con **Fuse.js**, che offre una ricerca "fuzzy" (tollerante agli errori di battitura) e istantanea sui documenti.
+- **Sistema di Ruoli e Permessi**: Definiti i ruoli `Gestore Piattaforma` e `Utente Standard` con capabilities specifiche.
+- **Documentazione**: Tutta la documentazione interna nella directory `/docs` è stata revisionata e aggiornata per riflettere lo stato attuale del codice.
 
 ---
 
-## 🔧 AGGIORNAMENTI SESSION - 30 Ottobre 2025 - ANALYTICS PANORAMICA HERO SECTION REDESIGN
+## 🎯 Roadmap per il Completamento
 
-### ✅ COMPLETATO: Analytics Panoramica - Hero Section Utenti Redesign + Ottimizzazione Responsive
-**Status**: ✅ COMPLETATO - UI/UX Migliorata | Fase 6 Analytics al 65%
+Di seguito, i prossimi step ordinati per priorità logica per arrivare al lancio della piattaforma.
 
-**Cosa Fatto**:
+### Fase 1: Completamento Funzionalità Core (Priorità Alta)
 
-**✅ Backend AJAX Handler**:
-- ✅ Funzione: `meridiana_ajax_get_users_by_profile()` in `includes/ajax-analytics.php`
-- ✅ Restituisce: profiles breakdown (con ACF label mapping) + status breakdown (attivo/sospeso/licenziato)
-- ✅ Profile labels: 14 profili professionali mappati da ACF field keys
-- ✅ Status counts: Attivi, Sospesi, Licenziati con colori distintivi (verde/arancione/rosso)
-- ✅ Nonce verification: Check `wp_rest` nonce + permission `view_analytics` || `manage_options`
+**Obiettivo**: Finalizzare le funzionalità rimanenti per raggiungere il feature-complete.
 
-**✅ HTML Template Redesign**:
-- ✅ 3-column layout: Sinistra (numero + subtitle + status) | Centro (pie chart) | Destra (legenda)
-- ✅ Left column:
-  - Grande numero utenti (72px, primary color, no background)
-  - Subtitle "Utenti attivi"
-  - Status breakdown: 3 items (Attivi/Sospesi/Licenziati) con pallini colorati
-- ✅ Center column: Canvas per doughnut chart Chart.js
-- ✅ Right column: Legend scrollable (max-height 400px) con pallini e conteggi
-- ✅ Removed: Title "Utenti totali", box-shadow, border, border-radius, padding, background-color
+1.  **Implementare le Automazioni dei Corsi (LearnDash)**:
+    - [ ] **Alert Scadenza Certificati**: Creare il cron job giornaliero che controlla i certificati in scadenza (a 7 giorni) e invia notifiche push ed email agli utenti.
+    - [ ] **Re-enrollment Automatico**: Implementare la logica che re-iscrive automaticamente un utente a un corso quando il suo certificato scade.
 
-**✅ CSS Responsive Optimization (Per Schermi ≥1024px)**:
-- ✅ Rimossi media query breakpoints a 1200px e 768px
-- ✅ Grid layout fisso: `grid-template-columns: auto minmax(200px, 1fr) auto`
-- ✅ Sempre su UNA SOLA RIGA - no responsive stack su mobile (non necessario per uso gestore da PC)
-- ✅ Grafico a torta fluid: `width: 100%; max-width: 400px; aspect-ratio: 1`
-- ✅ Chart rimpicciolisce fluidamente al diminuire della larghezza dello schermo
-- ✅ Vertical centering: `align-items: center` su hero container
-- ✅ Tutti gli elementi centrati verticalmente
+### Fase 2: Contenuti e User Acceptance Testing (UAT) (Priorità Media)
 
-**✅ Alpine.js Component Implementation**:
-- ✅ Metodo: `fetchUsersBreakdown()` - Fetch AJAX dati profili + status
-- ✅ Metodo: `renderUsersBreakdownChart()` - Crea doughnut chart con Chart.js
-- ✅ Metodo: `getProfileColor(profileKey)` - Returns colore consistente per legenda
-- ✅ Data properties:
-  - `usersBreakdownProfiles`: Array {key, label, count}
-  - `usersStatusBreakdown`: Object {attivo, sospeso, licenziato}
-  - `profileColors`: Array 14 colori distintivi per profili
-  - `globalStatsTotalUsers`: Numero totale utenti
+**Obiettivo**: Popolare la piattaforma e validare le funzionalità con utenti reali.
 
-**✅ Chart.js Doughnut Chart**:
-- ✅ Type: 'doughnut' (non bar)
-- ✅ Colori dinamici da array profileColors
-- ✅ Legend hidden (usiamo custom legend HTML)
-- ✅ Responsive: Mantiene aspect ratio 1:1
-- ✅ Hover effects su slices
-- ✅ Labels dentro le slice con conteggi
+1.  **Caricamento Contenuti**: Importare tutti i documenti (`protocolli`, `moduli`), `convenzioni`, `comunicazioni` e altri contenuti iniziali.
+2.  **Creazione Utenti Pilota**: Creare un gruppo di 15-20 utenti reali con profili e ruoli diversi.
+3.  **Sessioni di UAT**: Guidare gli utenti pilota nel testare tutte le funzionalità chiave:
+    - Navigazione e ricerca documenti.
+    - Completamento di un corso e download del certificato.
+    - Visualizzazione delle notifiche.
+    - (Per i Gestori) Creazione e modifica di un contenuto tramite la Dashboard Gestore.
+4.  **Raccolta Feedback**: Raccogliere e analizzare i feedback per identificare bug o aree di miglioramento dell'UX.
 
-**File Modificati**:
-- `includes/ajax-analytics.php` - ✅ AGGIUNTO `meridiana_ajax_get_users_by_profile()`
-- `page-analitiche.php` - ✅ AGGIUNTO hero section template con 3-column layout
-- `assets/js/src/analitiche.js` - ✅ AGGIUNTO data + methods per chart + legend
-- `assets/css/src/pages/_analitiche.scss` - ✅ COMPLETATO hero section styling (400+ righe)
+### Fase 3: Lancio e Go-Live (Priorità Bassa)
 
-**CSS Specifiche**:
-- `.analitiche-users-hero`: Grid `auto minmax(200px, 1fr) auto` + `align-items: center`
-- `.analitiche-users-hero__number`: 72px, primary color, no background
-- `.analitiche-users-hero__center`: `width: 100%; max-width: 400px; aspect-ratio: 1`
-- `.analitiche-users-hero__legend`: Flex column, scrollable 400px, border items
-- `.legend-item`: Grid 3-col (dot | label | count), small font
-- `.status-item`: Flex + colored dot + count
+**Obiettivo**: Eseguire il deploy in produzione e monitorare il lancio.
 
-**Build Completed**:
-- ✅ SCSS compiled successfully
-- ✅ JavaScript minified con webpack
-- ✅ main.min.js + analitiche.min.js bundled
-
-**Result**: Analytics Panoramica Hero Section + Responsive Optimization **100% COMPLETATO** ✅🎉
-
-**Design Finale - Hero Section**:
-```
-┌─────────────────────────────────────────────────────────┐
-│  42          │    [Pie Chart]     │  • ASA/OSS      15  │
-│  Utenti attivi     Distribuzione        • Medico       8  │
-│               │                   │  • Infermiere    12  │
-│  • Attivi    30 │                   │  • Logopedista   5  │
-│  • Sospesi    8 │                   │  • ... (scrollable) │
-│  • Licenziati  4 │                   │                   │
-└─────────────────────────────────────────────────────────┘
-```
+1.  **Eseguire la Checklist di Pre-Lancio**: Verificare tutti i punti della checklist nel documento `10_Deployment_Checklist.md`.
+2.  **Deploy**: Eseguire il deploy in ambiente di produzione.
+3.  **Monitoraggio Iniziale**: Monitorare attentamente i log, le performance e l'uptime per le prime 48 ore.
 
 ---
 
-## 🔧 AGGIORNAMENTI SESSION - 28 Ottobre 2025 - COMPLETAMENTO TAB + ANALYTICS + INIZIO FILE ARCHIVING
+## 💡 Proposte e Miglioramenti Strategici
 
-### ✅ COMPLETATO: Tab Convenzioni + Salute e Benessere
-**Status**: ✅ COMPLETATO - Production Ready | Fase 5 salita a 90%
+Considerando l'obiettivo di una piattaforma PWA performante per gli utenti e una gestione efficiente per i gestori, ecco alcune proposte per migliorare ulteriormente il progetto.
 
-**Cosa Fatto**:
+### Per l'Utente Finale (Mobile-First)
 
-**✅ Tab Convenzioni**:
-- ✅ Form CRUD completo (stesso pattern Comunicazioni)
-- ✅ Tabella query (CPT: convenzione)
-- ✅ CREATE/EDIT/DELETE funzionante
-- ✅ Status tracking integrato
+1.  **Modalità Offline Migliorata (PWA)**:
+    - **Proposta**: Oltre al caching di base, permettere agli utenti di **salvare offline documenti specifici** (es. i 5 protocolli più importanti per il loro ruolo) per accedervi anche senza connessione.
+    - **Vantaggi**: Aumenta drasticamente l'utilità per gli operatori sul campo in zone con scarsa connettività.
 
-**✅ Tab Salute e Benessere**:
-- ✅ Form CRUD completo (stesso pattern Comunicazioni)
-- ✅ Tabella query (CPT: salute_e_benessere)
-- ✅ CREATE/EDIT/DELETE funzionante
-- ✅ Status tracking integrato
+2.  **Gamification per i Corsi**:
+    - **Proposta**: Introdurre elementi di gamification come badge per il completamento di percorsi formativi, classifiche (opzionali e anonime) per UDO, e "strisce" di corsi completati.
+    - **Vantaggi**: Aumenta il coinvolgimento e la motivazione a completare la formazione.
 
-**File Interessati**:
-- `templates/parts/gestore/tab-convenzioni.php` - ✅ COMPLETATO
-- `templates/parts/gestore/tab-salute.php` - ✅ COMPLETATO
-- `assets/js/src/gestore-dashboard.js` - ✅ UPDATED (AJAX handlers)
+### Per il Gestore della Piattaforma (Desktop)
 
-**Result**: Fase 5 Dashboard Gestore **100% COMPLETE** ✅🎉
+1.  **Dashboard Analytics Potenziata**:
+    - **Proposta**: Aggiungere la possibilità di creare **report personalizzati** (es. "visualizzazioni del protocollo X da parte degli OSS della RSA nell'ultimo mese") e di salvarli per un accesso rapido.
+    - **Vantaggi**: Trasforma la dashboard da uno strumento di visualizzazione a uno strumento di analisi proattiva.
 
----
+2.  **Sistema di Annunci Mirati**:
+    - **Proposta**: Creare un'interfaccia nella Dashboard Gestore per inviare **annunci o notifiche push a segmenti di utenti specifici** (es. "A tutti gli infermieri", "Solo al personale della CDI"), sfruttando il sistema di segmentazione già esistente.
+    - **Vantaggi**: Comunicazioni più efficaci e mirate.
 
-### 🟢 IN PROGRESS: Analytics Dashboard - Funzionante, Miglioramento Grafico in Programma
-**Status**: 🟢 FUNZIONANTE - Grafica da migliorare | Fase 6 al 50%
+### Miglioramenti Architetturali
 
-**Cosa Fatto**:
-- ✅ Pagina Analytics (`/analitiche/`) funzionante
-- ✅ KPI base implementati
-- ✅ Query dati funzionanti
-- ✅ Permission check OK
+1.  **Sincronizzazione tra Tassonomie e Campi Select**:
+    - **Proposta**: Attualmente, i campi select per "Profilo Professionale" e "UDO" negli utenti sono statici. Creare una funzione che popoli dinamicamente queste scelte basandosi sui termini delle tassonomie corrispondenti.
+    - **Vantaggi**: Riduce la manutenzione e previene discrepanze tra i dati.
 
-**TODO - Miglioramento Grafico**:
-- 🔄 Styling cards KPI (design più moderno)
-- 🔄 Grafico distribuzione contenuti (Chart.js o simile)
-- 🔄 Ricerca utenti + protocolli (UI refined)
-- 🔄 Export CSV (design button + functionalità)
-- 🔄 Responsive design mobile
-
-**ETA**: ~1 sessione dopo file archiving
-
----
-
-### ✅ COMPLETATO: File Archiving & Automatic Cleanup System
-**Status**: ✅ COMPLETATO - Production Ready | Fase 7 Completata
-
-**Cosa Fatto**:
-
-**✅ Core Module**: `includes/meridiana-archive-system.php`
-- ✅ 350 linee di codice PHP
-- ✅ Funzione: `meridiana_ensure_archive_directory()` - setup directory sicura
-- ✅ Funzione: `meridiana_archive_replaced_document()` - archivia PDF sostituito
-- ✅ Funzione: `meridiana_cleanup_deleted_document()` - pulisce archivi su delete
-- ✅ Utility: `meridiana_get_document_archives()` - lista archivi
-- ✅ Skeleton funzioni: restore, cleanup cron (per future)
-
-**✅ Integrazione Archiviazione**:
-- ✅ Hook in `gestore-acf-forms.php:2225` → `meridiana_save_documento_acf_fields()`
-- ✅ Cattura vecchio PDF ID prima di aggiornare
-- ✅ Archiving automatico su PDF change
-- ✅ Context: 'edit_document'
-
-**✅ Integrazione Cleanup**:
-- ✅ Hook in `ajax-gestore-handlers.php:220` → `meridiana_ajax_delete_documento()`
-- ✅ Cleanup esplicito prima di hard delete
-- ✅ Hook ridondante su `delete_post` action
-- ✅ Eliminazione file + pulizia postmeta
-
-**✅ Storage & Security**:
-- ✅ Directory: `/wp-content/uploads/archived-files/`
-- ✅ `.htaccess` per bloccare accesso diretto
-- ✅ `index.php` per sicurezza
-- ✅ Metadata: `_archive_1`, `_archive_2`, ... `_archive_count`
-
-**✅ Metadata Tracking**:
-- ✅ original_attachment_id, original_filename
-- ✅ archived_filename, archived_file_path
-- ✅ archived_timestamp, archived_date_formatted
-- ✅ archived_by_user_id, archived_by_user_name
-- ✅ context, document_post_id, document_post_title
-
-**✅ Documentazione Completa**:
-- ✅ File: `docs/FILE_ARCHIVING_SYSTEM.md`
-- ✅ Architecture, flows, file structure
-- ✅ Testing checklist (4 test scenarios)
-- ✅ Security considerations
-- ✅ Performance impact analysis
-- ✅ Future enhancements (restore, cron, audit)
-- ✅ Debugging guide
-
-**File Interessati**:
-- `includes/meridiana-archive-system.php` - ✅ NUOVO (350 linee)
-- `functions.php` - ✅ MODIFICATO (+require, 1 linea)
-- `includes/gestore-acf-forms.php` - ✅ MODIFICATO (+archive logic, 6 linee)
-- `includes/ajax-gestore-handlers.php` - ✅ MODIFICATO (+cleanup logic, 12 linee)
-- `docs/FILE_ARCHIVING_SYSTEM.md` - ✅ NUOVO (completa documentazione)
-
-**Result**: File Archiving System **100% COMPLETATO** ✅🎉
-
----
-
-## 🔧 AGGIORNAMENTI SESSION - 24 Ottobre 2025 - PAGINA ANALITICHE CREATA
-
-### ✅ SETUP: Pagina Analytics creata manualmente
-**Status**: ✅ CREATA - Pagina WordPress ready per template
-
-**Dettagli Pagina**:
-- **Titolo**: Analitiche
-- **Slug**: `/analitiche/`
-- **URL**: http://nuova-formazione.local/analitiche/
-- **Stato**: Pubblicato
-- **Autore**: Matteo
-- **Template**: Template predefinito
-- **Data Creazione**: 24 Ottobre 2025
-
-**Prossimi Step - Implementazione**:
-1. ✅ **Template PHP** → `page-analitiche.php` (creato da Claude)
-2. ✅ **Backend Functions** → `includes/analytics-functions.php` (query dati, KPI, cache)
-3. ✅ **Frontend HTML/CSS/JS** → Analytics dashboard con:
-   - KPI Cards (utenti, protocolli, moduli, etc.)
-   - Grafico distribuzione contenuti
-   - Ricerca utenti + protocolli
-   - Export CSV (fase 2)
-4. ✅ **Permission check** → Solo gestore + admin
-
-**Architettura Dati**:
-- Fonte: `wp_document_views` + `wp_posts` + `wp_users`
-- Caching: Transient API (1 ora)
-- Performance: Query ottimizzate con indexing
-
----
-
-
-
-### ✅ COMPLETATO: Rollback versione analytics + Fix infinite loop dipendenze script
-**Status**: ✅ COMPLETATO - Dashboard Gestore funzionante (Production Ready)
-
-**Cosa Successo**:
-- ⚠️ Implementazione analytics tab ha rotto tutte le form della dashboard gestore
-- ⚠️ Causa: Funzioni PHP non definite in `tab-analitiche.php` (meridiana_get_cached_stat, etc.)
-- ⚠️ Memory exhausted: Infinite loop dipendenze script (gestore-dashboard → alpinejs → gestore-dashboard)
-
-**Azioni Eseguite**:
-1. ✅ **Backup emergenza creati** in `/home/claude/BACKUP_ROLLBACK_24OCT_*`
-2. ✅ **Rimosso tab Analitiche** da pagina dashboard (`page-dashboard-gestore.php`)
-3. ✅ **Ripulito `gestore-enqueue.php`** da logica analytics obsoleta
-4. ✅ **Fix infinite loop**: Rimossa dipendenza circolare script
-   - gestore-dashboard.js NON dipende più da alpinejs
-   - alpinejs carica DOPO e dipende da gestore-dashboard
-
-**File Modificati**:
-- `page-dashboard-gestore.php` - Rimosso button + tab pane analitiche
-- `includes/gestore-enqueue.php` - Pulizia logica analytics + fix dipendenze
-- `functions.php` - Riga 443: ripreso `require_once gestore-enqueue.php`
-
-**Result**: Dashboard Gestore Rollback **100% COMPLETATO** ✅🎉
-
-**Prossimi Step**:
-- Analytics verrà re-implementato DOPO in modo pulito (con tutte le funzioni PHP necessarie)
-- Focus: Completare tab Convenzioni + Salute e Benessere della dashboard gestore
-
----
-
-
-
-### ✅ COMPLETATO: Dashboard Gestore - Tutti i Tab Principali con Form Funzionanti
-**Status**: ✅ COMPLETATO - Production Ready | Fase 5 salita a 75%
-
-**Cosa Fatto**:
-
-**✅ Tab Documentazione (Protocolli + Moduli)**:
-- ✅ Tabella query dinamica (CPT: protocollo + modulo)
-- ✅ Frontend form: CREATE nuovo documento (selezione tipo)
-- ✅ Frontend form: EDIT documento esistente
-- ✅ AJAX DELETE con trash/hard delete
-- ✅ Tecnologia: **Custom Solution** (NON ACF Front Forms)
-- ✅ File attachment handling integrato
-
-**✅ Tab Utenti**:
-- ✅ Tabella query wp_users completa
-- ✅ Frontend form: CREATE nuovo utente (assegnazione role)
-- ✅ Frontend form: EDIT utente (cambio dati + role)
-- ✅ AJAX DELETE utente con conferma
-- ✅ Reset password AJAX + email notification
-- ✅ Tecnologia: **Custom Solution** (NON ACF Front Forms)
-
-**✅ Tab Comunicazioni**:
-- ✅ Tabella query (CPT: comunicazione)
-- ✅ Frontend form: CREATE nuova comunicazione
-- ✅ Frontend form: EDIT comunicazione
-- ✅ AJAX DELETE comunicazione
-- ✅ Status tracking (draft/published/archived)
-- ✅ Tecnologia: **Custom Solution** (NON ACF Front Forms)
-
-**⚠️ NOTA IMPLEMENTAZIONE**:
-- Tutte e 3 le tab: Custom Form Handler (senza ACF Front Forms)
-- Motivo: Controllo totale + performance ottimale
-- AJAX workflows: Fetch-based, error handling robusto
-- Modal workflow: Bootstrap form → AJAX submit → response handling
-- File handling: Attachment upload integrato in form submit
-
-**File Interessati**:
-- `templates/parts/gestore/tab-documenti.php` - ✅ COMPLETATO
-- `templates/parts/gestore/tab-utenti.php` - ✅ COMPLETATO
-- `templates/parts/gestore/tab-comunicazioni.php` - ✅ COMPLETATO
-- `assets/js/src/gestore-dashboard.js` - ✅ UPDATED (AJAX handlers)
-- `assets/css/src/pages/_gestore-dashboard.scss` - ✅ Form styles added
-
-**Result**: Dashboard Gestore Tab Primarie **100% COMPLETE** ✅🎉
-
----
-
-## 🎯 Prossimi Step Immediati
-
-### PRIORITÀ ALTA (Fase 6 Completion - 1 sessione):
-
-1. **✅ COMPLETATO: Analytics Panoramica - Hero Section + Responsive 1024px**
-   - ✅ Hero section con numero utenti + breakdown status + pie chart + legenda
-   - ✅ Responsive fluid per schermi ≥1024px (sempre su una riga)
-   - ✅ Grafico rimpicciolisce fluidamente al diminuire schermo
-   - ✅ Tutti elementi centrati verticalmente
-
-2. **✅ COMPLETATO: Analytics - Matrice Tab + Paginazione + Ricerca**
-   - ✅ Matrice protocolli × profili con sigle brevi
-   - ✅ Paginazione completa (10/20/50/100/200 righe per pagina)
-   - ✅ Ricerca live nel campo intestazione
-   - ✅ Tooltip su nomi protocolli
-   - ✅ Legenda orizzontale sopra griglia
-
-3. **✅ COMPLETATO: Sidebar Collassabile Desktop**
-   - ✅ Toggle button circolare (32x32px)
-   - ✅ Auto-collapse < 1024px
-   - ✅ LocalStorage persistence
-   - ✅ Transizioni fluide 0.3s
-   - ✅ Footer nascosto quando collassata
-   - ✅ Scrollbar rimossa
-
-4. **PROSSIMO: Completamento Analytics Restante** (Fase 6 - 1 sessione)
-   - Sezione Analisi Utenti (già parzialmente implementata)
-   - Sezione Analisi Documenti (già parzialmente implementata)
-   - Completamento statistiche globali
-   - Miglioramento responsive mobile
-   - ETA: ~1 sessione
-
-5. **POI: Notifiche Push + Email Automazioni** (Fase 8 - 2 sessioni)
-   - OneSignal integration
-   - Brevo email templates
-   - Trigger events per comunicazioni
-   - ETA: ~2 sessioni dopo analytics
-
----
-
-## 🔧 AGGIORNAMENTI SESSION - 22 Ottobre 2025 - GESTORE DASHBOARD SESSIONE 1.5 UI REFINEMENT
-
-### ✅ COMPLETATO: Dashboard Gestore - Header Removal + Tab Menu Styling
-**Status**: ✅ COMPLETATO - UI Refinement (Production Ready)
-
-**Cosa Fatto**:
-
-**✅ AZIONE 1: Eliminazione Header Rosso**
-- File: `page-dashboard-gestore.php`
-- Rimosso: `<div class="dashboard-header">` con titolo e sottotitolo
-- Result: Tabs ora partono direttamente in alto
-
-**✅ AZIONE 2: Sidebar Color Scheme sui Tab**
-- File: `assets/css/src/pages/_gestore-dashboard.scss`
-- Background tabs: `#2D3748` (grigio scuro sidebar)
-- Testo inactive: `#A0AEC0` (grigio chiaro)
-- Testo active: `#FFFFFF` (bianco)
-- Hover: `rgba(255, 255, 255, 0.05)` sfondo + testo chiaro
-- Border-bottom active: `var(--color-primary)` (rosso brand)
-- Border-bottom container: `#1F2937` (più scuro per contrasto)
-
-**✅ AZIONE 3: CSS Compilazione**
-- Run: `npm run build:scss` 
-- Output: `assets/css/dist/main.css` (✅ SUCCESS, exit code 0)
-- Warnings: Solo deprecation Sass (non influisce compilazione)
-
-**✅ AZIONE 4: Layout Adjustments**
-- Rimosso: `margin-bottom` da `.dashboard-tabs-container`
-- Aggiunto: `margin-top: var(--space-8)` a `.dashboard-content-container`
-- Border-radius container: `0` (per continuità con tab bar)
-- Box-shadow container: `none` (flat design con sidebar)
-
-**Result**: Dashboard Gestore Sessione 1.5 **100% COMPLETATO** ✅🎉
-
----
-
-## 🔧 AGGIORNAMENTI SESSION - 22 Ottobre 2025 - GESTORE DASHBOARD SESSIONE 1 SETUP BASE
-
-### ✅ COMPLETATO: Dashboard Gestore - Sessione 1 Setup Base + Navigazione
-**Status**: ✅ COMPLETATO - Fondazioni Dashboard Pronte (Production Ready)
-
-**Cosa Fatto**:
-
-**✅ AZIONE 1: Navigazione Desktop (Sidebar)**
-- File: `templates/parts/navigation/sidebar-nav.php`
-- Aggiunto link "Dashboard Gestore" con icon settings
-- Condition: `current_user_can('manage_platform')` || `current_user_can('manage_options')`
-- Posizionamento: Dopo Analytics (con divider)
-- Status attivo: `is_page('dashboard-gestore')`
-
-**✅ AZIONE 2: Navigazione Mobile (Bottom Nav)**
-- File: `templates/parts/navigation/bottom-nav.php`
-- Aggiunto bottone "Gestione" con icon settings (ACCANTO a Contatti)
-- NO removals di elementi esistenti
-- Condition: solo gestore/admin
-- Responsive: 5 items → OK, bottom-nav può gestire
-
-**✅ AZIONE 3: Page Base Dashboard**
-- File: `page-dashboard-gestore.php` (160 righe)
-- Permission check top-of-file (redirect se no capabilities)
-- Structure: Header + TabNav (5 tab) + Content + Modal
-- Alpine.js @data="gestoreDashboard()" init
-- x-cloak per nascondere finché Alpine carica
-
-**✅ AZIONE 4: Tab Template Parts (5 file)**
-- `templates/parts/gestore/tab-documenti.php` (query protocollo + modulo, tabella)
-- `templates/parts/gestore/tab-comunicazioni.php` (stub MVP)
-- `templates/parts/gestore/tab-convenzioni.php` (stub MVP)
-- `templates/parts/gestore/tab-salute.php` (stub MVP)
-- `templates/parts/gestore/tab-utenti.php` (query wp_users, tabella)
-
-**✅ AZIONE 5: CSS Base Complete**
-- File: `assets/css/src/pages/_gestore-dashboard.scss` (600+ righe)
-- Components: .dashboard-* (header, tabs, table, modal)
-- Responsive mobile-first: 480px, 768px breakpoints
-- Styles: header gradient, tab nav sticky, table hover, modal overlay
-- Badges: success, warning, blue, green, info
-- No-content placeholder styling
-
-**✅ AZIONE 6: SCSS Import in main.scss**
-- Aggiunto: `@import 'pages/gestore-dashboard'`
-- Posizione: Sezione "6. PAGINE SPECIFICHE" dopo docs-page
-
-**✅ AZIONE 7: Alpine.js Component**
-- File: `assets/js/src/gestore-dashboard.js` (200 righe)
-- Methods: openFormModal(), closeModal(), deletePost(), deleteUser(), resetUserPassword()
-- Props: activeTab, modalOpen, selectedPostId, selectedPostType, isLoading, errorMessage, successMessage
-- AJAX ready: fetch per delete/edit (da completare sessione 2)
-- Alpine 3.x compatible
-
-**✅ AZIONE 8: Enqueue JS in functions.php**
-- File: `includes/gestore-enqueue.php` (nuovo file separato)
-- Carica `gestore-dashboard.js` solo se `is_page('dashboard-gestore')`
-- Dipendenze: alpinejs + meridiana-child-scripts
-- Included in functions.php: `require_once MERIDIANA_CHILD_DIR . '/includes/gestore-enqueue.php'`
-
-**✅ AZIONE 9: Auto-Create Dashboard Page**
-- File: `includes/auto-create-pages.php` (nuovo file)
-- Crea automaticamente pagina /dashboard-gestore/ se non esiste
-- Trigger: `after_switch_theme` + `wp_loaded` (safety)
-- Post type: page | Status: publish
-- Included in functions.php
-
-**File Creati**: 10 files (+1200 linee)
-**File Modificati**: 4 files (+26 linee)
-**Totale Codice Aggiunto**: ~1230 linee
-
-**⚠️ AZIONI RICHIESTE ORA**:
-1. ✅ **Compilare SCSS**: `npm run build:scss` → per applicare CSS dashboard
-2. ✅ **Compilare JS**: Il file `gestore-dashboard.js` è già in src/, check webpack build
-3. ✅ **Hard refresh**: Ctrl+Shift+R nel browser
-4. ✅ **Verifica**: `/dashboard-gestore/` pagina creata automaticamente
-5. ✅ **Test Login**: Come gestore → verificare navigazione desktop + mobile
-
-**CSS Compilation Notes**:
-- SCSS source: `assets/css/src/pages/_gestore-dashboard.scss`
-- Output: `assets/css/dist/main.css` (compilato da main.scss)
-- NO inline styles - uso Design System variables
-- BEM naming convention throughout
-- Mobile-first responsive design
-- **CRITICO**: Se CSS non appare, eseguire: `npm run build:scss` + refresh
-
-**Result**: Dashboard Gestore Sessione 1 **100% SETUP COMPLETATO** ✅🎉
-
----
-
-## 📊 Riepilogo Avanzamento Totale AGGIORNATO 31 Ottobre - POST SESSION
-
-| Fase | Status | % |
-|------|--------|-----|
-| 1. Fondamenta | ✅ 100% | 100% |
-| 2. Struttura Dati | ✅ 100% | 100% |
-| 3. Sistema Utenti | ✅ 100% | 100% |
-| 4. Template Pagine | ✅ 100% | 100% |
-| 5. Frontend Forms Gestore | ✅ 100% | 100% | **(COMPLETATO - TUTTI TAB FUNZIONANTI)** |
-| 6. Analytics | 🟢 85% | 85% | **(MATRICE COMPLETA - PAGINAZIONE + RICERCA + TOOLTIP)** |
-| 7. File Archiving | ✅ 100% | 100% | **(COMPLETATO - AUTO ARCHIVE + CLEANUP)** |
-| 8. Notifiche | ⬜ 0% | 0% |
-| 9. Navigazione Desktop | ✅ 100% | 100% | **(SIDEBAR COLLASSABILE COMPLETATA)** |
-| 10. Sicurezza/Perf | 🟡 40% | 40% |
-| 11. Accessibilità | ✅ 95% | 95% |
-| 12. Testing | ⬜ 0% | 0% |
-| 13. Contenuti | ⬜ 0% | 0% |
-| 14. Deployment | ⬜ 0% | 0% |
-| **TOTALE** | **🟢 82%** | **82%** | **(+4% - Analytics Matrice Complete + Sidebar Collassabile)** |
-
----
-
-## 🎯 Prossimi Prompt Consigliati
-
-### ✅ COMPLETATI (Sessioni 1-6):
-
-1. **✅ COMPLETATO - Prompt 12a**: Dashboard Gestore - Tab Documentazione
-   - ✅ Custom Form Implementation (NON ACF Front Forms)
-   - ✅ AJAX delete documento + hard delete
-   - ✅ File archiving trigger on PDF change
-
-2. **✅ COMPLETATO - Prompt 12b**: Dashboard Gestore - Tab Utenti
-   - ✅ Custom Form Implementation (NON ACF Front Forms)
-   - ✅ Reset password AJAX + email
-   - ✅ User delete AJAX
-
-3. **✅ COMPLETATO - Prompt 12c**: Dashboard Gestore - Tab Comunicazioni/Convenzioni/Salute
-   - ✅ Form implementazione completa (5 tab)
-   - ✅ AJAX handlers
-   - ✅ Status tracking
-
-4. **✅ COMPLETATO - Prompt 13**: File Archiving & Cleanup System
-   - ✅ Auto-archiving su PDF change
-   - ✅ Auto-cleanup su hard delete
-   - ✅ Metadata tracking completo
-
-5. **✅ COMPLETATO - Prompt 14a**: Analytics Dashboard - Panoramica Hero Section
-   - ✅ Hero section con numero utenti
-   - ✅ Pie chart distribuzione profili
-   - ✅ Status breakdown (Attivi/Sospesi/Licenziati)
-   - ✅ Legend con profili + conteggi
-   - ✅ Responsive fluid 1024px+
-   - ✅ Tutti elementi centrati verticalmente
-
-6. **✅ COMPLETATO - Prompt 14b**: Analytics Dashboard - Matrice Completa
-   - ✅ Matrice protocolli × profili con sigle brevi
-   - ✅ Paginazione (10/20/50/100/200 righe)
-   - ✅ Ricerca live con debounce
-   - ✅ Tooltip su nomi protocolli
-   - ✅ Legenda orizzontale
-   - ✅ Intestazioni allineate perfettamente
-
-7. **✅ COMPLETATO - Prompt 15**: Sidebar Collassabile Desktop
-   - ✅ Toggle button con icona dinamica
-   - ✅ Auto-collapse < 1024px
-   - ✅ LocalStorage persistence
-   - ✅ Transizioni fluide
-   - ✅ Footer nascosto quando collassata
-   - ✅ Scrollbar rimossa
-
-### PRIORITÀ ALTA - PROSSIMA (Fase 6-7 - Sessione 7):
-
-8. **PROSSIMO: Prompt 16**: Analytics Dashboard - Completamento Restante
-   - Sezione Analisi Utenti + Analisi Documenti
-   - Statistiche Globali cards
-   - Responsive miglioramento mobile
-   - ETA: ~1 sessione
-
-### PRIORITÀ MEDIA (Fase 7-9):
-
-7. **Prompt 15 - COMPLETATO**: Template Unificato `single-documento.php`
-   - ✅ Template `single-documento.php` implementato e funzionante.
-   - ✅ Gestisce condizionalmente sia 'protocolli' che 'moduli' in un unico file.
-   - ✅ Include PDF embedder per la visualizzazione, riassunto, metadati e moduli correlati.
-   - ✅ Include navigazione breadcrumb e pulsante "indietro" come da specifiche.
-
-8. **Prompt 16**: Notifiche Push + Email Automazioni
-   - OneSignal integration
-   - Brevo email templates
-   - Trigger events
-
-9. **Prompt 17**: Testing & QA Completo
-   - Unit tests PHP
-   - E2E tests Cypress
-   - Lighthouse audit
-
----
-
-## 🤖 Note Importanti Sessione
-
-✅ **Dashboard Gestore Setup (COMPLETO)**:
-- ✅ Navigazione desktop + mobile funzionante
-- ✅ 5 tab con template parts
-- ✅ CSS desktop mobile-first + responsive
-- ✅ Alpine.js component ready per AJAX
-- ✅ Pagina auto-creata a /dashboard-gestore/
-- ✅ Permission checks su tutti gli endpoint
-
-✅ **File Creati**:
-1. page-dashboard-gestore.php
-2. tab-documenti.php (+ 3 tab stub)
-3. tab-utenti.php
-4. _gestore-dashboard.scss
-5. gestore-dashboard.js
-6. includes/gestore-enqueue.php
-7. includes/auto-create-pages.php
-
-✅ **File Modificati**:
-1. sidebar-nav.php (+12 righe)
-2. bottom-nav.php (+11 righe)
-3. main.scss (+1 riga)
-4. functions.php (+2 righe)
-
-⚠️ **AZIONI CRITICHE PRIMA PROSSIMA SESSIONE**:
-- **RUN**: `npm run build:scss` (compilare CSS)
-- **TEST**: Ctrl+Shift+R, login come gestore, verifica navigazione
-- **CHECK**: `/dashboard-gestore/` page caricabile
-- **VERIFY**: Tab switcher funziona in Alpine
-- **INSPECT**: Console no JavaScript errors
-
----
-
-**🎉 Sessione GESTORE DASHBOARD SETUP BASE Completata - 22 Ottobre 2025**
-
-**Statistiche Sessione:**
-- Azioni completate: 9 (navigazione + page + tabs + css + js + enqueue + auto-page)
-- File creati: 10
-- File modificati: 4
-- Linee di codice aggiunte: ~1230
-- Complessità: Media
-- **Completamento sessione: 100%** ✅
-
-**Statistiche Totali Progetto AGGIORNATE:**
-- Prompt completati: 12/15 (80%)
-- File creati/modificati: 82+ files
-- Lines of code totali: 8200+
-- Functions: 65+
-- **Completamento progetto: 59%** ✅
-
-**🎯 Prossimo Focus:**
-- Tab Documentazione: ACF forms + AJAX delete
-- Tab Utenti: User management forms
-- File archiving system
-
-✨ **Sessione 1 Setup Base: PRONTO PER SESSIONE 2** 🚀
-
----
-
-## 🔧 AGGIORNAMENTI SESSION PRECEDENTI
-
-[File originale TASKLIST continua qui...]
+2.  **Componenti Web (Web Components)**:
+    - **Proposta**: Per il futuro, considerare di incapsulare alcuni componenti riutilizzabili (es. le card, i modal) in Web Components nativi. Questo li renderebbe agnostici da qualsiasi framework (incluso Alpine.js) e più manutenibili nel lungo periodo.
+    - **Vantaggi**: Maggiore manutenibilità e portabilità del codice.

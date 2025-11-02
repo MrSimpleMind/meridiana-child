@@ -1,137 +1,157 @@
-﻿# Struttura Dati (CPT, Tassonomie, Campi Custom)
+# Struttura Dati (CPT, Tassonomie, Campi Custom)
 
-> Ultimo aggiornamento: 22 ottobre 2025  
-> Fonte: export ACF JSON in `acf-json/`
+> **Ultimo aggiornamento**: 1 Novembre 2025
+> **Fonte**: `acf-json/` directory, `includes/` directory
 
 ## Panoramica
-- Tutte le entita custom (CPT e tassonomie) sono gestite tramite ACF Pro e sincronizzate nei JSON del tema child.
-- Ogni CPT personalizzato ha `has_archive: true` e risponde agli URL `/slug/` standard di WordPress.
-- I CPT sono pubblici, non gerarchici, disponibili nel REST API e mostrati nel menu di amministrazione.
 
-### Riepilogo CPT
-| CPT | Slug | Icona menu | Supports | Archivio | Tassonomie collegate |
-| --- | --- | --- | --- | --- | --- |
-| Protocollo | `protocollo` | `dashicons-list-view` | title, custom-fields | Yes (`/protocollo/`) | `unita-offerta`, `profilo-professionale` |
-| Modulo | `modulo` | `dashicons-edit-large` | title, thumbnail, custom-fields | Yes (`/modulo/`) | `unita-offerta`, `profilo-professionale`, `area-competenza` |
-| Convenzione | `convenzione` | `dashicons-database-export` | title, thumbnail, custom-fields | Yes (`/convenzione/`) | `category` |
-| Organigramma | `organigramma` | `dashicons-info-outline` | title, thumbnail, custom-fields | Yes (`/organigramma/`) | nessuna custom |
-| Salute e Benessere | `salute-e-benessere-l` | `dashicons-heart` | title, thumbnail, custom-fields | Yes (`/salute-e-benessere-l/`) | `category` |
+La struttura dati della piattaforma è interamente gestita tramite **ACF Pro**, con tutte le configurazioni (Custom Post Types, Tassonomie, Campi Custom) sincronizzate tramite file JSON nella directory `acf-json/` del tema. Questo garantisce il versionamento e la coerenza tra diversi ambienti.
 
-> Anche il post type core `post` (Comunicazioni) utilizza la tassonomia `category`. I corsi LearnDash (`sfwd-courses`) sono definiti dal plugin.
+- **CPT**: Tutti i CPT sono pubblici, non gerarchici, esposti nel REST API e hanno un archivio attivo.
+- **Tassonomie**: Tutte le tassonomie custom sono gerarchiche e pubbliche.
+- **Campi Utente**: I campi custom per gli utenti sono gestiti da ACF e applicati a tutti i ruoli.
 
 ---
 
-## Dettaglio CPT
+## Riepilogo CPT
+
+| CPT | Slug | Icona Menu | `supports` | Archivio | Tassonomie Collegate |
+|---|---|---|---|---|---|
+| **Protocollo** | `protocollo` | `dashicons-list-view` | `title`, `custom-fields` | `/protocollo/` | `unita-offerta`, `profilo-professionale` |
+| **Modulo** | `modulo` | `dashicons-edit-large` | `title`, `thumbnail`, `custom-fields` | `/modulo/` | `unita-offerta`, `profilo-professionale`, `area-competenza` |
+| **Convenzione** | `convenzione` | `dashicons-database-export` | `title`, `thumbnail`, `custom-fields` | `/convenzione/` | `category` |
+| **Organigramma** | `organigramma` | `dashicons-info-outline` | `title`, `thumbnail`, `custom-fields` | `/organigramma/` | `unita-offerta` |
+| **Salute e Benessere**| `salute-e-benessere-l` | `dashicons-heart` | `title`, `thumbnail`, `custom-fields` | `/salute-e-benessere-l/` | `category` |
+
+> **Nota**: Il CPT `post` (Comunicazioni) e i CPT di LearnDash (`sfwd-courses`, `sfwd-quiz`, etc.) sono gestiti nativamente da WordPress e dal plugin LearnDash.
+
+---
+
+## Dettaglio CPT e Campi ACF
 
 ### 1. Protocollo (`protocollo`)
-**Scopo**: documenti procedurali visualizzabili online (PDF non scaricabile).
 
-- Voce di menu "Protocolli", visibile in admin bar e REST.
-- Archiviazione attiva: `/protocollo/`.
-- Tassonomie abilitate: `unita-offerta`, `profilo-professionale`.
+**Scopo**: Documenti procedurali e linee guida operative, visualizzabili online tramite PDF embedder (non scaricabili).
 
-**Campi ACF (group_protocollo)**
+**File ACF**: `group_protocollo.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| PDF Protocollo | `field_pdf_protocollo` | file | Yes | Solo PDF; `return_format: id` |
-| Riassunto | `field_riassunto_protocollo` | textarea | No | Breve descrizione |
-| Moduli Allegati | `field_moduli_allegati` | relationship | No | Seleziona CPT `modulo`; filtra per tassonomia |
-| Pianificazione ATS | `field_pianificazione_ats` | true_false | No | Flag ATS (toggle UI) |
+|---|---|---|---|---|
+| PDF Protocollo | `field_pdf_protocollo` | file | Sì | Solo PDF. `return_format: id`. |
+| Riassunto | `field_riassunto_protocollo` | textarea | No | Breve descrizione del contenuto. |
+| Moduli Allegati | `field_moduli_allegati` | relationship | No | Collega uno o più CPT `modulo`. `return_format: id`. |
+| Pianificazione ATS | `field_pianificazione_ats` | true_false | No | Flag per protocolli relativi alla pianificazione ATS. |
+
+---
 
 ### 2. Modulo (`modulo`)
-**Scopo**: moduli operativi scaricabili.
 
-- Menu "Moduli", archiviazione `/modulo/`.
-- Tassonomie associate: `unita-offerta`, `profilo-professionale`, `area-competenza`.
+**Scopo**: Documenti operativi scaricabili (checklist, form, template).
 
-**Campi ACF (group_modulo)**
+**File ACF**: `group_modulo.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| PDF Modulo | `field_pdf_modulo` | file | Yes | Solo PDF; `return_format: id` |
+|---|---|---|---|---|
+| PDF Modulo | `field_pdf_modulo` | file | Sì | Solo PDF. `return_format: id`. |
+
+---
 
 ### 3. Convenzione (`convenzione`)
-**Scopo**: convenzioni aziendali per welfare dipendenti.
 
-- Menu "Convenzioni", archiviazione `/convenzione/`.
-- Usa la tassonomia core `category` per eventuali gruppi tematici.
+**Scopo**: Gestione delle convenzioni aziendali per il welfare dei dipendenti.
 
-**Campi ACF (group_convenzione)**
+**File ACF**: `group_convenzione.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| Convenzione Attiva | `field_convenzione_attiva` | true_false | No | Default attiva (toggle Attiva/Scaduta) |
-| Descrizione | `field_descrizione_convenzione` | wysiwyg | Yes | Toolbar completa + media |
-| Immagine in Evidenza | `field_immagine_convenzione` | image | No | `return_format: id`, anteprima medium |
-| Contatti | `field_contatti_convenzione` | wysiwyg | No | Toolbar basic, niente media |
-| Allegati | `field_allegati_convenzione` | repeater | No | Sotto-campi `file` (file), `descrizione` (text) |
+|---|---|---|---|---|
+| Convenzione Attiva | `field_convenzione_attiva` | true_false | No | Default: `true`. UI on/off per "Attiva"/"Scaduta". |
+| Descrizione | `field_descrizione_convenzione` | wysiwyg | Sì | Editor completo con upload media. |
+| Immagine in Evidenza | `field_immagine_convenzione` | image | No | `return_format: id`. |
+| Contatti | `field_contatti_convenzione` | wysiwyg | No | Editor di base senza upload media. |
+| Allegati | `field_allegati_convenzione` | repeater | No | Sottocampi: `file` (file, `return_format: array`), `descrizione` (text). |
+
+---
 
 ### 4. Organigramma (`organigramma`)
-**Scopo**: rubrica delle figure aziendali.
 
-- Menu "Organigrammi", archiviazione `/organigramma/`.
-- Nessuna tassonomia collegata; i filtri avvengono tramite campi select statici.
+**Scopo**: Rubrica delle figure professionali e dei ruoli chiave all'interno della cooperativa.
 
-**Campi ACF (group_organigramma)**
+**File ACF**: `group_organigramma.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| Ruolo | `field_ruolo_organigramma` | text | Yes | Titolo/posizione |
-| UDO di riferimento | `field_udo_riferimento_organigramma` | select | No | Scelte fisse (Ambulatori, AP, CDI, ...) |
-| Email aziendale | `field_email_aziendale` | email | No | |
-| Telefono aziendale | `field_telefono_aziendale` | text | No | |
+|---|---|---|---|---|
+| Ruolo | `field_ruolo_organigramma` | text | Sì | Posizione o titolo della persona. |
+| Unità di Offerta | `field_udo_riferimento_organigramma` | select | No | Scelte statiche che replicano la tassonomia `unita-offerta`. |
+| Email Aziendale | `field_email_aziendale` | email | No | Indirizzo email di contatto. |
+| Telefono Aziendale | `field_telefono_aziendale` | text | No | Numero di telefono di contatto. |
+
+---
 
 ### 5. Salute e Benessere (`salute-e-benessere-l`)
-**Scopo**: contenuti welfare per i lavoratori.
 
-- Menu "Salute e Benessere Lavoratori", archiviazione `/salute-e-benessere-l/`.
-- Usa la tassonomia `category`.
+**Scopo**: Articoli e risorse per il benessere dei lavoratori.
 
-**Campi ACF (group_salute_benessere)**
+**File ACF**: `group_salute_benessere.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| Contenuto | `field_contenuto_salute` | wysiwyg | Yes | Corpo principale dell'articolo |
-| Risorse | `field_risorse_salute` | repeater | No | Ogni riga: `tipo` (select link/file), `titolo`, `url` (solo link), `file` (solo file) |
-
-### 6. Comunicazioni (`post`)
-- Post type core di WordPress per news aziendali.
-- Usa `category` e tag standard.
-- Condivide i template archivio con gli altri CPT (vedi `archive.php`).
-
-### 7. Corsi (LearnDash)
-- Post type `sfwd-courses` definito dal plugin LearnDash.
-- Nessuna definizione ACF nel repository corrente; eventuali tassonomie custom vanno gestite dal plugin.
+|---|---|---|---|---|
+| Contenuto | `field_contenuto_salute` | wysiwyg | Sì | Corpo principale dell'articolo. |
+| Risorse | `field_risorse_salute` | repeater | No | Sottocampi: `tipo` (select: link/file), `titolo` (text), `url` (url), `file` (file). |
 
 ---
 
 ## Tassonomie Custom (ACF)
-| Tassonomia | Slug | Gerarchica | Oggetti collegati | Note |
-| --- | --- | --- | --- | --- |
-| Unita di Offerta | `unita-offerta` | Yes | `protocollo`, `modulo`, `organigramma` | Reparti/servizi aziendali |
-| Profilo Professionale | `profilo-professionale` | Yes | `protocollo`, `modulo` | Figure professionali target |
-| Area di Competenza | `area-competenza` | Yes | `modulo` | Aree tematiche dei moduli |
 
-**Impostazioni comuni**
-- Public, visibili nel menu amministratore, nel REST (`show_in_rest: true`) e con rewrite attivo (`/slug/`).
-- Permettono gestione completa (crea/modifica/elimina) a chi possiede `manage_categories`.
+| Tassonomia | Slug | Gerarchica | Oggetti Collegati | File ACF |
+|---|---|---|---|---|
+| **Unità di Offerta** | `unita-offerta` | Sì | `protocollo`, `modulo`, `organigramma` | `taxonomy_68e50c5353289.json` |
+| **Profilo Professionale** | `profilo-professionale` | Sì | `protocollo`, `modulo` | `taxonomy_68e510b2d2b3c.json` |
+| **Area di Competenza** | `area-competenza` | Sì | `modulo` | `taxonomy_68e511a521483.json` |
 
-> I campi select statici presenti nei gruppi ACF (es. `udo_riferimento` per organigramma e utenti) replicano gli stessi valori delle tassonomie. Valutare la sincronizzazione futura per evitare duplicazioni manuali.
+**Impostazioni Comuni**:
+- Tutte le tassonomie sono pubbliche, visibili nel menu di amministrazione e nel REST API.
+- Hanno `rewrite` attivo per permettere la navigazione agli archivi (`/unita-offerta/nome-udo/`).
+- La gestione dei termini è consentita a chi ha la capability `manage_categories`.
 
 ---
 
-## Campi Custom Utente (group_user_fields)
+## Campi Custom Utente
+
+**Scopo**: Profilare gli utenti per segmentare l'accesso ai contenuti e le notifiche.
+
+**File ACF**: `group_user_fields.json`
+
 | Campo | Key | Tipo | Obbl. | Note |
-| --- | --- | --- | --- | --- |
-| Stato Utente | `field_stato_utente` | radio | Yes | Valori: Attivo, Sospeso, Licenziato |
-| Link Autologin Piattaforma Esterna | `field_link_autologin` | url | No | URL SSO per portali esterni |
-| Codice Fiscale | `field_68f1eb8305594` | text | No | Campo libero |
-| Profilo Professionale | `field_profilo_professionale_user` | select | No | Scelte statiche (label restituita) |
-| UDO di Riferimento | `field_udo_riferimento_user` | select | No | Scelte statiche (label restituita) |
+|---|---|---|---|---|
+| Stato Utente | `field_stato_utente` | radio | Sì | Valori: `attivo`, `sospeso`, `licenziato`. Default: `attivo`. |
+| Link Autologin Esterno | `field_link_autologin` | url | No | URL per SSO a piattaforme di formazione esterne. |
+| Codice Fiscale | `field_68f1eb8305594` | text | No | |
+| Profilo Professionale | `field_profilo_professionale_user` | select | No | Scelte statiche che replicano la tassonomia `profilo-professionale`. `return_format: label`. |
+| UDO di Riferimento | `field_udo_riferimento_user` | select | No | Scelte statiche che replicano la tassonomia `unita-offerta`. `return_format: label`. |
 
-I valori sono accessibili tramite `get_field( field_name, 'user_' . $user_id )` e vengono gestiti dagli handler AJAX del tema per l'aggiornamento profilo.
+**Accesso ai Dati**:
+I valori dei campi utente sono accessibili tramite `get_field( 'nome_campo', 'user_' . $user_id )`.
 
 ---
 
-## Note operative
-- Dopo ogni modifica a CPT o tassonomie in ACF, esportare e versionare i JSON aggiornati (ACF Tools -> Export/Sync) e quindi fare flush dei permalink (Impostazioni -> Permalink -> Salva).
-- I template PHP fanno affidamento sugli slug esatti: usare sempre `salute-e-benessere-l` e le tassonomie con trattino (`unita-offerta`, `profilo-professionale`, `area-competenza`).
-- Le query per la documentazione frontend combinano `protocollo` e `modulo`: ricordarsi di includere entrambe le tassonomie nelle `tax_query` per filtri mirati.
+## Sistema di Notifiche (ACF)
 
-Questo documento sostituisce tutte le versioni precedenti di `02_Struttura_Dati_CPT*.md`.
+La configurazione delle notifiche push è interamente gestita tramite Pagine di Opzioni ACF.
+
+- **Pagina Opzioni**: "Configurazione Notifiche" (`ui_options_page_690209ffe5d1c.json`)
+- **Sotto-pagina**: "Configurazione OneSignal" (`ui_options_page_69020d64aabb9.json`)
+
+**Campi ACF**:
+- **Credenziali OneSignal** (`group_notification_onesignal_setup.json`): `App ID` e `REST API Key`.
+- **Segmentazioni** (`group_notification_segmentazioni.json`): Un repeater per definire i gruppi di utenti target (es. "Tutti", "Solo Medici", "Solo UDO RSA").
+- **Triggers** (`group_notification_triggers.json`): Un repeater per definire quale evento (es. pubblicazione di un `protocollo`) invia quale notifica a quale segmento.
+
+Questo approccio permette una gestione flessibile e granulare delle notifiche direttamente dal backend di WordPress, senza dover modificare il codice.
+
+---
+
+## Note Operative
+
+- **Sincronizzazione**: Dopo ogni modifica a CPT, tassonomie o campi in ACF, i file JSON in `acf-json/` vengono aggiornati automaticamente. È fondamentale committare questi file su Git.
+- **Permalink**: In caso di problemi di routing dopo una modifica alla struttura, è buona norma visitare `Impostazioni > Permalink` e salvare le modifiche per fare un flush delle rewrite rules.
+- **Query**: Quando si costruiscono query complesse (es. per la pagina "Documentazione"), è necessario includere tutti i CPT e le tassonomie pertinenti per garantire che i filtri funzionino correttamente.

@@ -1,496 +1,161 @@
-# 📄 Struttura Pagine e Templates
+# 📄 Struttura Pagine e Template
 
-> **Contesto**: Layout e struttura di tutte le pagine principali della piattaforma
+> **Ultimo aggiornamento**: 1 Novembre 2025
+> **Fonte**: directory `templates/`, `page-*.php`, `single-*.php`, `archive.php`
 
-**Leggi anche**: 
-- `01_Design_System.md` per componenti UI
-- `04_Navigazione_Layout.md` per header/nav
-- `02_Struttura_Dati_CPT.md` per query contenuti
-
----
-
-## 🏠 HOME (Dashboard)
-
-### Template: `page-home.php`
-
-### Layout
-
-```
-┌─────────────────────────────┐
-│ Desktop Header / Bottom Nav │
-├─────────────────────────────┤
-│ Quick Actions (4 pulsanti)  │
-├─────────────────────────────┤
-│ Alerting (badges/notifiche) │
-├─────────────────────────────┤
-│ Feed Attività (ultimi cont.)│
-├─────────────────────────────┤
-│ I Miei Progressi (corsi)    │
-└─────────────────────────────┘
-```
-
-### Implementazione
-
-```php
-<?php
-/*
-Template Name: Home Dashboard
-*/
-
-get_header(); ?>
-
-<div class="content-wrapper">
-    <div class="container">
-        <h1>Benvenuto, <?php echo wp_get_current_user()->first_name; ?></h1>
-        
-        <!-- Quick Actions -->
-        <section class="quick-actions">
-            <a href="/documentazione" class="action-card">
-                <i data-lucide="file-text"></i>
-                <span>Cerca Protocolli</span>
-            </a>
-            <a href="/documentazione?type=modulo" class="action-card">
-                <i data-lucide="folder"></i>
-                <span>Cerca Moduli</span>
-            </a>
-            <a href="/corsi" class="action-card">
-                <i data-lucide="graduation-cap"></i>
-                <span>I Miei Corsi</span>
-            </a>
-            <a href="/organigramma" class="action-card">
-                <i data-lucide="users"></i>
-                <span>Organigramma</span>
-            </a>
-        </section>
-        
-        <!-- Alerting -->
-        <?php get_template_part('templates/parts/home/alerting'); ?>
-        
-        <!-- Feed Attività -->
-        <?php get_template_part('templates/parts/home/feed-attivita'); ?>
-        
-        <!-- Progressi Corsi -->
-        <?php get_template_part('templates/parts/home/progressi-corsi'); ?>
-    </div>
-</div>
-
-<?php get_footer(); ?>
-```
-
-### Partial: Alerting
-
-```php
-<?php
-// templates/parts/home/alerting.php
-
-$user_id = get_current_user_id();
-
-// Corsi in scadenza
-$corsi_scadenza = get_corsi_in_scadenza($user_id);
-
-// Comunicazioni recenti (ultimi 3 giorni)
-$nuove_comunicazioni = get_posts(array(
-    'post_type' => 'post',
-    'posts_per_page' => -1,
-    'date_query' => array(
-        array('after' => '3 days ago')
-    )
-));
-
-// Protocolli recenti (ultimi 7 giorni)
-$nuovi_protocolli = get_posts(array(
-    'post_type' => 'protocollo',
-    'posts_per_page' => -1,
-    'date_query' => array(
-        array('after' => '7 days ago')
-    )
-));
-
-if (empty($corsi_scadenza) && empty($nuove_comunicazioni) && empty($nuovi_protocolli)) {
-    return;
-}
-?>
-
-<section class="alerting">
-    <h2>Notifiche</h2>
-    
-    <?php if (!empty($corsi_scadenza)): ?>
-    <div class="alert alert-warning">
-        <i data-lucide="alert-triangle"></i>
-        <div>
-            <strong>Corsi in Scadenza</strong>
-            <p>Hai <?php echo count($corsi_scadenza); ?> certificati in scadenza nei prossimi 7 giorni.</p>
-            <a href="/corsi" class="btn btn-sm btn-outline">Visualizza</a>
-        </div>
-    </div>
-    <?php endif; ?>
-    
-    <?php if (!empty($nuove_comunicazioni)): ?>
-    <div class="alert alert-info">
-        <i data-lucide="bell"></i>
-        <div>
-            <strong>Nuove Comunicazioni</strong>
-            <p><?php echo count($nuove_comunicazioni); ?> comunicazioni pubblicate negli ultimi 3 giorni.</p>
-            <a href="/comunicazioni" class="btn btn-sm btn-outline">Leggi</a>
-        </div>
-    </div>
-    <?php endif; ?>
-    
-    <?php if (!empty($nuovi_protocolli)): ?>
-    <div class="alert alert-info">
-        <i data-lucide="file-text"></i>
-        <div>
-            <strong>Nuovi Protocolli</strong>
-            <p><?php echo count($nuovi_protocolli); ?> protocolli pubblicati negli ultimi 7 giorni.</p>
-            <a href="/documentazione" class="btn btn-sm btn-outline">Visualizza</a>
-        </div>
-    </div>
-    <?php endif; ?>
-</section>
-```
+**Leggi anche**:
+- `01_Design_System.md` per i componenti UI
+- `04_Navigazione_UX.md` per la struttura della navigazione
+- `02_Struttura_Dati_CPT.md` per le query dei contenuti
 
 ---
 
-## 📚 DOCUMENTAZIONE
+## 📐 Architettura Generale dei Template
 
-### Template: `page-documentazione.php`
+La piattaforma utilizza un'architettura di template flessibile e modulare, basata su un layout principale e template part riutilizzabili.
 
-### Layout
+### Layout Principale
 
-```
-┌───────────────┬─────────────────┐
-│ Sidebar       │ Grid Documenti  │
-│ - Tipo        │ - Card doc      │
-│ - UDO         │ - Card doc      │
-│ - Profilo     │ - Card doc      │
-│ - Area        │ ...             │
-│ - Search      │                 │
-│               │ Paginazione     │
-└───────────────┴─────────────────┘
-```
-
-### Implementazione
+Ogni pagina della piattaforma condivide una struttura comune:
 
 ```php
-<?php
-/*
-Template Name: Documentazione
-*/
+// Inizio di un template di pagina (es. page-home.php)
 
-get_header();
-
-// Filters from URL
-$tipo = isset($_GET['type']) ? sanitize_text_field($_GET['type']) : 'all';
-$udo = isset($_GET['udo']) ? intval($_GET['udo']) : null;
-$profilo = isset($_GET['profilo']) ? intval($_GET['profilo']) : null;
-$search = isset($_GET['s']) ? sanitize_text_field($_GET['s']) : '';
-
-// Build query
-$args = array(
-    'post_type' => ($tipo === 'all') ? array('protocollo', 'modulo') : $tipo,
-    'posts_per_page' => 20,
-    'paged' => get_query_var('paged') ?: 1,
-);
-
-if ($udo || $profilo) {
-    $args['tax_query'] = array('relation' => 'AND');
-    
-    if ($udo) {
-        $args['tax_query'][] = array(
-            'taxonomy' => 'unita_offerta',
-            'field' => 'term_id',
-            'terms' => $udo,
-        );
-    }
-    
-    if ($profilo) {
-        $args['tax_query'][] = array(
-            'taxonomy' => 'profili_professionali',
-            'field' => 'term_id',
-            'terms' => $profilo,
-        );
-    }
-}
-
-if ($search) {
-    $args['s'] = $search;
-}
-
-$query = new WP_Query($args);
+get_header(); // Carica l'header, che a sua volta include la sidebar di navigazione
 ?>
 
 <div class="content-wrapper">
     <div class="container">
-        <div class="documentazione-layout">
-            <!-- Sidebar Filters -->
-            <aside class="sidebar-filters">
-                <?php get_template_part('templates/parts/documentazione/filtri'); ?>
-            </aside>
-            
-            <!-- Results Grid -->
-            <main class="results-grid">
-                <div class="results-header">
-                    <h1>Documentazione</h1>
-                    <span class="results-count"><?php echo $query->found_posts; ?> documenti</span>
-                </div>
-                
-                <?php if ($query->have_posts()): ?>
-                    <div class="documents-grid">
-                        <?php while ($query->have_posts()): $query->the_post(); ?>
-                            <?php get_template_part('templates/parts/cards/card-documento'); ?>
-                        <?php endwhile; ?>
-                    </div>
-                    
-                    <?php 
-                    // Paginazione
-                    the_posts_pagination(array(
-                        'mid_size' => 2,
-                        'prev_text' => '<i data-lucide="chevron-left"></i>',
-                        'next_text' => '<i data-lucide="chevron-right"></i>',
-                    ));
-                    ?>
-                <?php else: ?>
-                    <p>Nessun documento trovato con i filtri selezionati.</p>
-                <?php endif; ?>
-                
-                <?php wp_reset_postdata(); ?>
-            </main>
-        </div>
+        <?php // Contenuto specifico della pagina ?>
     </div>
 </div>
 
-<?php get_footer(); ?>
-```
-
-### Card Documento
-
-```php
 <?php
-// templates/parts/cards/card-documento.php
-
-$doc_type = get_post_type();
-$pdf_field = ($doc_type === 'protocollo') ? 'pdf_protocollo' : 'pdf_modulo';
-$pdf_id = get_field($pdf_field);
-$pdf_url = wp_get_attachment_url($pdf_id);
-$riassunto = get_field('riassunto');
-$udo_terms = get_the_terms(get_the_ID(), 'unita_offerta');
-?>
-
-<div class="card card-documento">
-    <div class="card-documento__header">
-        <span class="badge badge-primary"><?php echo $doc_type === 'protocollo' ? 'Protocollo' : 'Modulo'; ?></span>
-    </div>
-    
-    <div class="card-documento__body">
-        <h3><?php the_title(); ?></h3>
-        
-        <?php if ($riassunto): ?>
-        <p class="riassunto"><?php echo wp_trim_words($riassunto, 20); ?></p>
-        <?php endif; ?>
-        
-        <?php if ($udo_terms): ?>
-        <div class="tags">
-            <?php foreach ($udo_terms as $term): ?>
-            <span class="tag"><?php echo $term->name; ?></span>
-            <?php endforeach; ?>
-        </div>
-        <?php endif; ?>
-    </div>
-    
-    <div class="card-documento__footer">
-        <?php if ($doc_type === 'protocollo'): ?>
-            <button class="btn btn-primary" data-modal-open="pdf-<?php echo get_the_ID(); ?>">
-                <i data-lucide="eye"></i> Visualizza
-            </button>
-        <?php else: ?>
-            <a href="<?php echo $pdf_url; ?>" class="btn btn-primary" download>
-                <i data-lucide="download"></i> Scarica
-            </a>
-        <?php endif; ?>
-    </div>
-</div>
-
-<!-- Modal per Protocollo (solo visualizzazione) -->
-<?php if ($doc_type === 'protocollo'): ?>
-<div class="modal" id="pdf-<?php echo get_the_ID(); ?>" x-data="documentTracker(<?php echo get_the_ID(); ?>)">
-    <div class="modal-backdrop" data-modal-close></div>
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3><?php the_title(); ?></h3>
-            <button data-modal-close><i data-lucide="x"></i></button>
-        </div>
-        <div class="modal-body">
-            <?php echo do_shortcode('[pdf-embedder url="' . $pdf_url . '"]'); ?>
-        </div>
-    </div>
-</div>
-<?php endif; ?>
+get_footer(); // Carica il footer, che a sua volta include la bottom bar per il mobile
 ```
+
+- **`get_header()`**: Include `header.php`, che renderizza la sidebar di navigazione (`sidebar-nav.php`) per la versione desktop.
+- **`.content-wrapper`**: Un contenitore che si adatta dinamicamente alla larghezza della sidebar (espansa o collassata).
+- **`.container`**: Limita la larghezza del contenuto e applica un padding laterale consistente.
+- **`get_footer()`**: Include `footer.php`, che renderizza la bottom navigation bar (`bottom-nav.php`) per la versione mobile.
 
 ---
 
-## 🎓 CORSI
+## 🏠 Home Page (Dashboard Utente)
 
-### Template: `page-corsi.php`
+**Template**: `page-home.php`
 
-### Layout con Tabs
+Pagina di atterraggio per tutti gli utenti dopo il login. Fornisce un riepilogo delle attività recenti e accesso rapido alle sezioni principali.
+
+### Sezioni Principali
+
+- **Quick Actions**: Pulsanti per le azioni più comuni (Cerca Protocolli, I Miei Corsi, etc.).
+- **Feed Attività**: Elenco degli ultimi contenuti pubblicati (Comunicazioni, Convenzioni, Salute e Benessere).
+- **I Miei Progressi**: Riepilogo dei corsi in corso e completati (integrazione con LearnDash).
+
+### Template Parts Utilizzati
+
+- `templates/parts/home/convenzioni-carousel.php`
+- `templates/parts/home/news-list.php`
+- `templates/parts/home/salute-list.php`
+
+---
+
+## 🗂️ Archivi Unificati
+
+**Template**: `archive.php`
+
+Un unico template gestisce le pagine di archivio per tutti i CPT (`post`, `convenzione`, `salute-e-benessere-l`, etc.), ad eccezione della documentazione che ha una sua pagina dedicata.
+
+### Logica di Funzionamento
+
+Il template `archive.php` utilizza `get_post_type()` per determinare il tipo di contenuto da visualizzare e adatta dinamicamente il titolo e le card.
 
 ```php
-<div class="content-wrapper">
-    <div class="container">
-        <h1>I Miei Corsi</h1>
-        
-        <div class="tabs" x-data="{ tab: 'obbligatori' }">
-            <div class="tabs-nav">
-                <button @click="tab = 'obbligatori'" 
-                        :class="{ 'active': tab === 'obbligatori' }">
-                    Obbligatori
-                </button>
-                <button @click="tab = 'facoltativi'"
-                        :class="{ 'active': tab === 'facoltativi' }">
-                    Facoltativi
-                </button>
-                <button @click="tab = 'completati'"
-                        :class="{ 'active': tab === 'completati' }">
-                    Completati
-                </button>
-            </div>
-            
-            <!-- Tab: Obbligatori -->
-            <div x-show="tab === 'obbligatori'" class="tab-content">
-                <div class="subtabs" x-data="{ subtab: 'interni' }">
-                    <button @click="subtab = 'interni'" 
-                            :class="{ 'active': subtab === 'interni' }">
-                        Interni
-                    </button>
-                    <button @click="subtab = 'esterni'"
-                            :class="{ 'active': subtab === 'esterni' }">
-                        Esterni
-                    </button>
-                    
-                    <!-- Interni -->
-                    <div x-show="subtab === 'interni'">
-                        <?php get_template_part('templates/parts/corsi/grid-corsi-interni'); ?>
-                    </div>
-                    
-                    <!-- Esterni -->
-                    <div x-show="subtab === 'esterni'">
-                        <?php 
-                        $link_esterno = get_field('link_autologin_esterno', 'user_' . get_current_user_id());
-                        if ($link_esterno):
-                        ?>
-                            <div class="external-platform">
-                                <h3>Piattaforma Certificata Esterna</h3>
-                                <p>Accedi alla piattaforma di formazione certificata per completare i corsi obbligatori esterni.</p>
-                                <a href="<?php echo esc_url($link_esterno); ?>" 
-                                   class="btn btn-primary btn-lg" 
-                                   target="_blank">
-                                    Accedi alla Piattaforma
-                                    <i data-lucide="external-link"></i>
-                                </a>
-                            </div>
-                        <?php else: ?>
-                            <p>Nessun link configurato per i corsi esterni.</p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Tab: Facoltativi -->
-            <div x-show="tab === 'facoltativi'" class="tab-content">
-                <?php get_template_part('templates/parts/corsi/grid-corsi-facoltativi'); ?>
-            </div>
-            
-            <!-- Tab: Completati -->
-            <div x-show="tab === 'completati'" class="tab-content">
-                <?php get_template_part('templates/parts/corsi/grid-corsi-completati'); ?>
-            </div>
-        </div>
-    </div>
+// in archive.php
+
+$post_type = get_post_type();
+$archive_title = get_the_archive_title();
+
+// ...
+
+<div class="archive-grid">
+    <?php while (have_posts()) : the_post(); ?>
+        <?php 
+        // Carica la card appropriata in base al post type
+        if ($post_type === 'post') {
+            get_template_part('templates/parts/cards/card-article');
+        } elseif ($post_type === 'convenzione') {
+            get_template_part('templates/parts/cards/card-convenzione');
+        } else {
+            // Card di default
+        }
+        ?>
+    <?php endwhile; ?>
 </div>
 ```
 
 ---
 
-## 📊 ANALYTICS (Solo Gestore/Admin)
+## 📄 Pagine Singole
 
-### Template: `page-analytics.php`
+### Documento Singolo (Protocollo/Modulo)
 
-```php
-<?php
-/*
-Template Name: Analytics
-*/
+**Template**: `single-documento.php`
 
-// Check permission
-if (!current_user_can('view_analytics')) {
-    wp_die('Non hai i permessi per visualizzare questa pagina.');
-}
+Questo template unificato gestisce la visualizzazione sia dei `protocolli` che dei `moduli`.
 
-get_header();
-?>
+- **Trigger**: Viene caricato grazie a un filtro su `template_include` in `functions.php`.
+- **Logica Condizionale**: All'interno del template, `get_post_type()` viene usato per differenziare la visualizzazione:
+  - **Protocollo**: Mostra il PDF embeddato (non scaricabile) e avvia il tracking della visualizzazione.
+  - **Modulo**: Mostra un pulsante per il download diretto del file.
+- **Metadati**: Visualizza tassonomie collegate (UDO, Profilo Professionale) e un riassunto.
+- **Moduli Correlati**: Se è un protocollo, elenca i moduli collegati tramite il campo relationship di ACF.
 
-<div class="content-wrapper">
-    <div class="container-wide">
-        <h1>Analytics Visualizzazioni</h1>
-        
-        <!-- KPI Cards -->
-        <?php get_template_part('templates/parts/analytics/kpi-widget'); ?>
-        
-        <!-- Filters -->
-        <div class="analytics-filters">
-            <select id="filter-tipo" class="select-field">
-                <option value="">Tutti i Tipi</option>
-                <option value="protocollo">Protocolli</option>
-                <option value="modulo">Moduli</option>
-            </select>
-            
-            <select id="filter-udo" class="select-field">
-                <option value="">Tutte le UDO</option>
-                <?php
-                $udos = get_terms('unita_offerta');
-                foreach ($udos as $udo):
-                ?>
-                <option value="<?php echo $udo->term_id; ?>"><?php echo $udo->name; ?></option>
-                <?php endforeach; ?>
-            </select>
-            
-            <input type="date" id="filter-date-from" class="input-field">
-            <input type="date" id="filter-date-to" class="input-field">
-            
-            <button id="apply-filters" class="btn btn-primary">Applica Filtri</button>
-        </div>
-        
-        <!-- Documents Table -->
-        <?php get_template_part('templates/parts/analytics/documents-table'); ?>
-        
-        <!-- Document Detail (se query param) -->
-        <?php if (isset($_GET['view']) && $_GET['view'] === 'document'): ?>
-            <?php get_template_part('templates/parts/analytics/document-detail'); ?>
-        <?php endif; ?>
-    </div>
-</div>
+### Altri Post Singoli
 
-<?php get_footer(); ?>
-```
+- **`single-convenzione.php`**: Dettaglio di una convenzione, con descrizione, contatti e allegati.
+- **`single-salute-e-benessere-l.php`**: Articolo di salute e benessere, con contenuto e risorse correlate.
+- **`single.php`**: Template di fallback per i post standard (Comunicazioni).
+- **`single-sfwd-courses.php`**: Template per i corsi di LearnDash, che si integra con la struttura del plugin.
 
 ---
 
-## 🤖 Checklist per IA
+## 🛠️ Pagine Funzionali
 
-Quando crei template pagine:
+### Dashboard Gestore
 
-- [ ] Usa `get_template_part()` per riutilizzabilità
-- [ ] Sempre `get_header()` e `get_footer()`
-- [ ] Wrap content in `.content-wrapper` (per bottom nav)
-- [ ] Check permissions prima di render contenuti sensibili
-- [ ] Escape output: `esc_html()`, `esc_url()`
-- [ ] Sanitize input: `sanitize_text_field()`, `intval()`
-- [ ] Alpine.js per interattività (tabs, filters, modals)
-- [ ] Responsive: test mobile-first
-- [ ] Pagination: usa `the_posts_pagination()`
-- [ ] Loading states per AJAX
+**Template**: `page-dashboard-gestore.php`
+
+Pagina accessibile solo ai ruoli `gestore_piattaforma` e `administrator`. È una vera e propria applicazione frontend per la gestione dei contenuti, basata su **Alpine.js** e **AJAX**.
+
+- **Struttura a Tab**: La navigazione è suddivisa in tab (Documenti, Utenti, Comunicazioni, etc.).
+- **Operazioni CRUD**: Ogni tab permette di creare, modificare ed eliminare contenuti senza ricaricare la pagina.
+- **Modal per Form**: I form di inserimento/modifica vengono caricati dinamicamente in un modal.
+- **Template Parts**: Ogni tab carica un template part dedicato (es. `templates/parts/gestore/tab-documenti.php`).
+
+### Pagina Analytics
+
+**Template**: `page-analitiche.php`
+
+Dashboard per la visualizzazione dei dati di tracking, accessibile solo ai gestori e amministratori.
+
+- **Componenti**: KPI globali, grafici (distribuzione utenti, contenuti), e tabelle dati.
+- **Interattività**: Filtri per data, tipo di documento, UDO, e ricerca per utenti e documenti.
+- **Drill-down**: Dalle tabelle principali è possibile accedere a viste di dettaglio per singolo documento o utente.
+
+### Pagina Contatti
+
+**Template**: `page-contatti.php`
+
+Visualizza l'organigramma aziendale, recuperando i dati dal CPT `organigramma`.
 
 ---
 
-**📄 Struttura pagine completa e modulare.**
+## 🤖 Checklist per Sviluppo
+
+- **Modularità**: Utilizzare `get_template_part()` il più possibile per creare componenti riutilizzabili (es. le card).
+- **Wrapper di Contenuto**: Iniziare sempre un nuovo template con `get_header()` e `<div class="content-wrapper">` e chiuderlo con `</div>` e `get_footer()`.
+- **Permessi**: All'inizio di ogni template che mostra dati sensibili (es. `page-analitiche.php`), inserire un controllo sui permessi con `current_user_can()`.
+- **Query**: Utilizzare `WP_Query` per le liste di contenuti custom e ricordarsi di usare `wp_reset_postdata()` dopo ogni loop custom.
+- **Dati Dinamici**: Evitare testo hard-coded. Usare `get_the_title()`, `the_content()`, `get_field()` etc. per popolare i template.
