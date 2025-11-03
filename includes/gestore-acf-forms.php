@@ -485,6 +485,32 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
         }
     }
 
+    // ============================================
+    // Recupera valori ACF per i campi corsi
+    // ============================================
+    $tutti_corsi_value = false;
+    $corsi_assegnati = [];
+
+    if ($action === 'edit' && $user_id) {
+        $user_context = 'user_' . $user_id;
+        $tutti_corsi_value = function_exists('get_field') ? get_field('tutti_corsi', $user_context) : false;
+        $corsi_raw = function_exists('get_field') ? get_field('corsi_assegnati', $user_context) : [];
+        if (is_array($corsi_raw)) {
+            $corsi_assegnati = $corsi_raw;
+        }
+    }
+
+    // ============================================
+    // Recupera TUTTI i corsi disponibili
+    // ============================================
+    $all_courses = get_posts([
+        'post_type'      => 'sfwd-courses',
+        'numberposts'    => -1,
+        'orderby'        => 'post_title',
+        'order'          => 'ASC',
+        'post_status'    => 'publish',
+    ]);
+
     $default_stato_choices = [
         'attivo' => 'Attivo',
         'sospeso' => 'Sospeso',
@@ -663,6 +689,43 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
                     </select>
                 </div>
             </div>
+
+            <!-- Tutti i Corsi -->
+            <div class="acf-field acf-field-true-false">
+                <div class="acf-label">
+                    <label for="tutti_corsi">Tutti i Corsi</label>
+                    <p class="description">Spunta per enrollare l'utente in TUTTI i corsi disponibili</p>
+                </div>
+                <div class="acf-input">
+                    <input type="checkbox" id="tutti_corsi" name="user_acf[field_tutti_corsi]" value="1" <?php echo $tutti_corsi_value ? 'checked' : ''; ?> />
+                </div>
+            </div>
+
+            <!-- Corsi Specifici - Multi Select -->
+            <div class="acf-field acf-field-post-object" id="corsi-specifici-field" style="<?php echo $tutti_corsi_value ? 'display:none;' : ''; ?>">
+                <div class="acf-label">
+                    <label for="corsi_assegnati">Corsi</label>
+                    <p class="description">Seleziona i corsi specifici da assegnare all'utente (Ctrl+click per selezionare più corsi)</p>
+                </div>
+                <div class="acf-input">
+                    <select id="corsi_assegnati" name="corsi_assegnati[]" multiple size="8" style="height: auto; padding: 5px;">
+                        <?php if (!empty($all_courses)): ?>
+                            <?php foreach ($all_courses as $course):
+                                $course_id = $course->ID;
+                                $is_selected = !empty($corsi_assegnati) && array_filter($corsi_assegnati, function($c) use ($course_id) {
+                                    return (is_object($c) && $c->ID == $course_id) || (is_int($c) && $c == $course_id);
+                                });
+                            ?>
+                            <option value="<?php echo esc_attr($course_id); ?>" <?php echo $is_selected ? 'selected' : ''; ?>>
+                                <?php echo esc_html($course->post_title); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        <?php else: ?>
+                            <option disabled>Nessun corso disponibile</option>
+                        <?php endif; ?>
+                    </select>
+                </div>
+            </div>
         </div>
 
         <!-- Hidden fields -->
@@ -674,6 +737,29 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
             <?php echo $action === 'new' ? 'Crea Utente' : 'Aggiorna Utente'; ?>
         </button>
     </form>
+
+    <script>
+    (function() {
+        const tuttiCorsiCheckbox = document.getElementById('tutti_corsi');
+        const corsiSpecificiField = document.getElementById('corsi-specifici-field');
+
+        if (tuttiCorsiCheckbox && corsiSpecificiField) {
+            // Gestisci il cambio dello stato del checkbox
+            tuttiCorsiCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    corsiSpecificiField.style.display = 'none';
+                    // Deseleziona tutti i checkbox dei corsi
+                    const checkboxes = corsiSpecificiField.querySelectorAll('input[type="checkbox"]');
+                    checkboxes.forEach(checkbox => {
+                        checkbox.checked = false;
+                    });
+                } else {
+                    corsiSpecificiField.style.display = '';
+                }
+            });
+        }
+    })();
+    </script>
     <?php
     return ob_get_clean();
 }
@@ -2513,6 +2599,57 @@ function meridiana_ajax_save_user() {
             update_user_meta($user_id, 'udo_riferimento', $udo_value);
         } else {
             delete_user_meta($user_id, 'udo_riferimento');
+        }
+    }
+
+    // ============================================
+    // SALVA E GESTISCI ENROLLMENT CORSI
+    // ============================================
+
+    // Recupera i valori dei corsi dal form
+    $tutti_corsi = isset($_POST['user_acf']['field_tutti_corsi']) && $_POST['user_acf']['field_tutti_corsi'] === '1';
+    $corsi_selezionati = isset($_POST['corsi_assegnati']) && is_array($_POST['corsi_assegnati'])
+        ? array_map('intval', $_POST['corsi_assegnati'])
+        : [];
+
+    // Salva i valori ACF per i corsi
+    if (function_exists('update_field')) {
+        update_field('field_tutti_corsi', $tutti_corsi, $user_context);
+        update_field('field_corsi_assegnati', $corsi_selezionati, $user_context);
+    } else {
+        update_user_meta($user_id, 'tutti_corsi', $tutti_corsi ? 1 : 0);
+        update_user_meta($user_id, 'corsi_assegnati', $corsi_selezionati);
+    }
+
+    // ============================================
+    // ENROLLMENT AUTOMATICO NEI CORSI
+    // ============================================
+
+    // Recupera tutti i corsi disponibili
+    $all_available_courses = get_posts([
+        'post_type'      => 'sfwd-courses',
+        'numberposts'    => -1,
+        'post_status'    => 'publish',
+        'fields'         => 'ids',
+    ]);
+
+    if (!empty($all_available_courses)) {
+        $courses_to_enroll = [];
+
+        // Se "Tutti i Corsi" è spuntato, usa tutti i corsi
+        if ($tutti_corsi) {
+            $courses_to_enroll = $all_available_courses;
+        } else {
+            // Altrimenti, usa solo i corsi selezionati
+            $courses_to_enroll = $corsi_selezionati;
+        }
+
+        // Enrolla l'utente nei corsi selezionati
+        if (!empty($courses_to_enroll)) {
+            foreach ($courses_to_enroll as $course_id) {
+                // Usa la nostra logica di enrollment tramite user meta
+                update_user_meta($user_id, '_enrolled_course_' . $course_id, current_time('timestamp'));
+            }
         }
     }
 

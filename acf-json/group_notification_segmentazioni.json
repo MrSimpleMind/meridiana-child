@@ -201,7 +201,7 @@
                     "name": "segmentation_custom_query_class",
                     "aria-label": "",
                     "type": "text",
-                    "instructions": "Es: MeridianaNotification\\CustomQueryClass",
+                    "instructions": "Es: MeridianaNotificationCustomQueryClass",
                     "required": false,
                     "conditional_logic": [
                         [
@@ -217,7 +217,7 @@
                         "class": "",
                         "id": ""
                     },
-                    "placeholder": "MeridianaNotification\\CustomQueryClass",
+                    "placeholder": "MeridianaNotificationCustomQueryClass",
                     "default_value": "",
                     "maxlength": "",
                     "prepend": "",
@@ -263,9 +263,9 @@
     "label_placement": "top",
     "instruction_placement": "label",
     "hide_on_screen": "",
-    "active": true,
+    "active": false,
     "description": "Repeater per gestire le segmentazioni notifiche",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1761742980
+    "modified": 1762184148
 }

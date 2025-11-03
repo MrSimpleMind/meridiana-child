@@ -74,9 +74,9 @@
     "label_placement": "top",
     "instruction_placement": "label",
     "hide_on_screen": "",
-    "active": true,
+    "active": false,
     "description": "Configurazione credenziali OneSignal",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1761742969
+    "modified": 1762184152
 }

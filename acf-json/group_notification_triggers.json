@@ -200,9 +200,9 @@
     "label_placement": "top",
     "instruction_placement": "label",
     "hide_on_screen": "",
-    "active": true,
+    "active": false,
     "description": "Configura i trigger per le notifiche push",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1761743497
+    "modified": 1762184145
 }
