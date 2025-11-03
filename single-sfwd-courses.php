@@ -8,6 +8,12 @@
 
 if (!defined('ABSPATH')) exit;
 
+// Helper function to check if lesson is completed by user
+function is_lesson_completed_by_user($lesson_id, $user_id) {
+    $completed_lessons = get_user_meta($user_id, '_completed_lesson_' . $lesson_id, true);
+    return !empty($completed_lessons);
+}
+
 get_header();
 
 $course_id = get_the_ID();
@@ -29,9 +35,9 @@ $course_meta = get_post_meta($course_id);
 // LearnDash course settings (via settings key)
 $course_settings = get_post_meta($course_id, '_sfwd-courses', true);
 
-// Get course status for current user
-$user_course_status = learndash_user_get_course_access_list($user_id, array($course_id));
-$is_enrolled = !empty($user_course_status);
+// Get course status for current user (via user meta)
+$enrolled_meta = get_user_meta($user_id, '_enrolled_course_' . $course_id, true);
+$is_enrolled = !empty($enrolled_meta);
 
 // Get course progress
 $course_progress = 0;
@@ -55,7 +61,7 @@ if ($is_enrolled) {
     if ($total_lessons > 0) {
         // Count completed lessons for user
         foreach ($lessons->posts as $lesson_id) {
-            if (learndash_lesson_completed_by_user($lesson_id, $user_id)) {
+            if (is_lesson_completed_by_user($lesson_id, $user_id)) {
                 $lessons_completed++;
             }
         }
@@ -90,7 +96,7 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
     get_template_part('templates/parts/navigation/desktop-sidebar');
     ?>
 
-    <main class="page-single-course">
+    <main class="page-single-course" x-data="courseEnroll(<?php echo $course_id; ?>, '<?php echo get_permalink($course_id); ?>')" x-cloak>
         <div class="single-course-container">
 
             <!-- BREADCRUMB -->
@@ -98,7 +104,7 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
 
             <!-- BACK BUTTON -->
             <div class="back-link-wrapper">
-                <a href="<?php echo esc_url(get_post_type_archive_link('sfwd-courses')); ?>" class="back-link">
+                <a href="<?php echo esc_url(home_url('/corsi/')); ?>" class="back-link">
                     <i data-lucide="arrow-left"></i>
                     <span>Torna ai Corsi</span>
                 </a>
@@ -157,7 +163,7 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                             foreach ($all_lessons as $lesson):
                                 $lesson_id = $lesson->ID;
                                 $lesson_title = $lesson->post_title;
-                                $lesson_completed = $is_enrolled ? learndash_lesson_completed_by_user($lesson_id, $user_id) : false;
+                                $lesson_completed = $is_enrolled ? is_lesson_completed_by_user($lesson_id, $user_id) : false;
                                 $lesson_url = get_permalink($lesson_id);
 
                                 // Get quizzes in this lesson
@@ -307,6 +313,54 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
         </div>
     </main>
 </div>
+
+<script>
+document.addEventListener('alpine:init', () => {
+    Alpine.data('courseEnroll', (courseId, courseUrl) => ({
+        courseId: courseId,
+        courseUrl: courseUrl,
+        isLoading: false,
+        errorMessage: '',
+
+        async enrollCourse(id) {
+            if (!id) return;
+
+            this.isLoading = true;
+            this.errorMessage = '';
+
+            try {
+                // Get nonce from page
+                const nonce = document.querySelector('[data-nonce]')?.dataset.nonce || '';
+                const userId = parseInt(document.querySelector('[data-user-id]')?.dataset.userId || 0);
+                const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
+
+                const response = await fetch(
+                    `${restUrl}user/${userId}/courses/${id}/enroll`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': nonce,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Redirect immediately after successful enrollment
+                window.location.href = this.courseUrl;
+
+            } catch (error) {
+                console.error('Error enrolling in course:', error);
+                this.errorMessage = 'Errore nell\'iscrizione. Per favore riprova.';
+                this.isLoading = false;
+            }
+        }
+    }));
+});
+</script>
 
 <?php
 get_footer();

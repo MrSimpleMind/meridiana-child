@@ -70,7 +70,7 @@ function meridiana_render_test_data_page() {
 
             if ($result['success']) {
                 echo "\n\n✓ Test data generation COMPLETED SUCCESSFULLY!";
-                echo "\n\nSummary:";
+                echo "\n\n📚 CONTENUTI E DOCUMENTI:";
                 echo "\n  • Utenti: " . $result['users'];
                 echo "\n  • Protocolli: " . $result['protocolli'];
                 echo "\n  • Moduli: " . $result['moduli'];
@@ -78,7 +78,17 @@ function meridiana_render_test_data_page() {
                 echo "\n  • Salute & Benessere: " . $result['salute'];
                 echo "\n  • Comunicazioni: " . $result['comunicazioni'];
                 echo "\n  • Organigrammi: " . $result['organigrammi'];
+                echo "\n\n🎓 CORSI LEARNDASH:";
+                echo "\n  • Corsi: " . $result['courses'];
+                echo "\n  • Lezioni: " . $result['lessons'];
+                echo "\n  • Quiz: " . $result['quizzes'];
+                echo "\n  • Domande Quiz: " . $result['questions'];
+                echo "\n  • Iscrizioni Utenti: " . $result['enrollments'];
+                echo "\n  • Corsi Completati: " . ($result['progress']['completed'] ?? 0);
+                echo "\n  • Corsi in Corso: " . ($result['progress']['in_progress'] ?? 0);
+                echo "\n\n📊 ANALYTICS:";
                 echo "\n  • Document Views: " . $result['views'];
+                echo "\n\n⏱️  Tempo totale: " . $result['elapsed'] . "s";
             } else {
                 echo "\n\n✗ Generation FAILED with errors";
             }
@@ -115,8 +125,10 @@ function meridiana_render_test_data_page() {
                     <!-- GENERATE SECTION -->
                     <div style="border: 1px solid #ccc; padding: 20px; border-radius: 4px;">
                         <h2>Generate Test Data</h2>
-                        <p>Creates realistic test data for development:</p>
-                        <ul style="line-height: 1.8; font-size: 14px;">
+                        <p>Creates realistic test data for development (v4.0 - With LearnDash Courses):</p>
+
+                        <h3 style="color: #333; margin-top: 15px; font-size: 13px;">📚 Documents & Content:</h3>
+                        <ul style="line-height: 1.8; font-size: 14px; margin: 10px 0;">
                             <li><strong>100 users</strong> with profilo, UDO, stato, codice fiscale</li>
                             <li><strong>25 protocolli</strong> with PDF, moduli allegati, taxonomy</li>
                             <li><strong>25 moduli</strong> with PDF, area-competenza taxonomy</li>
@@ -124,7 +136,22 @@ function meridiana_render_test_data_page() {
                             <li><strong>25 salute articles</strong> with repeater resources</li>
                             <li><strong>25 comunicazioni</strong> (posts)</li>
                             <li><strong>20 organigrammi</strong> with contacts</li>
-                            <li><strong>2000-3000 views</strong> across documents</li>
+                        </ul>
+
+                        <h3 style="color: #333; margin-top: 15px; font-size: 13px;">🎓 LearnDash Courses:</h3>
+                        <ul style="line-height: 1.8; font-size: 14px; margin: 10px 0;">
+                            <li><strong>8-10 courses</strong> with titles, descriptions, featured images</li>
+                            <li><strong>3-5 lessons per course</strong> with lorem ipsum content</li>
+                            <li><strong>1-2 quizzes per course</strong> with passing percentage</li>
+                            <li><strong>15-25 quiz questions</strong> with multiple choice answers</li>
+                            <li><strong>Course enrollments</strong> - random users enrolled to multiple courses</li>
+                            <li><strong>Course progress</strong> - 40% completed, 45% in progress, 15% not started</li>
+                            <li><strong>Certificates enabled</strong> - with 1-year expiration</li>
+                        </ul>
+
+                        <h3 style="color: #333; margin-top: 15px; font-size: 13px;">📊 Analytics:</h3>
+                        <ul style="line-height: 1.8; font-size: 14px; margin: 10px 0;">
+                            <li><strong>2000-3000 document views</strong> with realistic user distribution</li>
                         </ul>
 
                         <p style="background: #e8f5e9; padding: 10px; border-radius: 3px; font-size: 13px;">
@@ -323,6 +350,85 @@ class MeridianaTestDataGenerator {
         'Notifica: Disponibilità Nuovi Servizi'
     ];
 
+    // ===== CORSI =====
+
+    private $titoli_corsi = [
+        'Introduzione ai Protocolli Aziendali',
+        'Sicurezza e Igiene sul Lavoro',
+        'GDPR e Privacy nel Contesto Sanitario',
+        'Comunicazione Efficace in Equipe',
+        'Gestione delle Emergenze',
+        'Excel Avanzato per Gestionali',
+        'Public Speaking e Presentazioni',
+        'Problem Solving Avanzato',
+        'Gestione dello Stress e Benessere',
+        'Leadership e Gestione del Team'
+    ];
+
+    private $titoli_lezioni = [
+        'Introduzione ai Concetti Base',
+        'Struttura e Organizzazione',
+        'Principi Fondamentali',
+        'Applicazione Pratica',
+        'Casi Studio e Scenari',
+        'Best Practices',
+        'Strumenti e Risorse',
+        'Valutazione e Monitoraggio',
+        'Problematiche Comuni',
+        'Conclusioni e Prospettive'
+    ];
+
+    // Track course states during generation (for enrollment distribution)
+    private $course_states = [];  // array of ['course_id' => 'in-progress'|'completed'|'optional']
+
+    private $domande_quiz = [
+        [
+            'domanda' => 'Quale è lo scopo principale di questo argomento?',
+            'risposte' => [
+                'A' => ['testo' => 'Migliorare l\'efficienza lavorativa', 'corretta' => true],
+                'B' => ['testo' => 'Ridurre i costi operativi', 'corretta' => false],
+                'C' => ['testo' => 'Aumentare il numero di dipendenti', 'corretta' => false],
+                'D' => ['testo' => 'Nessuna delle precedenti', 'corretta' => false],
+            ]
+        ],
+        [
+            'domanda' => 'Quali sono i benefici principali della pratica descritta?',
+            'risposte' => [
+                'A' => ['testo' => 'Maggiore sicurezza e qualità', 'corretta' => true],
+                'B' => ['testo' => 'Riduzione del tempo di lavoro', 'corretta' => false],
+                'C' => ['testo' => 'Aumento della complessità', 'corretta' => false],
+                'D' => ['testo' => 'Nessun vantaggio', 'corretta' => false],
+            ]
+        ],
+        [
+            'domanda' => 'Come si applica correttamente il procedimento?',
+            'risposte' => [
+                'A' => ['testo' => 'Seguendo rigorosamente i passaggi documentati', 'corretta' => true],
+                'B' => ['testo' => 'In modo casuale e improvisato', 'corretta' => false],
+                'C' => ['testo' => 'Solo quando conveniente', 'corretta' => false],
+                'D' => ['testo' => 'Non è importante come si applica', 'corretta' => false],
+            ]
+        ],
+        [
+            'domanda' => 'Quali figure professionali sono coinvolte?',
+            'risposte' => [
+                'A' => ['testo' => 'Infermieri, Medici e Coordinatori', 'corretta' => true],
+                'B' => ['testo' => 'Solo il Direttore', 'corretta' => false],
+                'C' => ['testo' => 'Nessuno in particolare', 'corretta' => false],
+                'D' => ['testo' => 'Dipende dalla situazione', 'corretta' => false],
+            ]
+        ],
+        [
+            'domanda' => 'Quali sono i rischi se non si segue la procedura?',
+            'risposte' => [
+                'A' => ['testo' => 'Compromissione della sicurezza e qualità', 'corretta' => true],
+                'B' => ['testo' => 'Nessun rischio particolare', 'corretta' => false],
+                'C' => ['testo' => 'Solo lievi inconvenienti', 'corretta' => false],
+                'D' => ['testo' => 'Miglioramento della situazione', 'corretta' => false],
+            ]
+        ],
+    ];
+
     /**
      * Erase ALL data except admin accounts
      */
@@ -351,7 +457,7 @@ class MeridianaTestDataGenerator {
         echo "== Eliminazione Post/CPT ==\n";
         $posts_deleted = 0;
         // NOTE: 'page' is deliberately EXCLUDED - pages are permanent structural templates!
-        $post_types = ['post', 'protocollo', 'modulo', 'convenzione', 'salute-e-benessere-l', 'organigramma'];
+        $post_types = ['post', 'protocollo', 'modulo', 'convenzione', 'salute-e-benessere-l', 'organigramma', 'sfwd-courses', 'sfwd-lessons', 'sfwd-quiz', 'sfwd-question'];
         foreach ($post_types as $cpt) {
             $posts = get_posts(['post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'any']);
             foreach ($posts as $post) {
@@ -416,6 +522,7 @@ class MeridianaTestDataGenerator {
 
         // Delete ONLY test posts (those with "Test" in title, from test CPT only)
         // NOTE: 'page' is NEVER touched here!
+        // NOTE: LearnDash courses are COMPLETELY REGENERATED (all deleted, not just "Test" ones)
         $test_cpts = ['protocollo', 'modulo', 'convenzione', 'salute-e-benessere-l', 'post', 'organigramma'];
 
         foreach ($test_cpts as $cpt) {
@@ -428,21 +535,71 @@ class MeridianaTestDataGenerator {
                 }
             }
         }
+
+        // Delete ALL LearnDash courses, lessons, quizzes, and questions (complete regeneration)
+        echo "== Eliminazione Corsi LearnDash Precedenti ==\n";
+        $learndash_cpts = ['sfwd-courses', 'sfwd-lessons', 'sfwd-quiz', 'sfwd-question'];
+        foreach ($learndash_cpts as $cpt) {
+            $posts = get_posts(['post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'any']);
+            foreach ($posts as $post) {
+                wp_delete_post($post->ID, true);
+                $deleted_posts++;
+            }
+        }
+        echo "  ✓ Eliminati tutti i corsi LearnDash precedenti (per rigenerazione completa)\n";
         if ($deleted_posts > 0) {
             echo "  ✓ Eliminati $deleted_posts post di test (con 'Test' nel titolo)\n";
         } else {
             echo "  ℹ  Nessun post di test da eliminare\n";
         }
 
-        // Delete test document views (those with IP 127.0.0.1 - test marker)
-        $deleted_views = $wpdb->query("DELETE FROM {$wpdb->prefix}document_views WHERE ip_address = '127.0.0.1'");
-        if ($deleted_views > 0) {
-            echo "  ✓ Eliminate $deleted_views visualizzazioni di test\n";
-        } else {
-            echo "  ℹ  Nessuna visualizzazione di test da eliminare\n";
+        // Delete orphaned course enrollments (for courses that were deleted)
+        echo "== Pulizia Iscrizioni Corsi ==\n";
+        $deleted_enrollments = 0;
+
+        // Get all test courses that still exist (to preserve non-test courses)
+        $test_courses = get_posts([
+            'post_type' => 'sfwd-courses',
+            'numberposts' => -1,
+            'post_status' => 'any',
+            's' => 'Test'  // Only get courses with "Test" in title
+        ]);
+        $test_course_ids = wp_list_pluck($test_courses, 'ID');
+
+        // Delete enrollments for deleted courses (courses NOT in the list)
+        if (!empty($test_course_ids)) {
+            $placeholders = implode(',', array_fill(0, count($test_course_ids), '%d'));
+            $deleted_enrollments = $wpdb->query($wpdb->prepare(
+                "DELETE FROM {$wpdb->prefix}learndash_user_course_access
+                 WHERE course_id NOT IN ($placeholders)
+                 AND course_id IN (
+                     SELECT ID FROM {$wpdb->prefix}posts
+                     WHERE post_type = 'sfwd-courses' AND post_title LIKE '%Test%'
+                 )",
+                ...$test_course_ids
+            ));
         }
 
-        echo "✓ Pulizia selettiva completata (solo dati test)\n\n";
+        // Actually, simpler approach: delete enrollments for courses that don't exist
+        $deleted_enrollments = $wpdb->query(
+            "DELETE FROM {$wpdb->prefix}learndash_user_course_access
+             WHERE course_id NOT IN (
+                 SELECT ID FROM {$wpdb->prefix}posts
+                 WHERE post_type = 'sfwd-courses'
+             )"
+        );
+
+        if ($deleted_enrollments > 0) {
+            echo "  ✓ Eliminate $deleted_enrollments iscrizioni orfane (corsi non esistenti)\n";
+        } else {
+            echo "  ℹ  Nessuna iscrizione orfana\n";
+        }
+
+        // DO NOT DELETE document views here - they are preserved across regenerations
+        // Views are only deleted when user explicitly clicks "Erase All Data"
+        echo "  ℹ  Visualizzazioni: PRESERVATE (non eliminate)\n";
+
+        echo "✓ Pulizia selettiva completata (solo dati test, visualizzazioni preservate)\n\n";
     }
 
     /**
@@ -826,6 +983,352 @@ class MeridianaTestDataGenerator {
     }
 
     /**
+     * Genera 8-10 corsi LearnDash con distribuzione di stati
+     * ~30% In Corso, ~20% Completati, ~50% Facoltativi
+     */
+    public function generate_courses() {
+        echo "== Generazione 6 Corsi LearnDash ==\n";
+
+        $created = 0;
+        $num_courses = 6;  // Esattamente 6 corsi per test
+
+        // Reset course states for this generation
+        $this->course_states = [];
+
+        // Distribute courses evenly for testing
+        $num_in_progress = 2;    // 2 corsi in corso
+        $num_completed = 2;      // 2 corsi completati
+        $num_optional = 2;       // 2 corsi facoltativi (da cui iscriversi)
+
+        $state_distribution = array_merge(
+            array_fill(0, $num_in_progress, 'in-progress'),
+            array_fill(0, $num_completed, 'completed'),
+            array_fill(0, $num_optional, 'optional')
+        );
+        shuffle($state_distribution);
+
+        for ($i = 1; $i <= $num_courses; $i++) {
+            $title = $this->titoli_corsi[array_rand($this->titoli_corsi)] . ' - Test ' . $i;
+            $course_state = $state_distribution[$i - 1]; // Get state for this course
+
+            $course_id = wp_insert_post([
+                'post_title'   => $title,
+                'post_content' => '<p>' . $this->generate_lorem(400) . '</p>',
+                'post_type'    => 'sfwd-courses',
+                'post_status'  => 'publish',
+                'post_author'  => 1,
+            ]);
+
+            if (is_wp_error($course_id)) {
+                echo "  ✗ Errore creazione corso\n";
+                continue;
+            }
+
+            // Store state for later use in enrollment
+            $this->course_states[$course_id] = $course_state;
+
+            // LearnDash course meta
+            update_post_meta($course_id, 'course_prerequisite', ''); // No prerequisite
+            update_post_meta($course_id, 'course_lesson_count', 0); // Will be updated
+            update_post_meta($course_id, 'course_lesson_order', 'menu_order'); // Lesson order
+
+            // IMPORTANT: Save course state to database (for API and regenerations)
+            update_post_meta($course_id, '_course_test_state', $course_state); // 'in-progress', 'completed', 'optional'
+
+            // Certificate settings - ONLY for completed/in-progress courses (not optional)
+            if ($course_state !== 'optional') {
+                update_post_meta($course_id, 'course_certificate', 1); // Enable certificate
+                update_post_meta($course_id, 'course_certificate_expiration_enabled', 1); // Certificate expiration
+                update_post_meta($course_id, 'course_certificate_expiration', 365); // 1 year expiration
+            } else {
+                update_post_meta($course_id, 'course_certificate', 0); // No certificate for optional
+            }
+
+            // Course settings
+            update_post_meta($course_id, 'course_lesson_progression', 1); // Sequential
+            update_post_meta($course_id, 'course_access_list', ''); // Everyone can access
+
+            // Set featured image
+            $image_id = $this->create_placeholder_image('Corso');
+            if ($image_id) {
+                set_post_thumbnail($course_id, $image_id);
+            }
+
+            $created++;
+        }
+
+        echo "  ✓ Distribuzione corsi:\n";
+        echo "    - In Corso: $num_in_progress\n";
+        echo "    - Completati: $num_completed\n";
+        echo "    - Facoltativi: $num_optional\n";
+        echo "✓ Corsi: $created creati\n\n";
+        return $created;
+    }
+
+    /**
+     * Genera lezioni per ogni corso
+     */
+    public function generate_lessons() {
+        echo "== Generazione Lezioni ==\n";
+
+        $created = 0;
+        $courses = get_posts(['post_type' => 'sfwd-courses', 'numberposts' => -1]);
+
+        foreach ($courses as $course) {
+            $num_lessons = rand(3, 5);
+
+            for ($i = 1; $i <= $num_lessons; $i++) {
+                $lesson_title = $this->titoli_lezioni[array_rand($this->titoli_lezioni)] . ' - Lezione ' . $i;
+
+                $lesson_id = wp_insert_post([
+                    'post_title'   => $lesson_title,
+                    'post_content' => '<p>' . $this->generate_lorem(600) . '</p>',
+                    'post_type'    => 'sfwd-lessons',
+                    'post_status'  => 'publish',
+                    'post_parent'  => $course->ID, // Link to course
+                    'post_author'  => 1,
+                    'menu_order'   => $i, // Lesson order
+                ]);
+
+                if (!is_wp_error($lesson_id)) {
+                    // LearnDash lesson meta
+                    update_post_meta($lesson_id, 'course_id', $course->ID);
+                    update_post_meta($lesson_id, 'lesson_progression', 'on');
+                    update_post_meta($lesson_id, 'lesson_completion_default_on_view', 'on'); // Auto-mark complete
+
+                    $created++;
+                }
+            }
+        }
+
+        echo "✓ Lezioni: $created create\n\n";
+        return $created;
+    }
+
+    /**
+     * Genera quiz per ogni corso
+     */
+    public function generate_quizzes() {
+        echo "== Generazione Quiz ==\n";
+
+        $created = 0;
+        $courses = get_posts(['post_type' => 'sfwd-courses', 'numberposts' => -1]);
+
+        foreach ($courses as $course) {
+            $num_quizzes = rand(1, 2);
+
+            for ($i = 1; $i <= $num_quizzes; $i++) {
+                $quiz_title = 'Quiz ' . $i . ' - ' . $course->post_title;
+
+                $quiz_id = wp_insert_post([
+                    'post_title'   => $quiz_title,
+                    'post_content' => '<p>Quiz per verificare la comprensione degli argomenti.</p>',
+                    'post_type'    => 'sfwd-quiz',
+                    'post_status'  => 'publish',
+                    'post_parent'  => $course->ID, // Link to course
+                    'post_author'  => 1,
+                    'menu_order'   => 10 + $i, // Quiz after lessons
+                ]);
+
+                if (!is_wp_error($quiz_id)) {
+                    // LearnDash quiz meta
+                    update_post_meta($quiz_id, 'course_id', $course->ID);
+                    update_post_meta($quiz_id, 'quiz_lesson_id', 0); // Quiz for whole course
+                    update_post_meta($quiz_id, 'quiz_pro_enabled', 'on');
+                    update_post_meta($quiz_id, 'quiz_passing_percentage', '70'); // 70% to pass
+                    update_post_meta($quiz_id, 'quiz_question_count', 0); // Will be updated
+                    update_post_meta($quiz_id, 'quiz_randomize_questions', 'off');
+                    update_post_meta($quiz_id, 'quiz_show_score', 'on');
+                    update_post_meta($quiz_id, 'quiz_show_answers', 'on');
+
+                    $created++;
+                }
+            }
+        }
+
+        echo "✓ Quiz: $created creati\n\n";
+        return $created;
+    }
+
+    /**
+     * Genera domande per ogni quiz
+     */
+    public function generate_questions() {
+        echo "== Generazione Domande Quiz ==\n";
+
+        $created = 0;
+        $quizzes = get_posts(['post_type' => 'sfwd-quiz', 'numberposts' => -1]);
+
+        foreach ($quizzes as $quiz) {
+            $num_questions = rand(3, 5);
+
+            for ($i = 0; $i < $num_questions; $i++) {
+                // Random question from pool
+                $question_data = $this->domande_quiz[array_rand($this->domande_quiz)];
+                $question_text = $question_data['domanda'] . ' (' . $i + 1 . ')';
+
+                $question_id = wp_insert_post([
+                    'post_title'   => $question_text,
+                    'post_content' => $question_text,
+                    'post_type'    => 'sfwd-question',
+                    'post_status'  => 'publish',
+                    'post_parent'  => $quiz->ID, // Link to quiz
+                    'post_author'  => 1,
+                    'menu_order'   => $i + 1,
+                ]);
+
+                if (!is_wp_error($question_id)) {
+                    // LearnDash question meta - Question Type: Multiple Choice
+                    update_post_meta($question_id, 'question_type', 'single');
+                    update_post_meta($question_id, 'question_points', 10);
+                    update_post_meta($question_id, 'question_show_explanation', 'on');
+
+                    // Build answers array
+                    $answers = [];
+                    foreach ($question_data['risposte'] as $letter => $risposta) {
+                        $answers[] = [
+                            'text' => $risposta['testo'],
+                            'correct' => $risposta['corretta'] ? 'on' : '',
+                            'sort' => count($answers) + 1,
+                        ];
+                    }
+
+                    // Save answers as post meta
+                    update_post_meta($question_id, 'question_answer_type', 'single'); // Single choice
+                    update_post_meta($question_id, 'question_answers', $answers);
+                    update_post_meta($question_id, 'question_explanation', $this->generate_lorem(200));
+
+                    $created++;
+                }
+            }
+        }
+
+        echo "✓ Domande: $created create\n\n";
+        return $created;
+    }
+
+    /**
+     * Iscrivere utenti ai corsi (ONLY to in-progress and completed, NOT optional)
+     */
+    public function generate_course_enrollments() {
+        global $wpdb;
+        echo "== Iscrizione Utenti ai Corsi ==\n";
+
+        $enrolled = 0;
+        $users = get_users(['number' => -1, 'role' => 'subscriber']);
+        $courses = get_posts(['post_type' => 'sfwd-courses', 'numberposts' => -1]);
+
+        if (empty($users) || empty($courses)) {
+            echo "⚠ Mancano utenti o corsi\n\n";
+            return 0;
+        }
+
+        // Filter courses: only enroll to non-optional courses (read state from database)
+        $enrollable_courses = array_filter($courses, function($course) {
+            $course_state = get_post_meta($course->ID, '_course_test_state', true);
+            return !empty($course_state) && $course_state !== 'optional';
+        });
+
+        if (empty($enrollable_courses)) {
+            echo "⚠ Nessun corso non-facoltativo per le iscrizioni\n\n";
+            return 0;
+        }
+
+        // Get first user (admin or test user)
+        $first_user = isset($users[0]) ? $users[0] : null;
+
+        // Enroll users to courses based on state
+        foreach ($enrollable_courses as $course) {
+            $course_state = get_post_meta($course->ID, '_course_test_state', true) ?: 'optional';
+
+            // Always enroll first user to test courses (especially completed ones)
+            if ($first_user) {
+                // Mark first user as enrolled via user meta (for API to read)
+                update_user_meta($first_user->ID, '_enrolled_course_' . $course->ID, current_time('timestamp'));
+                $enrolled++;
+            }
+
+            // Enroll additional random users for completed courses
+            if ($course_state === 'completed') {
+                $num_enrollments = rand(2, 3);
+            } else {
+                $num_enrollments = rand(1, 2);
+            }
+
+            $shuffled_users = $users;
+            shuffle($shuffled_users);
+            $users_to_enroll = array_slice($shuffled_users, 0, min($num_enrollments, count($shuffled_users)));
+
+            foreach ($users_to_enroll as $user) {
+                // Mark user as enrolled via user meta (for API to read)
+                update_user_meta($user->ID, '_enrolled_course_' . $course->ID, current_time('timestamp'));
+                $enrolled++;
+            }
+        }
+
+        echo "✓ Iscrizioni: $enrolled utenti iscritti ai corsi non-facoltativi\n\n";
+        return $enrolled;
+    }
+
+    /**
+     * Simula progresso utenti e completamento corsi basato su course_states
+     * in-progress: 30-60% lezioni complete
+     * completed: 100% lezioni complete
+     */
+    public function generate_course_progress() {
+        global $wpdb;
+        echo "== Simulazione Progresso Corsi ==\n";
+
+        $completed = 0;
+        $in_progress = 0;
+
+        // Get all user courses from database
+        $user_courses = $wpdb->get_results(
+            "SELECT DISTINCT user_id, course_id FROM {$wpdb->prefix}learndash_user_course_access"
+        );
+
+        foreach ($user_courses as $uc) {
+            $user_id = $uc->user_id;
+            $course_id = $uc->course_id;
+
+            // Get course state from database (persistent)
+            $course_state = get_post_meta($course_id, '_course_test_state', true) ?: 'optional';
+
+            // Get lessons for this course
+            $lessons = get_posts([
+                'post_type' => 'sfwd-lessons',
+                'numberposts' => -1,
+                'meta_key' => 'course_id',
+                'meta_value' => $course_id,
+                'fields' => 'ids',
+            ]);
+
+            if (empty($lessons)) {
+                continue;
+            }
+
+            // Mark lessons based on course state
+            if ($course_state === 'completed') {
+                // Mark ALL lessons as complete
+                $completed_lessons = $lessons;
+                update_user_meta($user_id, '_learndash_course_' . $course_id . '_lessons_completed', $completed_lessons);
+                $completed++;
+            } elseif ($course_state === 'in-progress') {
+                // Mark 30-60% of lessons as complete
+                $num_to_complete = rand(ceil(count($lessons) * 0.30), ceil(count($lessons) * 0.60));
+                $completed_lessons = array_slice($lessons, 0, min($num_to_complete, count($lessons)));
+                update_user_meta($user_id, '_learndash_course_' . $course_id . '_lessons_completed', $completed_lessons);
+                $in_progress++;
+            }
+            // 'optional' courses have no enrolled users, so no progress to track
+        }
+
+        echo "✓ Corsi completati: $completed\n";
+        echo "✓ Corsi in progress: $in_progress\n\n";
+        return ['in_progress' => $in_progress, 'completed' => $completed];
+    }
+
+    /**
      * Genera visualizzazioni simulate con distribuzione realistica
      * - Alcuni utenti vedono molto (power users)
      * - La maggior parte vede poco (average users)
@@ -1128,8 +1631,8 @@ class MeridianaTestDataGenerator {
      */
     public function run() {
         echo "\n========================================\n";
-        echo "MERIDIANA TEST DATA GENERATOR v3.0\n";
-        echo "Enhanced with Full ACF Support\n";
+        echo "MERIDIANA TEST DATA GENERATOR v4.0\n";
+        echo "Enhanced with Courses, Lessons & Quizzes\n";
         echo "========================================\n\n";
 
         $start_time = microtime(true);
@@ -1137,7 +1640,7 @@ class MeridianaTestDataGenerator {
         // Clean up old data first
         $this->cleanup_old_data();
 
-        // Generate new data
+        // Generate new data - DOCUMENTI E CONTENUTI
         $users = $this->generate_users();
         $protocolli = $this->generate_protocolli();
         $moduli = $this->generate_moduli();
@@ -1145,6 +1648,16 @@ class MeridianaTestDataGenerator {
         $salute = $this->generate_salute_benessere();
         $comunicazioni = $this->generate_comunicazioni();
         $organigrammi = $this->generate_organigramma();
+
+        // Generate new data - CORSI LEARNDASH
+        $courses = $this->generate_courses();
+        $lessons = $this->generate_lessons();
+        $quizzes = $this->generate_quizzes();
+        $questions = $this->generate_questions();
+        $enrollments = $this->generate_course_enrollments();
+        $progress = $this->generate_course_progress();
+
+        // Generate analytics
         $views = $this->generate_document_views();
 
         $elapsed = round(microtime(true) - $start_time, 2);
@@ -1163,6 +1676,12 @@ class MeridianaTestDataGenerator {
             'salute' => $salute,
             'comunicazioni' => $comunicazioni,
             'organigrammi' => $organigrammi,
+            'courses' => $courses,
+            'lessons' => $lessons,
+            'quizzes' => $quizzes,
+            'questions' => $questions,
+            'enrollments' => $enrollments,
+            'progress' => $progress,
             'views' => $views,
         ];
     }

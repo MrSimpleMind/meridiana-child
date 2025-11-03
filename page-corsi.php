@@ -35,11 +35,11 @@ $user_id = $current_user->ID;
                     <div class="corsi-tabs">
                         <button type="button"
                                 class="corsi-tabs__item"
-                                :class="{ 'active': activeTab === 'in-progress' }"
-                                @click="setTab('in-progress')">
+                                :class="{ 'active': activeTab === 'courses' }"
+                                @click="setTab('courses')">
                             <i data-lucide="play-circle"></i>
-                            <span>In Corso</span>
-                            <span class="corsi-tabs__badge" x-text="inProgressCount" x-show="inProgressCount > 0"></span>
+                            <span>Corsi</span>
+                            <span class="corsi-tabs__badge" x-text="coursesCount" x-show="coursesCount > 0"></span>
                         </button>
                         <button type="button"
                                 class="corsi-tabs__item"
@@ -48,14 +48,6 @@ $user_id = $current_user->ID;
                             <i data-lucide="check-circle"></i>
                             <span>Completati</span>
                             <span class="corsi-tabs__badge" x-text="completedCount" x-show="completedCount > 0"></span>
-                        </button>
-                        <button type="button"
-                                class="corsi-tabs__item"
-                                :class="{ 'active': activeTab === 'optional' }"
-                                @click="setTab('optional')">
-                            <i data-lucide="star"></i>
-                            <span>Facoltativi</span>
-                            <span class="corsi-tabs__badge" x-text="optionalCount" x-show="optionalCount > 0"></span>
                         </button>
                         <button type="button"
                                 class="corsi-tabs__item"
@@ -74,49 +66,67 @@ $user_id = $current_user->ID;
                 <div class="container">
                     <div class="corsi-content">
 
-                        <!-- TAB: IN PROGRESS -->
-                        <div class="corsi-tab-pane" x-show="activeTab === 'in-progress'" x-cloak>
+                        <!-- TAB: COURSES (disponibili + in progress) -->
+                        <div class="corsi-tab-pane" x-show="activeTab === 'courses'" x-cloak>
                             <div class="corsi-header">
-                                <h2 class="corsi-header__title">Corsi in Corso</h2>
-                                <p class="corsi-header__subtitle">Continua il tuo percorso di formazione</p>
+                                <h2 class="corsi-header__title">Corsi Disponibili</h2>
+                                <p class="corsi-header__subtitle">Iscriviti ai corsi o continua quelli in corso</p>
                             </div>
 
-                            <template x-if="inProgressCourses.length > 0">
+                            <template x-if="courses.length > 0">
                                 <div class="corsi-grid">
-                                    <template x-for="course in inProgressCourses" :key="course.id">
+                                    <template x-for="course in courses" :key="course.id">
                                         <div class="course-card">
                                             <div class="course-card__header">
                                                 <h3 class="course-card__title" x-text="course.title"></h3>
-                                                <span class="course-card__status course-card__status--in-progress">In Corso</span>
+                                                <template x-if="course.is_enrolled">
+                                                    <span class="course-card__status course-card__status--in-progress">In Corso</span>
+                                                </template>
+                                                <template x-if="!course.is_enrolled">
+                                                    <span class="course-card__status course-card__status--available">Disponibile</span>
+                                                </template>
                                             </div>
 
                                             <div class="course-card__body">
                                                 <p class="course-card__description" x-text="course.description"></p>
 
-                                                <div class="course-card__progress">
-                                                    <div class="progress-bar">
-                                                        <div class="progress-bar__fill" :style="{ width: course.progress + '%' }"></div>
+                                                <!-- Mostra progress solo se iscritto -->
+                                                <template x-if="course.is_enrolled">
+                                                    <div class="course-card__progress">
+                                                        <div class="progress-bar">
+                                                            <div class="progress-bar__fill" :style="{ width: course.progress + '%' }"></div>
+                                                        </div>
+                                                        <span class="course-card__progress-text" x-text="course.progress + '%'"></span>
                                                     </div>
-                                                    <span class="course-card__progress-text" x-text="course.progress + '%'"></span>
-                                                </div>
+                                                </template>
                                             </div>
 
                                             <div class="course-card__footer">
-                                                <a :href="course.url" class="btn btn-primary btn-sm">
-                                                    <i data-lucide="arrow-right"></i>
-                                                    Continua
-                                                </a>
+                                                <!-- Se iscritto: bottone Continua -->
+                                                <template x-if="course.is_enrolled">
+                                                    <a :href="course.url" class="btn btn-primary btn-sm">
+                                                        <i data-lucide="arrow-right"></i>
+                                                        Continua
+                                                    </a>
+                                                </template>
+                                                <!-- Se non iscritto: bottone Iscriviti -->
+                                                <template x-if="!course.is_enrolled">
+                                                    <button @click="enrollCourse(course.id)" class="btn btn-primary btn-sm">
+                                                        <i data-lucide="plus-circle"></i>
+                                                        Iscriviti
+                                                    </button>
+                                                </template>
                                             </div>
                                         </div>
                                     </template>
                                 </div>
                             </template>
 
-                            <template x-if="inProgressCourses.length === 0">
+                            <template x-if="courses.length === 0">
                                 <div class="corsi-empty">
                                     <i data-lucide="inbox"></i>
-                                    <h3>Nessun corso in corso</h3>
-                                    <p>Non hai ancora iniziato nessun corso.</p>
+                                    <h3>Nessun corso disponibile</h3>
+                                    <p>Non ci sono corsi disponibili al momento.</p>
                                 </div>
                             </template>
                         </div>
@@ -165,56 +175,6 @@ $user_id = $current_user->ID;
                                     <i data-lucide="inbox"></i>
                                     <h3>Nessun corso completato</h3>
                                     <p>Completa un corso per vederlo qui.</p>
-                                </div>
-                            </template>
-                        </div>
-
-                        <!-- TAB: OPTIONAL -->
-                        <div class="corsi-tab-pane" x-show="activeTab === 'optional'" x-cloak>
-                            <div class="corsi-header">
-                                <h2 class="corsi-header__title">Corsi Facoltativi</h2>
-                                <p class="corsi-header__subtitle">Amplia le tue competenze con corsi aggiuntivi</p>
-                            </div>
-
-                            <template x-if="optionalCourses.length > 0">
-                                <div class="corsi-grid">
-                                    <template x-for="course in optionalCourses" :key="course.id">
-                                        <div class="course-card course-card--optional">
-                                            <div class="course-card__header">
-                                                <h3 class="course-card__title" x-text="course.title"></h3>
-                                                <span class="course-card__status course-card__status--optional">Facoltativo</span>
-                                            </div>
-
-                                            <div class="course-card__body">
-                                                <p class="course-card__description" x-text="course.description"></p>
-                                                <div class="course-card__meta">
-                                                    <span class="course-meta-item">
-                                                        <i data-lucide="clock"></i>
-                                                        <span x-text="course.duration"></span>
-                                                    </span>
-                                                    <span class="course-meta-item">
-                                                        <i data-lucide="user"></i>
-                                                        <span x-text="course.enrolledCount + ' iscritti'"></span>
-                                                    </span>
-                                                </div>
-                                            </div>
-
-                                            <div class="course-card__footer">
-                                                <button @click="enrollCourse(course.id)" class="btn btn-primary btn-sm">
-                                                    <i data-lucide="plus"></i>
-                                                    Iscriviti
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </template>
-                                </div>
-                            </template>
-
-                            <template x-if="optionalCourses.length === 0">
-                                <div class="corsi-empty">
-                                    <i data-lucide="inbox"></i>
-                                    <h3>Nessun corso facoltativo disponibile</h3>
-                                    <p>Al momento non ci sono corsi facoltativi disponibili.</p>
                                 </div>
                             </template>
                         </div>

@@ -66,6 +66,7 @@ add_action('rest_api_init', 'meridiana_register_learndash_endpoints');
  * @return WP_REST_Response
  */
 function meridiana_get_user_courses($request) {
+    global $wpdb;
     $user_id = intval($request->get_param('user_id'));
 
     if (!$user_id) {
@@ -73,122 +74,120 @@ function meridiana_get_user_courses($request) {
     }
 
     // ========================================
-    // MOCK DATA - Replace with real LearnDash queries later
+    // REAL LEARNDASH DATA - Direct database queries
     // ========================================
 
-    $user = get_user_by('id', $user_id);
-    $user_name = $user ? $user->display_name : 'Utente';
+    $courses = array();
+    $completed = array();
+    $certificates = array();
+
+    // Get all courses from database
+    $all_courses = get_posts(array(
+        'post_type'      => 'sfwd-courses',
+        'numberposts'    => -1,
+        'post_status'    => 'publish',
+    ));
+
+    if (empty($all_courses)) {
+        // No courses found
+        $data = array(
+            'courses'      => array(),
+            'completed'    => array(),
+            'certificates' => array(),
+        );
+        return rest_ensure_response($data);
+    }
+
+    foreach ($all_courses as $course) {
+        $course_id = $course->ID;
+
+        // Fetch course data
+        $course_data = array(
+            'id'          => $course_id,
+            'title'       => $course->post_title,
+            'description' => wp_trim_words($course->post_content, 20, '...'),
+            'url'         => get_permalink($course_id),
+            'featured_image' => wp_get_attachment_url(get_post_thumbnail_id($course_id)) ?: 'https://via.placeholder.com/400x250/3b82f6/ffffff?text=' . urlencode($course->post_title),
+        );
+
+        // Check if user is enrolled (via user meta - our custom enrollment system)
+        $enrolled_meta = get_user_meta($user_id, '_enrolled_course_' . $course_id, true);
+        $is_enrolled = !empty($enrolled_meta);
+
+        if ($is_enrolled) {
+            // User is enrolled - Get progress from lesson completion
+            $lessons = get_posts(array(
+                'post_type'      => 'sfwd-lessons',
+                'numberposts'    => -1,
+                'orderby'        => 'menu_order',
+                'order'          => 'ASC',
+                'meta_key'       => 'course_id',
+                'meta_value'     => $course_id,
+                'fields'         => 'ids',
+            ));
+
+            $lessons_count = count($lessons);
+            $lessons_completed = 0;
+
+            // Count completed lessons using user_meta
+            if ($lessons_count > 0) {
+                foreach ($lessons as $lesson_id) {
+                    // Check if lesson is marked complete in user meta
+                    $lesson_completed = get_user_meta($user_id, '_completed_lesson_' . $lesson_id, true);
+                    if (!empty($lesson_completed)) {
+                        $lessons_completed++;
+                    }
+                }
+                $progress_percent = round(($lessons_completed / $lessons_count) * 100);
+            } else {
+                $progress_percent = 0;
+            }
+
+            $course_data['progress'] = $progress_percent;
+            $course_data['lessons_total'] = $lessons_count;
+            $course_data['lessons_done'] = $lessons_completed;
+            $course_data['is_enrolled'] = true;
+
+            // Separate by completion status
+            if ($progress_percent === 100) {
+                $course_data['completedDate'] = date('d/m/Y', current_time('timestamp'));
+                $course_data['completed_date'] = $course_data['completedDate'];
+                $completed[] = $course_data;
+
+                // Add certificate
+                $has_certificate = get_post_meta($course_id, 'course_certificate', true);
+                if ($has_certificate) {
+                    $cert_data = array(
+                        'id'         => 'cert_' . $course_id,
+                        'courseName' => $course->post_title,
+                        'issuedDate' => date('d/m/Y', current_time('timestamp')),
+                        'expiryDate' => null,
+                    );
+
+                    $expiration = get_post_meta($course_id, 'course_certificate_expiration', true);
+                    if ($expiration) {
+                        $expiry_timestamp = current_time('timestamp') + ($expiration * 86400);
+                        $cert_data['expiryDate'] = date('d/m/Y', $expiry_timestamp);
+                    }
+
+                    $certificates[] = $cert_data;
+                }
+            } else {
+                // In progress (0-99%)
+                $courses[] = $course_data;
+            }
+        } else {
+            // User not enrolled - Show in courses list with enrollment button
+            $course_data['progress'] = 0;
+            $course_data['is_enrolled'] = false;
+            $courses[] = $course_data;
+        }
+    }
 
     $data = array(
-        'in_progress' => array(
-            array(
-                'id' => 1,
-                'title' => 'Introduzione ai Protocolli Aziendali',
-                'description' => 'Corso fondamentale per comprendere i protocolli operativi della struttura.',
-                'url' => home_url('/course/intro-protocolli/'),
-                'progress' => 65,
-                'lessons_total' => 8,
-                'lessons_done' => 5,
-                'featured_image' => 'https://via.placeholder.com/400x250/3b82f6/ffffff?text=Protocolli',
-                'is_enrolled' => true,
-                'status' => 'in-progress',
-            ),
-            array(
-                'id' => 2,
-                'title' => 'Sicurezza e Igiene sul Lavoro',
-                'description' => 'Formazione obbligatoria su norme di sicurezza e igiene.',
-                'url' => home_url('/course/sicurezza-igiene/'),
-                'progress' => 40,
-                'lessons_total' => 6,
-                'lessons_done' => 2,
-                'featured_image' => 'https://via.placeholder.com/400x250/f59e0b/ffffff?text=Sicurezza',
-                'is_enrolled' => true,
-                'status' => 'in-progress',
-            ),
-        ),
-        'completed' => array(
-            array(
-                'id' => 3,
-                'title' => 'Comunicazione Efficace in Equipe',
-                'description' => 'Come migliorare la comunicazione tra i membri del team.',
-                'url' => home_url('/course/comunicazione-equipe/'),
-                'progress' => 100,
-                'lessons_total' => 5,
-                'lessons_done' => 5,
-                'featured_image' => 'https://via.placeholder.com/400x250/22c55e/ffffff?text=Comunicazione',
-                'is_enrolled' => true,
-                'completed_date' => '15/09/2025',
-                'status' => 'completed',
-            ),
-            array(
-                'id' => 4,
-                'title' => 'Gestione delle Emergenze',
-                'description' => 'Procedure di gestione e risposta alle emergenze.',
-                'url' => home_url('/course/emergenze/'),
-                'progress' => 100,
-                'lessons_total' => 7,
-                'lessons_done' => 7,
-                'featured_image' => 'https://via.placeholder.com/400x250/ef4444/ffffff?text=Emergenze',
-                'is_enrolled' => true,
-                'completed_date' => '22/08/2025',
-                'status' => 'completed',
-            ),
-        ),
-        'optional' => array(
-            array(
-                'id' => 5,
-                'title' => 'Excel Avanzato per Gestionali',
-                'description' => 'Approfondimento su Excel per gestione dati e reporting.',
-                'url' => home_url('/course/excel-avanzato/'),
-                'progress' => 0,
-                'lessons_total' => 4,
-                'lessons_done' => 0,
-                'featured_image' => 'https://via.placeholder.com/400x250/10b981/ffffff?text=Excel',
-                'enrolled_count' => 34,
-                'is_enrolled' => false,
-                'status' => 'optional',
-            ),
-            array(
-                'id' => 6,
-                'title' => 'Public Speaking e Presentazioni',
-                'description' => 'Tecniche per parlare in pubblico e creare presentazioni efficaci.',
-                'url' => home_url('/course/public-speaking/'),
-                'progress' => 0,
-                'lessons_total' => 6,
-                'lessons_done' => 0,
-                'featured_image' => 'https://via.placeholder.com/400x250/8b5cf6/ffffff?text=Speaking',
-                'enrolled_count' => 22,
-                'is_enrolled' => false,
-                'status' => 'optional',
-            ),
-            array(
-                'id' => 7,
-                'title' => 'Problem Solving Avanzato',
-                'description' => 'Metodologie e strumenti per risolvere problemi complessi.',
-                'url' => home_url('/course/problem-solving/'),
-                'progress' => 0,
-                'lessons_total' => 5,
-                'lessons_done' => 0,
-                'featured_image' => 'https://via.placeholder.com/400x250/06b6d4/ffffff?text=Problem',
-                'enrolled_count' => 18,
-                'is_enrolled' => false,
-                'status' => 'optional',
-            ),
-        ),
-        'certificates' => array(
-            array(
-                'id' => 'cert_1',
-                'courseName' => 'Comunicazione Efficace in Equipe',
-                'issuedDate' => '15/09/2025',
-                'expiryDate' => null,
-            ),
-            array(
-                'id' => 'cert_2',
-                'courseName' => 'Gestione delle Emergenze',
-                'issuedDate' => '22/08/2025',
-                'expiryDate' => '22/08/2027',
-            ),
-        ),
+        'courses'      => $courses,
+        'completed'    => $completed,
+        'certificates' => $certificates,
     );
 
     return rest_ensure_response($data);
@@ -202,27 +201,49 @@ function meridiana_get_user_courses($request) {
  * @return WP_REST_Response
  */
 function meridiana_enroll_user_in_course($request) {
-    $user_id = intval($request->get_param('user_id'));
-    $course_id = intval($request->get_param('course_id'));
+    try {
+        $user_id = intval($request->get_param('user_id'));
+        $course_id = intval($request->get_param('course_id'));
 
-    if (!$user_id || !$course_id) {
-        return new WP_Error('invalid_params', 'Missing user_id or course_id', array('status' => 400));
+        if (!$user_id || !$course_id) {
+            return new WP_Error('invalid_params', 'Missing user_id or course_id', array('status' => 400));
+        }
+
+        // Verify course exists
+        $course = get_post($course_id);
+        if (!$course || $course->post_type !== 'sfwd-courses') {
+            return new WP_Error('invalid_course', 'Course does not exist', array('status' => 400));
+        }
+
+        // Check if user exists
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return new WP_Error('invalid_user', 'User does not exist', array('status' => 400));
+        }
+
+        // Check if already enrolled (via user meta)
+        $enrolled_meta = get_user_meta($user_id, '_enrolled_course_' . $course_id, true);
+        if (!empty($enrolled_meta)) {
+            return new WP_Error('already_enrolled', 'User is already enrolled in this course', array('status' => 400));
+        }
+
+        // Enroll user - store in user meta
+        update_user_meta($user_id, '_enrolled_course_' . $course_id, current_time('timestamp'));
+
+        $response = array(
+            'success' => true,
+            'message' => 'Iscritto al corso con successo',
+            'user_id' => $user_id,
+            'course_id' => $course_id,
+            'enrolled_date' => current_time('mysql'),
+        );
+
+        return rest_ensure_response($response);
+
+    } catch (Exception $e) {
+        error_log('LearnDash Enrollment Exception: ' . $e->getMessage());
+        return new WP_Error('enrollment_exception', 'Exception: ' . $e->getMessage(), array('status' => 500));
     }
-
-    // ========================================
-    // MOCK: Simula iscrizione riuscita
-    // Future: ld_update_user_course_access() e learndash_user_add_course_access()
-    // ========================================
-
-    $response = array(
-        'success' => true,
-        'message' => 'Iscritto al corso con successo',
-        'user_id' => $user_id,
-        'course_id' => $course_id,
-        'enrolled_date' => current_time('mysql'),
-    );
-
-    return rest_ensure_response($response);
 }
 
 /**
@@ -259,7 +280,7 @@ function meridiana_get_course_certificate($request) {
 /**
  * POST /wp-json/learnDash/v1/lessons/{id}/mark-viewed
  *
- * Marca lezione come visualizzata per utente
+ * Marca lezione come visualizzata per utente - SALVA nel database
  *
  * @return WP_REST_Response
  */
@@ -272,14 +293,26 @@ function meridiana_mark_lesson_viewed($request) {
         return new WP_Error('invalid_lesson', 'Invalid lesson ID', array('status' => 400));
     }
 
+    if (!$user_id) {
+        return new WP_Error('invalid_user', 'User not logged in', array('status' => 401));
+    }
+
+    // Verify lesson exists
+    $lesson = get_post($lesson_id);
+    if (!$lesson || $lesson->post_type !== 'sfwd-lessons') {
+        return new WP_Error('invalid_lesson_post', 'Lesson does not exist', array('status' => 400));
+    }
+
     // ========================================
-    // MOCK: Simula tracciamento
-    // Future: learndash_mark_lesson_complete() + tracking
+    // SAVE: Salva il completamento della lezione nel database
     // ========================================
+
+    // Save lesson completion using user meta
+    update_user_meta($user_id, '_completed_lesson_' . $lesson_id, current_time('timestamp'));
 
     $response = array(
         'success' => true,
-        'message' => 'Lezione marcata come visualizzata',
+        'message' => 'Lezione marcata come completata',
         'lesson_id' => $lesson_id,
         'user_id' => $user_id,
         'duration' => $duration,

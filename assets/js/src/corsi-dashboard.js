@@ -11,15 +11,14 @@ document.addEventListener('alpine:init', () => {
         // STATE
         // ========================================
 
-        activeTab: 'in-progress',
+        activeTab: 'courses',  // 'courses' | 'completed' | 'certificates'
         userId: null,
         ajaxUrl: null,
         nonce: null,
 
         // Course Lists
-        inProgressCourses: [],
+        courses: [],
         completedCourses: [],
-        optionalCourses: [],
         certificates: [],
 
         // UI State
@@ -39,6 +38,13 @@ document.addEventListener('alpine:init', () => {
             this.restUrl = container?.dataset.restUrl || '/wp-json/learnDash/v1/';
             this.nonce = container?.dataset.nonce || '';
 
+            console.log('Corsi Dashboard Init:', {
+                userId: this.userId,
+                restUrl: this.restUrl,
+                nonce: this.nonce,
+                container: container?.className
+            });
+
             // Carica i corsi al mount
             this.loadAllCourses();
 
@@ -49,7 +55,7 @@ document.addEventListener('alpine:init', () => {
 
             // Ripristina il tab precedente se salvato
             const savedTab = localStorage.getItem('meridiana_corsi_active_tab');
-            if (savedTab && ['in-progress', 'completed', 'optional', 'certificates'].includes(savedTab)) {
+            if (savedTab && ['courses', 'completed', 'certificates'].includes(savedTab)) {
                 this.activeTab = savedTab;
             }
         },
@@ -58,16 +64,12 @@ document.addEventListener('alpine:init', () => {
         // COMPUTED PROPERTIES
         // ========================================
 
-        get inProgressCount() {
-            return this.inProgressCourses.length;
+        get coursesCount() {
+            return this.courses.length;
         },
 
         get completedCount() {
             return this.completedCourses.length;
-        },
-
-        get optionalCount() {
-            return this.optionalCourses.length;
         },
 
         get certificatesCount() {
@@ -79,7 +81,7 @@ document.addEventListener('alpine:init', () => {
         // ========================================
 
         setTab(tabName) {
-            if (['in-progress', 'completed', 'optional', 'certificates'].includes(tabName)) {
+            if (['courses', 'completed', 'certificates'].includes(tabName)) {
                 this.activeTab = tabName;
             }
         },
@@ -119,9 +121,8 @@ document.addEventListener('alpine:init', () => {
                 const data = await response.json();
 
                 // Organizza i corsi per categoria
-                this.inProgressCourses = data.in_progress || [];
+                this.courses = data.courses || [];
                 this.completedCourses = data.completed || [];
-                this.optionalCourses = data.optional || [];
                 this.certificates = data.certificates || [];
 
             } catch (error) {
@@ -315,9 +316,8 @@ document.addEventListener('alpine:init', () => {
 
         getTabLabel(tabName) {
             const labels = {
-                'in-progress': 'In Corso',
+                'courses': 'Corsi',
                 'completed': 'Completati',
-                'optional': 'Facoltativi',
                 'certificates': 'Certificati',
             };
             return labels[tabName] || tabName;
@@ -325,12 +325,10 @@ document.addEventListener('alpine:init', () => {
 
         getCoursesForTab(tabName) {
             switch (tabName) {
-                case 'in-progress':
-                    return this.inProgressCourses;
+                case 'courses':
+                    return this.courses;
                 case 'completed':
                     return this.completedCourses;
-                case 'optional':
-                    return this.optionalCourses;
                 case 'certificates':
                     return this.certificates;
                 default:
