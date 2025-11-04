@@ -333,6 +333,10 @@ function meridiana_get_lesson_quizzes( $lesson_id ) {
 /**
  * Check if lesson is completed by user
  *
+ * Supports both:
+ * - LearnDash native: lesson_{id}
+ * - Custom meta (legacy): _completed_lesson_{id}
+ *
  * @param int $user_id User ID
  * @param int $lesson_id Lesson ID
  * @return bool True if completed, false otherwise
@@ -345,9 +349,14 @@ function meridiana_lesson_is_completed( $user_id, $lesson_id ) {
 		return false;
 	}
 
-	// LearnDash stores lesson completion in user meta
+	// Try LearnDash native format first
 	$completed = get_user_meta( $user_id, 'lesson_' . $lesson_id, true );
+	if ( ! empty( $completed ) ) {
+		return true;
+	}
 
+	// Fallback to custom meta (legacy)
+	$completed = get_user_meta( $user_id, '_completed_lesson_' . $lesson_id, true );
 	return ! empty( $completed );
 }
 
@@ -378,6 +387,10 @@ function meridiana_mark_lesson_complete( $user_id, $lesson_id ) {
 /**
  * Check if quiz is completed by user
  *
+ * Supports both:
+ * - LearnDash native: quiz_{id}
+ * - Custom meta (legacy): _completed_quiz_{id}
+ *
  * @param int $user_id User ID
  * @param int $quiz_id Quiz ID
  * @return bool True if completed, false otherwise
@@ -390,9 +403,14 @@ function meridiana_quiz_is_completed( $user_id, $quiz_id ) {
 		return false;
 	}
 
-	// LearnDash stores quiz completion in user meta
+	// Try LearnDash native format first
 	$completed = get_user_meta( $user_id, 'quiz_' . $quiz_id, true );
+	if ( ! empty( $completed ) ) {
+		return true;
+	}
 
+	// Fallback to custom meta (legacy)
+	$completed = get_user_meta( $user_id, '_completed_quiz_' . $quiz_id, true );
 	return ! empty( $completed );
 }
 
