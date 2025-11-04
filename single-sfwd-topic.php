@@ -243,7 +243,7 @@ if ($lesson_id) {
                             <p class="single-topic__widget-message">
                                 Contrassegna questo argomento come completato quando hai finito
                             </p>
-                            <button class="btn btn-primary btn-block" onclick="markTopicComplete(<?php echo $topic_id; ?>)">
+                            <button class="btn btn-primary btn-block" onclick="markTopicComplete(<?php echo $topic_id; ?>, <?php echo $user_id; ?>)">
                                 <i data-lucide="check"></i>
                                 Segna come Completato
                             </button>
@@ -354,6 +354,39 @@ document.addEventListener('alpine:init', () => {
         }
     }));
 });
+
+// Function to mark topic as complete
+async function markTopicComplete(topicId, userId) {
+    if (!topicId || !userId) return;
+
+    try {
+        const nonce = document.querySelector('[data-nonce]')?.dataset.nonce || '';
+        const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
+
+        const response = await fetch(
+            `${restUrl}topics/${topicId}/mark-completed`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-WP-Nonce': nonce,
+                },
+                body: JSON.stringify({ user_id: userId }),
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Reload page to show updated status
+        window.location.reload();
+
+    } catch (error) {
+        console.error('Error marking topic complete:', error);
+        alert('Errore nel segnare l\'argomento come completato. Riprova.');
+    }
+}
 </script>
 
 <?php
