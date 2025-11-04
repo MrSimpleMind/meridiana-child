@@ -8,12 +8,7 @@
 
 if (!defined('ABSPATH')) exit;
 
-// Helper function to check if topic/quiz is completed by user
-function is_topic_completed_by_user($topic_id, $user_id) {
-    $completed = get_user_meta($user_id, '_completed_topic_' . $topic_id, true);
-    return !empty($completed);
-}
-
+// Helper function to check if quiz is completed by user
 function is_quiz_completed_by_user($quiz_id, $user_id) {
     $completed = get_user_meta($user_id, '_completed_quiz_' . $quiz_id, true);
     return !empty($completed);
@@ -46,36 +41,18 @@ $lesson_completed = get_user_meta($user_id, '_completed_lesson_' . $lesson_id, t
 $is_completed = !empty($lesson_completed);
 
 // ============================================
-// GET TOPICS IN THIS LESSON
-// ============================================
-
-$topics_in_lesson = array();
-if ($is_enrolled) {
-    $topics_query = new WP_Query(array(
-        'post_type' => 'sfwd-topic',
-        'posts_per_page' => -1,
-        'orderby' => 'menu_order',
-        'order' => 'ASC',
-        'meta_key' => 'lesson_id',
-        'meta_value' => $lesson_id,
-    ));
-    $topics_in_lesson = $topics_query->posts;
-    wp_reset_postdata();
-}
-
-// ============================================
-// GET QUIZZES IN THIS LESSON
+// GET QUIZZES IN THIS LESSON (Direct children via post_parent)
 // ============================================
 
 $quizzes_in_lesson = array();
 if ($is_enrolled) {
+    // Query quizzes that are direct children of this lesson (post_parent = lesson_id)
     $quizzes_query = new WP_Query(array(
         'post_type' => 'sfwd-quiz',
         'posts_per_page' => -1,
         'orderby' => 'menu_order',
         'order' => 'ASC',
-        'meta_key' => 'lesson_id',
-        'meta_value' => $lesson_id,
+        'post_parent' => $lesson_id,
     ));
     $quizzes_in_lesson = $quizzes_query->posts;
     wp_reset_postdata();
@@ -109,19 +86,55 @@ if ($course_id) {
 }
 
 // ============================================
-// CALCULATE LESSON PROGRESS
+// GET ALL LESSONS IN COURSE + DETERMINE PROGRESSION
+// ============================================
+
+$all_course_lessons = array();
+$lesson_index = 0;
+$is_last_lesson = false;
+$next_lesson = null;
+
+if ($course_id) {
+    $lessons_query = new WP_Query(array(
+        'post_type' => 'sfwd-lessons',
+        'posts_per_page' => -1,
+        'orderby' => 'menu_order',
+        'order' => 'ASC',
+        'meta_key' => 'course_id',
+        'meta_value' => $course_id,
+    ));
+    $all_course_lessons = $lessons_query->posts;
+    wp_reset_postdata();
+
+    // Find current lesson position
+    foreach ($all_course_lessons as $idx => $l) {
+        if ($l->ID === $lesson_id) {
+            $lesson_index = $idx;
+            $is_last_lesson = ($idx === count($all_course_lessons) - 1);
+            // Get next lesson if not last
+            if (!$is_last_lesson) {
+                $next_lesson = $all_course_lessons[$idx + 1];
+            } else {
+                // If last lesson, look for final quiz by slug "quizzo"
+                $final_quiz = get_page_by_path('quizzo', OBJECT, 'sfwd-quiz');
+                if ($final_quiz) {
+                    $next_lesson = $final_quiz;
+                }
+            }
+            break;
+        }
+    }
+}
+
+// ============================================
+// CALCULATE LESSON PROGRESS (based on quizzes only)
 // ============================================
 
 $lesson_progress = 0;
-$total_items = count($topics_in_lesson) + count($quizzes_in_lesson);
+$total_items = count($quizzes_in_lesson);
 $completed_items = 0;
 
 if ($total_items > 0) {
-    foreach ($topics_in_lesson as $topic) {
-        if (is_topic_completed_by_user($topic->ID, $user_id)) {
-            $completed_items++;
-        }
-    }
     foreach ($quizzes_in_lesson as $quiz) {
         if (is_quiz_completed_by_user($quiz->ID, $user_id)) {
             $completed_items++;
@@ -141,6 +154,8 @@ if ($total_items > 0) {
 
     <main class="page-single-lesson"
           data-user-id="<?php echo esc_attr($user_id); ?>"
+          data-lesson-id="<?php echo esc_attr($lesson_id); ?>"
+          data-course-id="<?php echo esc_attr($course_id); ?>"
           data-nonce="<?php echo esc_attr(wp_create_nonce('wp_rest')); ?>"
           data-rest-url="<?php echo esc_attr('/wp-json/learnDash/v1/'); ?>">
         <div class="single-lesson-container">
@@ -177,7 +192,12 @@ if ($total_items > 0) {
             <div class="single-lesson__layout">
 
                 <!-- MAIN CONTENT -->
-                <main class="single-lesson__content">
+                <main class="single-lesson__content"
+                      data-lesson-id="<?php echo $lesson_id; ?>"
+                      data-course-id="<?php echo $course_id; ?>"
+                      data-user-id="<?php echo $user_id; ?>"
+                      data-nonce="<?php echo wp_create_nonce('learnDash_lesson_nonce'); ?>"
+                      data-rest-url="<?php echo rest_url('learnDash/v1/'); ?>">
 
                     <!-- LESSON DESCRIPTION -->
                     <div class="single-lesson__description wysiwyg-content">
@@ -192,53 +212,6 @@ if ($total_items > 0) {
                         }
                         ?>
                     </div>
-
-                    <!-- TOPICS SECTION -->
-                    <?php if (!empty($topics_in_lesson) && $is_enrolled): ?>
-                    <section class="single-lesson__topics">
-                        <h2 class="single-lesson__section-title">
-                            <i data-lucide="layers"></i>
-                            Argomenti (<?php echo count($topics_in_lesson); ?>)
-                        </h2>
-
-                        <div class="lesson-topics-list">
-                            <?php
-                            $topic_index = 1;
-                            foreach ($topics_in_lesson as $topic):
-                                $topic_id = $topic->ID;
-                                $topic_completed = is_topic_completed_by_user($topic_id, $user_id);
-                            ?>
-                            <div class="topic-item <?php echo $topic_completed ? 'topic-item--completed' : ''; ?>">
-                                <div class="topic-item__icon">
-                                    <?php if ($topic_completed): ?>
-                                        <i data-lucide="check-circle" class="topic-completed-icon"></i>
-                                    <?php else: ?>
-                                        <i data-lucide="circle" class="topic-pending-icon"></i>
-                                    <?php endif; ?>
-                                </div>
-
-                                <div class="topic-item__content">
-                                    <h3 class="topic-item__title">
-                                        <a href="<?php echo esc_url(get_permalink($topic_id)); ?>">
-                                            <?php echo esc_html($topic->post_title); ?>
-                                        </a>
-                                    </h3>
-                                </div>
-
-                                <div class="topic-item__action">
-                                    <a href="<?php echo esc_url(get_permalink($topic_id)); ?>" class="btn btn-sm btn-outline">
-                                        <i data-lucide="arrow-right"></i>
-                                        <?php echo $topic_completed ? 'Rivedi' : 'Inizia'; ?>
-                                    </a>
-                                </div>
-                            </div>
-                            <?php
-                                $topic_index++;
-                            endforeach;
-                            ?>
-                        </div>
-                    </section>
-                    <?php endif; ?>
 
                     <!-- QUIZZES SECTION -->
                     <?php if (!empty($quizzes_in_lesson) && $is_enrolled): ?>
@@ -334,13 +307,6 @@ if ($total_items > 0) {
                             Informazioni
                         </h3>
 
-                        <?php if (!empty($topics_in_lesson)): ?>
-                        <div class="single-lesson__info-item">
-                            <strong>Argomenti:</strong>
-                            <span><?php echo count($topics_in_lesson); ?></span>
-                        </div>
-                        <?php endif; ?>
-
                         <?php if (!empty($quizzes_in_lesson)): ?>
                         <div class="single-lesson__info-item">
                             <strong>Quiz:</strong>
@@ -354,21 +320,32 @@ if ($total_items > 0) {
                         </div>
                     </div>
 
-                    <!-- LESSON NAVIGATION WIDGET -->
-                    <?php if (!empty($all_lessons) && count($all_lessons) > 1): ?>
+                    <!-- LESSON NAVIGATION WIDGET (Procedural: only show completed and current lesson) -->
+                    <?php if (!empty($all_course_lessons) && count($all_course_lessons) > 1): ?>
                     <div class="single-lesson__widget">
                         <h3 class="single-lesson__widget-title">
                             <i data-lucide="list"></i>
-                            Lezioni del Corso
+                            Progresso Corso
                         </h3>
 
                         <div class="lessons-navigation">
-                            <?php foreach ($all_lessons as $idx => $l): ?>
-                            <a href="<?php echo esc_url(get_permalink($l->ID)); ?>"
-                               class="lessons-navigation__item <?php echo $l->ID === $lesson_id ? 'active' : ''; ?>">
+                            <?php
+                            // Helper function to check if lesson is completed
+                            $check_lesson_completed = function($l_id) use ($user_id) {
+                                return !empty(get_user_meta($user_id, '_completed_lesson_' . $l_id, true));
+                            };
+
+                            foreach ($all_course_lessons as $idx => $l):
+                                $is_completed = $check_lesson_completed($l->ID);
+                                $is_current = ($l->ID === $lesson_id);
+                            ?>
+                            <div class="lessons-navigation__item <?php echo $is_current ? 'active' : ''; echo $is_completed ? 'completed' : ''; ?>">
                                 <span class="lessons-navigation__number"><?php echo $idx + 1; ?></span>
                                 <span class="lessons-navigation__title"><?php echo esc_html($l->post_title); ?></span>
-                            </a>
+                                <?php if ($is_completed): ?>
+                                    <i data-lucide="check" class="lessons-navigation__checkmark"></i>
+                                <?php endif; ?>
+                            </div>
                             <?php endforeach; ?>
                         </div>
                     </div>
@@ -382,42 +359,49 @@ if ($total_items > 0) {
                             Azioni
                         </h3>
 
-                        <?php if (!$is_completed && $total_items === 0): ?>
-                        <button class="btn btn-primary btn-block"
-                                @click="markLessonComplete(<?php echo $lesson_id; ?>, <?php echo $course_id; ?>)"
-                                x-data="lessonComplete()"
-                                :class="{ 'disabled': isLoading }">
-                            <i data-lucide="check"></i>
-                            Segna come Completata
-                        </button>
-                        <?php elseif ($is_completed): ?>
-                        <div class="lesson-completed-badge">
-                            <i data-lucide="award"></i>
-                            <span>Lezione Completata!</span>
+                        <!-- LESSON ACTIONS: Button to mark complete and auto-navigate -->
+                        <div x-data="lessonCompleteHandler({
+                            isCompleted: <?php echo $is_completed ? 'true' : 'false'; ?>,
+                            hasQuizzes: <?php echo $total_items > 0 ? 'true' : 'false'; ?>,
+                            isLastLesson: <?php echo $is_last_lesson ? 'true' : 'false'; ?>,
+                            nextLessonUrl: '<?php echo esc_js($next_lesson ? get_permalink($next_lesson->ID) : get_permalink($course_id)); ?>'
+                        })">
+
+                            <!-- Main Action Button with Lock Icon Badge -->
+                            <div class="lesson-action-wrapper">
+                                <button class="btn btn-primary btn-block"
+                                        type="button"
+                                        @click="handleClick()"
+                                        :disabled="isLoading || (hasQuizzes && !isCompleted)"
+                                        :class="{ 'is-loading': isLoading }">
+                                    <i data-lucide="check"></i>
+                                    <span x-text="getButtonText()"></span>
+                                </button>
+
+                                <!-- Open Lock Icon Badge (top right) -->
+                                <div class="lock-icon-badge" :class="{ 'visible': isCompleted }">
+                                    <i data-lucide="unlock"></i>
+                                </div>
+                            </div>
+
+                            <!-- Error Message (if any) -->
+                            <template x-if="errorMessage">
+                                <div class="lesson-error-message" style="margin-top: 10px; color: #dc3545;">
+                                    <i data-lucide="alert-circle"></i>
+                                    <span x-text="errorMessage"></span>
+                                </div>
+                            </template>
+
+                            <!-- Quiz Warning (shows when quizzes exist but not completed) -->
+                            <template x-if="hasQuizzes && !isCompleted">
+                                <div class="lesson-quiz-warning" style="margin-top: 10px; padding: 10px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+                                    <i data-lucide="alert-circle" style="color: #ffc107;"></i>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.875rem;">Completa i <?php echo $total_items; ?> quiz prima di procedere</p>
+                                </div>
+                            </template>
+
                         </div>
-                        <?php endif; ?>
 
-                        <!-- Navigation Buttons -->
-                        <?php if ($current_lesson_index > 0): ?>
-                        <a href="<?php echo esc_url(get_permalink($all_lessons[$current_lesson_index - 1]->ID)); ?>" class="btn btn-secondary btn-block btn-sm">
-                            <i data-lucide="arrow-left"></i>
-                            Lezione Precedente
-                        </a>
-                        <?php endif; ?>
-
-                        <?php if ($current_lesson_index < count($all_lessons) - 1): ?>
-                        <a href="<?php echo esc_url(get_permalink($all_lessons[$current_lesson_index + 1]->ID)); ?>" class="btn btn-secondary btn-block btn-sm">
-                            <i data-lucide="arrow-right"></i>
-                            Lezione Successiva
-                        </a>
-                        <?php endif; ?>
-
-                        <?php if ($course): ?>
-                        <a href="<?php echo esc_url(get_permalink($course_id)); ?>" class="btn btn-outline btn-block btn-sm">
-                            <i data-lucide="arrow-up"></i>
-                            Torna al Corso
-                        </a>
-                        <?php endif; ?>
                     </div>
                     <?php endif; ?>
 
@@ -429,22 +413,209 @@ if ($total_items > 0) {
     </main>
 </div>
 
+<style>
+/* Lesson Action Wrapper with Lock Badge */
+.lesson-action-wrapper {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.lesson-action-btn {
+    position: relative;
+    transition: all 0.3s ease;
+}
+
+.lesson-action-btn.btn-locked {
+    background-color: var(--color-primary);
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.lesson-action-btn.btn-unlocked {
+    background-color: var(--color-success);
+}
+
+.lesson-action-btn.is-loading {
+    opacity: 0.6;
+    cursor: wait;
+}
+
+/* Lock Icon Badge - Top Right */
+.lock-icon-badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    width: 36px;
+    height: 36px;
+    background-color: #9CA3AF;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 20px;
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.3s ease;
+    pointer-events: none;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+.lock-icon-badge.visible {
+    opacity: 1;
+    transform: scale(1);
+    animation: lockOpenAppear 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.lock-icon-badge i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+}
+
+.btn-icon-wrapper {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+}
+
+.btn-icon {
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    display: inline-block;
+}
+
+.btn-icon.hidden {
+    display: none;
+}
+
+.lock-icon:not(.hidden) {
+    animation: lockBounce 0.6s ease-out;
+}
+
+.unlock-icon:not(.hidden) {
+    animation: unlockOpen 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes lockBounce {
+    0% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1) rotate(-10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes unlockOpen {
+    0% {
+        transform: scale(0) rotate(-90deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.1) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+@keyframes lockOpenAppear {
+    0% {
+        transform: scale(0) rotate(-90deg);
+        opacity: 0;
+    }
+    50% {
+        transform: scale(1.15) rotate(10deg);
+    }
+    100% {
+        transform: scale(1) rotate(0deg);
+        opacity: 1;
+    }
+}
+
+.lesson-completed-badge {
+    margin-top: 15px;
+    padding: 12px;
+    background-color: rgba(16, 185, 129, 0.1);
+    border-left: 4px solid var(--color-success);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+.lesson-completed-badge i {
+    width: 24px;
+    height: 24px;
+}
+</style>
+
 <script>
 document.addEventListener('alpine:init', () => {
-    Alpine.data('lessonComplete', () => ({
+    Alpine.data('lessonCompleteHandler', (initialState = {}) => ({
+        isCompleted: initialState.isCompleted || false,
+        hasQuizzes: initialState.hasQuizzes || false,
+        isLastLesson: initialState.isLastLesson || false,
+        nextLessonUrl: initialState.nextLessonUrl || '',
         isLoading: false,
         errorMessage: '',
 
-        async markLessonComplete(lessonId, courseId) {
-            if (!lessonId || !courseId) return;
+        getButtonText() {
+            if (this.isLoading) {
+                return 'Elaborazione...';
+            }
+            if (this.isLastLesson) {
+                return 'Vai al Quiz';
+            }
+            return 'Completa Lezione';
+        },
 
+        async handleClick() {
+            console.log('Button clicked! hasQuizzes:', this.hasQuizzes, 'isCompleted:', this.isCompleted);
+
+            // Se ha quiz ma non completati, non fare nulla
+            if (this.hasQuizzes && !this.isCompleted) {
+                console.log('Quiz exist but not completed - returning');
+                return;
+            }
+
+            const mainElement = document.querySelector('[data-lesson-id]');
+            const lessonId = parseInt(mainElement?.dataset.lessonId || 0);
+            const courseId = parseInt(mainElement?.dataset.courseId || 0);
+
+            console.log('Extracted lessonId:', lessonId, 'courseId:', courseId);
+
+            if (!lessonId || !courseId) {
+                this.errorMessage = 'Errore: ID lezione o corso non trovati';
+                console.error('Missing IDs:', { lessonId, courseId });
+                return;
+            }
+
+            await this.markLessonComplete(lessonId, courseId);
+        },
+
+        async markLessonComplete(lessonId, courseId) {
             this.isLoading = true;
             this.errorMessage = '';
 
             try {
-                const userId = parseInt(document.querySelector('[data-user-id]')?.dataset.userId || 0);
-                const nonce = document.querySelector('[data-nonce]')?.dataset.nonce || '';
-                const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
+                const mainElement = document.querySelector('[data-lesson-id]');
+                const userId = parseInt(mainElement?.dataset.userId || 0);
+                const nonce = mainElement?.dataset.nonce || '';
+                const restUrl = mainElement?.dataset.restUrl || '/wp-json/learnDash/v1/';
+
+                console.log('Making API call:', { userId, nonce: nonce.substring(0, 10) + '...', restUrl, lessonId });
 
                 // Mark lesson as complete via user meta
                 const response = await fetch(
@@ -459,16 +630,27 @@ document.addEventListener('alpine:init', () => {
                     }
                 );
 
+                const data = await response.json();
+
+                console.log('API Response:', { status: response.status, ok: response.ok, data });
+
                 if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                    throw new Error(`HTTP ${response.status}: ${data.message || data.code || 'Unknown error'}`);
                 }
 
-                // Reload page to show updated progress
-                window.location.reload();
+                console.log('Lesson marked complete! nextLessonUrl:', this.nextLessonUrl);
+
+                // Redirect immediately to next lesson or quiz
+                if (this.nextLessonUrl) {
+                    console.log('Redirecting to:', this.nextLessonUrl);
+                    window.location.href = this.nextLessonUrl;
+                } else {
+                    console.warn('No nextLessonUrl provided');
+                }
 
             } catch (error) {
                 console.error('Error marking lesson complete:', error);
-                this.errorMessage = 'Errore nel segnare la lezione come completata.';
+                this.errorMessage = 'Errore: ' + error.message;
                 this.isLoading = false;
             }
         }

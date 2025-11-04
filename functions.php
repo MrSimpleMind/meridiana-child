@@ -676,5 +676,60 @@ function meridiana_run_db_update_once() {
     }
 }
 
+/**
+ * LEARNDASH INTEGRATION: Mark course as completed when final quiz is passed
+ *
+ * When user completes the final quiz (Quizzo) with a passing score,
+ * mark the course as completed in user meta
+ */
+add_action('learndash_quiz_completed', 'meridiana_mark_course_complete_on_quiz', 10, 3);
+function meridiana_mark_course_complete_on_quiz($quiz_id, $user_id, $quiz_data) {
+    // Get the quiz post
+    $quiz = get_post($quiz_id);
+    if (!$quiz || $quiz->post_type !== 'sfwd-quiz') {
+        return;
+    }
+
+    // Check if this is the final quiz (Quizzo) by slug
+    if ($quiz->post_name !== 'quizzo') {
+        return;
+    }
+
+    // Get the course ID this quiz belongs to
+    // The quiz should have course_id in meta
+    $course_id = get_post_meta($quiz_id, 'course_id', true);
+
+    // If no course_id found, try to find by post_parent relationship or search
+    if (!$course_id) {
+        // Search for courses that have this quiz
+        $courses = get_posts([
+            'post_type' => 'sfwd-courses',
+            'numberposts' => 1,
+            'meta_query' => [
+                [
+                    'key' => '_sfwd-course_options',
+                    'compare' => 'EXISTS'
+                ]
+            ]
+        ]);
+
+        if (!empty($courses)) {
+            $course_id = $courses[0]->ID;
+        }
+    }
+
+    // If we found a course, mark it as completed if quiz was passed
+    if ($course_id) {
+        // Check if quiz was passed (score >= passing score)
+        // $quiz_data contains the quiz results
+        if (!empty($quiz_data['pass']) || !empty($quiz_data['passed'])) {
+            // Mark the entire course as completed
+            update_user_meta($user_id, '_completed_course_' . $course_id, current_time('timestamp'));
+
+            error_log('LearnDash: Course ' . $course_id . ' marked as completed for user ' . $user_id . ' after passing quiz ' . $quiz_id);
+        }
+    }
+}
+
 
 

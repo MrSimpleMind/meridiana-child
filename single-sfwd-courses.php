@@ -87,6 +87,23 @@ $all_lessons = $all_lessons_query->posts;
 // Get course featured image
 $featured_image = get_the_post_thumbnail_url($course_id, 'large');
 
+// ============================================
+// GET QUIZ RESULTS (for completed courses)
+// ============================================
+
+$quiz_results = null;
+$current_tab = isset($_GET['tab']) ? sanitize_text_field($_GET['tab']) : 'lezioni';
+
+if ($current_tab === 'risultati' && $course_progress === 100) {
+    // Get the final quiz (Quizzo)
+    $final_quiz = get_page_by_path('quizzo', OBJECT, 'sfwd-quiz');
+
+    if ($final_quiz) {
+        // Get quiz results from user meta
+        $quiz_results = get_user_meta($user_id, '_quiz_results_' . $final_quiz->ID, true);
+    }
+}
+
 ?>
 
 <div class="content-wrapper">
@@ -166,31 +183,62 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                         <div class="course-lessons-list">
                             <?php
                             $lesson_index = 1;
-                            foreach ($all_lessons as $lesson):
+                            $current_lesson_index = 0;
+
+                            // Trova la prima lezione non completata (current lesson)
+                            if ($is_enrolled) {
+                                foreach ($all_lessons as $idx => $lesson) {
+                                    if (!is_lesson_completed_by_user($lesson->ID, $user_id)) {
+                                        $current_lesson_index = $idx;
+                                        break;
+                                    }
+                                }
+                            }
+
+                            foreach ($all_lessons as $idx => $lesson):
                                 $lesson_id = $lesson->ID;
                                 $lesson_title = $lesson->post_title;
                                 $lesson_completed = $is_enrolled ? is_lesson_completed_by_user($lesson_id, $user_id) : false;
                                 $lesson_url = get_permalink($lesson_id);
 
+                                // PROCEDURAL: lesson is accessible only if:
+                                // 1. User is enrolled
+                                // 2. It's the current lesson (next to complete) or already completed
+                                $is_current_lesson = ($idx === $current_lesson_index);
+                                $is_accessible = $is_enrolled && ($lesson_completed || $is_current_lesson);
+
                                 // Get quizzes in this lesson
                                 $quizzes = get_post_meta($lesson_id, 'quiz_list', true);
                                 $quiz_count = is_array($quizzes) ? count($quizzes) : 0;
                             ?>
-                            <div class="lesson-item <?php echo $lesson_completed ? 'lesson-item--completed' : ''; ?>">
+                            <div class="lesson-item <?php echo $lesson_completed ? 'lesson-item--completed' : ''; echo $is_current_lesson ? ' lesson-item--current' : ''; echo !$is_accessible ? ' lesson-item--locked' : ''; ?>">
                                 <div class="lesson-item__icon">
                                     <?php if ($lesson_completed): ?>
                                         <i data-lucide="check-circle" class="lesson-completed-icon"></i>
+                                    <?php elseif ($is_current_lesson): ?>
+                                        <i data-lucide="play-circle" class="lesson-current-icon"></i>
                                     <?php else: ?>
-                                        <i data-lucide="circle" class="lesson-pending-icon"></i>
+                                        <i data-lucide="lock" class="lesson-locked-icon"></i>
                                     <?php endif; ?>
                                 </div>
 
                                 <div class="lesson-item__content">
                                     <h3 class="lesson-item__title">
-                                        <a href="<?php echo esc_url($lesson_url); ?>">
-                                            <?php echo esc_html($lesson_title); ?>
-                                        </a>
+                                        <?php if ($is_accessible): ?>
+                                            <a href="<?php echo esc_url($lesson_url); ?>">
+                                                <?php echo esc_html($lesson_title); ?>
+                                            </a>
+                                        <?php else: ?>
+                                            <span><?php echo esc_html($lesson_title); ?></span>
+                                        <?php endif; ?>
                                     </h3>
+
+                                    <?php if ($is_current_lesson && !$lesson_completed): ?>
+                                    <p class="lesson-item__status">
+                                        <i data-lucide="arrow-right"></i>
+                                        <span>Lezione Corrente</span>
+                                    </p>
+                                    <?php endif; ?>
 
                                     <?php if ($quiz_count > 0): ?>
                                     <p class="lesson-item__meta">
@@ -201,7 +249,7 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                                 </div>
 
                                 <div class="lesson-item__action">
-                                    <?php if ($is_enrolled): ?>
+                                    <?php if ($is_accessible): ?>
                                         <a href="<?php echo esc_url($lesson_url); ?>" class="btn btn-sm btn-outline">
                                             <i data-lucide="arrow-right"></i>
                                             <?php echo $lesson_completed ? 'Rivedi' : 'Inizia'; ?>
@@ -218,6 +266,46 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                                 $lesson_index++;
                             endforeach;
                             ?>
+                        </div>
+                    </section>
+                    <?php endif; ?>
+
+                    <!-- QUIZ RESULTS SECTION (for completed courses) -->
+                    <?php if ($current_tab === 'risultati' && $course_progress === 100): ?>
+                    <section class="single-course__section quiz-results-section">
+                        <h2 class="single-course__section-title">
+                            <i data-lucide="bar-chart-2"></i>
+                            Risultati Quiz
+                        </h2>
+
+                        <div class="quiz-results-container">
+                            <?php if ($quiz_results): ?>
+                                <!-- Results with WP Pro Quiz data -->
+                                <div class="quiz-results-content">
+                                    <div class="quiz-results-header">
+                                        <h3><?php echo esc_html(get_the_title($final_quiz->ID)); ?></h3>
+                                        <div class="quiz-results-score">
+                                            <span class="score-label">Punteggio Ottenuto:</span>
+                                            <span class="score-value"><?php echo isset($quiz_results['score']) ? esc_html($quiz_results['score']) : 'N/A'; ?></span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Detailed Results - This will be populated by WP Pro Quiz data -->
+                                    <div class="quiz-results-details">
+                                        <p class="note">I risultati dettagliati vengono gestiti da LearnDash. Puoi rivedere le tue risposte accedendo al quiz.</p>
+                                        <a href="<?php echo esc_url(get_permalink($final_quiz->ID)); ?>" class="btn btn-primary">
+                                            <i data-lucide="arrow-right"></i>
+                                            Rivedi Quiz
+                                        </a>
+                                    </div>
+                                </div>
+                            <?php else: ?>
+                                <!-- No results yet - guide to take quiz -->
+                                <div class="quiz-results-empty">
+                                    <i data-lucide="info"></i>
+                                    <p>Completa il quiz finale per visualizzare i tuoi risultati.</p>
+                                </div>
+                            <?php endif; ?>
                         </div>
                     </section>
                     <?php endif; ?>
@@ -308,45 +396,50 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                             <i data-lucide="download"></i>
                             Scarica Certificato
                         </button>
+
+                        <a href="<?php echo esc_url(add_query_arg('tab', 'risultati', get_permalink($course_id))); ?>" class="btn btn-info btn-block">
+                            <i data-lucide="bar-chart-2"></i>
+                            Risultati Quiz
+                        </a>
                         <?php endif; ?>
 
-                        <!-- Unenroll Button -->
-                        <button class="btn btn-outline btn-danger btn-block" @click="showUnenrollModal(<?php echo $course_id; ?>)">
-                            <i data-lucide="log-out"></i>
-                            Abbandona Corso
+                        <!-- Reset Course Button -->
+                        <button class="btn btn-outline btn-warning btn-block" @click="showResetModal(<?php echo $course_id; ?>)">
+                            <i data-lucide="refresh-cw"></i>
+                            Riprovare Corso
                         </button>
                     </div>
                     <?php endif; ?>
 
-                    <!-- Unenroll Confirmation Modal -->
-                    <div class="unenroll-modal-wrapper" x-show="isUnenrollModalOpen" style="display: none;">
-                        <div class="unenroll-modal-overlay" @click="closeUnenrollModal()"></div>
-                        <div class="unenroll-modal">
-                            <div class="unenroll-modal__header">
-                                <h3 class="unenroll-modal__title">
+                    <!-- Reset Course Confirmation Modal -->
+                    <div class="reset-modal-wrapper" x-show="isResetModalOpen" style="display: none;">
+                        <div class="reset-modal-overlay" @click="closeResetModal()"></div>
+                        <div class="reset-modal">
+                            <div class="reset-modal__header">
+                                <h3 class="reset-modal__title">
                                     <i data-lucide="alert-circle"></i>
-                                    Abbandona Corso
+                                    Riprovare Corso
                                 </h3>
-                                <button class="unenroll-modal__close" @click="closeUnenrollModal()">
+                                <button class="reset-modal__close" @click="closeResetModal()">
                                     <i data-lucide="x"></i>
                                 </button>
                             </div>
 
-                            <div class="unenroll-modal__body">
-                                <p>Sei sicuro di voler abbandonare questo corso?</p>
+                            <div class="reset-modal__body">
+                                <p>Sei sicuro di voler riprovare questo corso?</p>
                                 <p><strong><?php echo esc_html($course_title); ?></strong></p>
-                                <div class="unenroll-modal__warning">
+                                <div class="reset-modal__warning">
                                     <i data-lucide="alert-triangle"></i>
-                                    <p>Abbandonando il corso perderai l'accesso al materiale didattico e alla tua iscrizione. I dati di progresso saranno conservati.</p>
+                                    <p>Riprovando il corso tutti i tuoi progressi verranno azzerati. Rimarrai iscritto al corso e potrai ricominciare da capo.</p>
                                 </div>
                             </div>
 
-                            <div class="unenroll-modal__footer">
-                                <button class="btn btn-outline" @click="closeUnenrollModal()">
+                            <div class="reset-modal__footer">
+                                <button class="btn btn-outline" @click="closeResetModal()">
                                     Annulla
                                 </button>
-                                <button class="btn btn-danger" @click="confirmUnenroll(<?php echo $course_id; ?>)" :disabled="isUnenrolling">
-                                    <span x-text="isUnenrolling ? 'Abbandono in corso...' : 'Sì, Abbandona'"></span>
+                                <button class="btn btn-warning" @click="confirmReset(<?php echo $course_id; ?>)" :disabled="isResetting">
+                                    <span x-text="isResetting ? 'Azzeramento in corso...' : 'Sì, Riprova'"></span>
                                 </button>
                             </div>
                         </div>
@@ -366,8 +459,8 @@ document.addEventListener('alpine:init', () => {
         courseId: courseId,
         courseUrl: courseUrl,
         isLoading: false,
-        isUnenrolling: false,
-        isUnenrollModalOpen: false,
+        isResetting: false,
+        isResetModalOpen: false,
         errorMessage: '',
         successMessage: '',
 
@@ -409,20 +502,20 @@ document.addEventListener('alpine:init', () => {
         },
 
         // Modal management
-        showUnenrollModal(id) {
-            this.isUnenrollModalOpen = true;
+        showResetModal(id) {
+            this.isResetModalOpen = true;
         },
 
-        closeUnenrollModal() {
-            this.isUnenrollModalOpen = false;
+        closeResetModal() {
+            this.isResetModalOpen = false;
             this.errorMessage = '';
         },
 
-        // Unenroll from course
-        async confirmUnenroll(id) {
+        // Reset course progress
+        async confirmReset(id) {
             if (!id) return;
 
-            this.isUnenrolling = true;
+            this.isResetting = true;
             this.errorMessage = '';
 
             try {
@@ -431,7 +524,7 @@ document.addEventListener('alpine:init', () => {
                 const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
 
                 const response = await fetch(
-                    `${restUrl}user/${userId}/courses/${id}/unenroll`,
+                    `${restUrl}user/${userId}/courses/${id}/reset`,
                     {
                         method: 'POST',
                         headers: {
@@ -445,17 +538,17 @@ document.addEventListener('alpine:init', () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Close modal and redirect to courses page
-                this.isUnenrollModalOpen = false;
-                this.successMessage = 'Sei stato rimosso dal corso. Reindirizzamento...';
+                // Close modal and reload page to reflect new state
+                this.isResetModalOpen = false;
+                this.successMessage = 'Corso azzerato. Reindirizzamento...';
                 setTimeout(() => {
-                    window.location.href = '/corsi/';
+                    window.location.reload();
                 }, 1000);
 
             } catch (error) {
-                console.error('Error unenrolling from course:', error);
-                this.errorMessage = 'Errore nell\'abbandono del corso. Per favore riprova.';
-                this.isUnenrolling = false;
+                console.error('Error resetting course:', error);
+                this.errorMessage = 'Errore nell\'azzeramento del corso. Per favore riprova.';
+                this.isResetting = false;
             }
         },
 

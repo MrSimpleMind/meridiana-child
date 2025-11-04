@@ -78,11 +78,11 @@ function meridiana_render_test_data_page() {
                 echo "\n  • Salute & Benessere: " . $result['salute'];
                 echo "\n  • Comunicazioni: " . $result['comunicazioni'];
                 echo "\n  • Organigrammi: " . $result['organigrammi'];
-                echo "\n\n🎓 CORSI LEARNDASH:";
+                echo "\n\n🎓 CORSI LEARNDASH (Gerarchia: Corso > Lezione > Argomento > Quiz):";
                 echo "\n  • Corsi: " . $result['courses'];
                 echo "\n  • Lezioni: " . $result['lessons'];
                 echo "\n  • Argomenti (Topics): " . $result['topics'];
-                echo "\n  • Quiz: " . $result['quizzes'];
+                echo "\n  • Quiz (legati ai topics): " . $result['quizzes'];
                 echo "\n  • Domande Quiz: " . $result['questions'];
                 echo "\n  • Iscrizioni Utenti: " . $result['enrollments'];
                 echo "\n  • Corsi Completati: " . ($result['progress']['completed'] ?? 0);
@@ -139,15 +139,16 @@ function meridiana_render_test_data_page() {
                             <li><strong>20 organigrammi</strong> with contacts</li>
                         </ul>
 
-                        <h3 style="color: #333; margin-top: 15px; font-size: 13px;">🎓 LearnDash Courses:</h3>
+                        <h3 style="color: #333; margin-top: 15px; font-size: 13px;">🎓 LearnDash Courses (Simplified Structure):</h3>
                         <ul style="line-height: 1.8; font-size: 14px; margin: 10px 0;">
-                            <li><strong>8-10 courses</strong> with titles, descriptions, featured images</li>
+                            <li><strong>6 courses</strong> with titles, descriptions, featured images</li>
                             <li><strong>3-5 lessons per course</strong> with lorem ipsum content</li>
-                            <li><strong>1-2 quizzes per course</strong> with passing percentage</li>
-                            <li><strong>15-25 quiz questions</strong> with multiple choice answers</li>
-                            <li><strong>Course enrollments</strong> - random users enrolled to multiple courses</li>
-                            <li><strong>Course progress</strong> - 40% completed, 45% in progress, 15% not started</li>
+                            <li><strong>1 quiz per lesson</strong> (procedural: Lesson 1 → Quiz 1, Lesson 2 → Quiz 2, etc.)</li>
+                            <li><strong>1 final quiz per course</strong> (completes the course)</li>
+                            <li><strong>Course enrollments</strong> - random users enrolled to courses</li>
+                            <li><strong>Course progress</strong> - 2 completed, 2 in progress, 2 optional</li>
                             <li><strong>Certificates enabled</strong> - with 1-year expiration</li>
+                            <li><strong>Note:</strong> Topics/Arguments layer removed for simplicity</li>
                         </ul>
 
                         <h3 style="color: #333; margin-top: 15px; font-size: 13px;">📊 Analytics:</h3>
@@ -537,17 +538,35 @@ class MeridianaTestDataGenerator {
             }
         }
 
-        // Delete ALL LearnDash courses, lessons, quizzes, and questions (complete regeneration)
+        // Delete ALL LearnDash courses, lessons, topics, questions BUT PRESERVE manually created quizzes
         echo "== Eliminazione Corsi LearnDash Precedenti ==\n";
-        $learndash_cpts = ['sfwd-courses', 'sfwd-lessons', 'sfwd-quiz', 'sfwd-question'];
-        foreach ($learndash_cpts as $cpt) {
+
+        // Delete courses, lessons, topics, and questions (simplified structure)
+        $learndash_cpts_to_delete = ['sfwd-courses', 'sfwd-lessons', 'sfwd-topic', 'sfwd-question'];
+        foreach ($learndash_cpts_to_delete as $cpt) {
             $posts = get_posts(['post_type' => $cpt, 'numberposts' => -1, 'post_status' => 'any']);
             foreach ($posts as $post) {
                 wp_delete_post($post->ID, true);
                 $deleted_posts++;
             }
         }
-        echo "  ✓ Eliminati tutti i corsi LearnDash precedenti (per rigenerazione completa)\n";
+        echo "  ✓ Eliminati tutti i corsi/lezioni/argomenti/domande LearnDash precedenti\n";
+
+        // Delete ONLY auto-generated quizzes (preserve manually created ones)
+        echo "== Eliminazione Quiz Generati Automaticamente ==\n";
+        $quizzes = get_posts(['post_type' => 'sfwd-quiz', 'numberposts' => -1, 'post_status' => 'any']);
+        $quizzes_deleted = 0;
+        foreach ($quizzes as $quiz) {
+            // Only delete if it has the auto-generated marker
+            $is_auto_generated = get_post_meta($quiz->ID, '_generated_by_test_data', true);
+            if ($is_auto_generated) {
+                wp_delete_post($quiz->ID, true);
+                $quizzes_deleted++;
+                $deleted_posts++;
+            }
+        }
+        echo "  ✓ Eliminati $quizzes_deleted quiz generati automaticamente\n";
+        echo "  ℹ  Quiz creati manualmente: PRESERVATI ✓\n";
         if ($deleted_posts > 0) {
             echo "  ✓ Eliminati $deleted_posts post di test (con 'Test' nel titolo)\n";
         } else {
@@ -1153,34 +1172,54 @@ class MeridianaTestDataGenerator {
     }
 
     /**
-     * Genera quiz per ogni corso
+     * DEPRECATED: Old quiz generation (topics-based)
+     * Kept for backwards compatibility only
+     * Use generate_lesson_quizzes() instead
      */
     public function generate_quizzes() {
         echo "== Generazione Quiz ==\n";
 
         $created = 0;
-        $courses = get_posts(['post_type' => 'sfwd-courses', 'numberposts' => -1]);
+        $topics = get_posts(['post_type' => 'sfwd-topic', 'numberposts' => -1]);
 
-        foreach ($courses as $course) {
-            $num_quizzes = rand(1, 2);
+        if (empty($topics)) {
+            echo "⚠ Nessun argomento (topic) trovato\n\n";
+            return 0;
+        }
+
+        foreach ($topics as $topic) {
+            $topic_id = $topic->ID;
+
+            // Get lesson and course from topic meta
+            $lesson_id = get_post_meta($topic_id, 'lesson_id', true);
+            $course_id = get_post_meta($topic_id, 'course_id', true);
+
+            if (!$lesson_id || !$course_id) {
+                continue;
+            }
+
+            // 50% of topics have 1 quiz, 50% have 0 quizzes
+            $num_quizzes = rand(0, 1);
 
             for ($i = 1; $i <= $num_quizzes; $i++) {
-                $quiz_title = 'Quiz ' . $i . ' - ' . $course->post_title;
+                $quiz_title = 'Quiz Argomento - ' . $topic->post_title;
 
                 $quiz_id = wp_insert_post([
                     'post_title'   => $quiz_title,
-                    'post_content' => '<p>Quiz per verificare la comprensione degli argomenti.</p>',
+                    'post_content' => '<p>Quiz per verificare la comprensione di questo argomento.</p>',
                     'post_type'    => 'sfwd-quiz',
                     'post_status'  => 'publish',
-                    'post_parent'  => $course->ID, // Link to course
+                    'post_parent'  => $topic->ID, // Link to TOPIC (not course!)
                     'post_author'  => 1,
-                    'menu_order'   => 10 + $i, // Quiz after lessons
+                    'menu_order'   => $i,
                 ]);
 
                 if (!is_wp_error($quiz_id)) {
-                    // LearnDash quiz meta
-                    update_post_meta($quiz_id, 'course_id', $course->ID);
-                    update_post_meta($quiz_id, 'quiz_lesson_id', 0); // Quiz for whole course
+                    // LearnDash quiz meta - Link to topic, lesson, and course
+                    update_post_meta($quiz_id, 'course_id', $course_id);
+                    update_post_meta($quiz_id, 'lesson_id', $lesson_id);
+                    update_post_meta($quiz_id, 'topic_id', $topic_id);  // NEW: Link to topic
+
                     update_post_meta($quiz_id, 'quiz_pro_enabled', 'on');
                     update_post_meta($quiz_id, 'quiz_passing_percentage', '70'); // 70% to pass
                     update_post_meta($quiz_id, 'quiz_question_count', 0); // Will be updated
@@ -1188,23 +1227,49 @@ class MeridianaTestDataGenerator {
                     update_post_meta($quiz_id, 'quiz_show_score', 'on');
                     update_post_meta($quiz_id, 'quiz_show_answers', 'on');
 
+                    // IMPORTANT: Mark this quiz as auto-generated (for cleanup purposes)
+                    // When cleanup runs, it will preserve manually created quizzes
+                    update_post_meta($quiz_id, '_generated_by_test_data', 1);
+
                     $created++;
                 }
             }
         }
 
-        echo "✓ Quiz: $created creati\n\n";
+        echo "✓ Quiz: $created creati (legati ai topics)\n\n";
         return $created;
     }
 
     /**
      * Genera domande per ogni quiz
+     *
+     * NOTA: Temporaneamente DISABILITATO per testing della UI
+     * Le domande devono essere create via LearnDash UI (nativo) per compatibilità massima
+     *
+     * Per riabilitare: decommentare il codice sotto
      */
     public function generate_questions() {
         echo "== Generazione Domande Quiz ==\n";
+        echo "⚠️  TEMPORANEAMENTE DISABILITATA per testing\n";
+        echo "    I quiz sono stati creati vuoti per permetterti di testare la UI\n";
+        echo "    Crea le domande manualmente via LearnDash Admin\n\n";
+
+        // Placeholder return
+        return 0;
+
+        /*
+        // ============================================
+        // CODICE DISABILITATO - DECOMMENTARE PER RIABILITARE
+        // ============================================
 
         $created = 0;
+        // Get all quizzes (now linked to topics via generate_quizzes)
         $quizzes = get_posts(['post_type' => 'sfwd-quiz', 'numberposts' => -1]);
+
+        if (empty($quizzes)) {
+            echo "⚠ Nessun quiz trovato\n\n";
+            return 0;
+        }
 
         foreach ($quizzes as $quiz) {
             $num_questions = rand(3, 5);
@@ -1212,14 +1277,14 @@ class MeridianaTestDataGenerator {
             for ($i = 0; $i < $num_questions; $i++) {
                 // Random question from pool
                 $question_data = $this->domande_quiz[array_rand($this->domande_quiz)];
-                $question_text = $question_data['domanda'] . ' (' . $i + 1 . ')';
+                $question_text = $question_data['domanda'] . ' (' . ($i + 1) . ')';
 
                 $question_id = wp_insert_post([
                     'post_title'   => $question_text,
                     'post_content' => $question_text,
                     'post_type'    => 'sfwd-question',
                     'post_status'  => 'publish',
-                    'post_parent'  => $quiz->ID, // Link to quiz
+                    'post_parent'  => $quiz->ID, // Link to quiz (which is linked to topic)
                     'post_author'  => 1,
                     'menu_order'   => $i + 1,
                 ]);
@@ -1250,8 +1315,9 @@ class MeridianaTestDataGenerator {
             }
         }
 
-        echo "✓ Domande: $created create\n\n";
+        echo "✓ Domande: $created create (associate ai quiz per i topics)\n\n";
         return $created;
+        */
     }
 
     /**
@@ -1373,6 +1439,123 @@ class MeridianaTestDataGenerator {
         echo "✓ Corsi completati: $completed\n";
         echo "✓ Corsi in progress: $in_progress\n\n";
         return ['in_progress' => $in_progress, 'completed' => $completed];
+    }
+
+    /**
+     * NEW: Genera quiz per ogni lezione (procedural system)
+     * Struttura semplificata: Corso > Lezione > Quiz
+     */
+    public function generate_lesson_quizzes() {
+        echo "== Generazione Quiz per Lezioni (NEW PROCEDURAL) ==\n";
+
+        $created = 0;
+        $lessons = get_posts(['post_type' => 'sfwd-lessons', 'numberposts' => -1]);
+
+        if (empty($lessons)) {
+            echo "⚠ Nessuna lezione trovata\n\n";
+            return 0;
+        }
+
+        foreach ($lessons as $lesson) {
+            $lesson_id = $lesson->ID;
+            $course_id = get_post_meta($lesson_id, 'course_id', true);
+
+            if (!$course_id) {
+                continue;
+            }
+
+            // Create 1 quiz per lesson
+            $quiz_title = 'Quiz - ' . $lesson->post_title;
+
+            $quiz_id = wp_insert_post([
+                'post_title'   => $quiz_title,
+                'post_content' => '<p>Quiz per verificare la comprensione della lezione.</p>',
+                'post_type'    => 'sfwd-quiz',
+                'post_status'  => 'publish',
+                'post_parent'  => $lesson_id,  // Directly linked to lesson
+                'post_author'  => 1,
+                'menu_order'   => 1,
+            ]);
+
+            if (!is_wp_error($quiz_id)) {
+                // LearnDash quiz meta
+                update_post_meta($quiz_id, 'course_id', $course_id);
+                update_post_meta($quiz_id, 'lesson_id', $lesson_id);
+
+                update_post_meta($quiz_id, 'quiz_pro_enabled', 'on');
+                update_post_meta($quiz_id, 'quiz_passing_percentage', '70');
+                update_post_meta($quiz_id, 'quiz_question_count', 0);
+                update_post_meta($quiz_id, 'quiz_randomize_questions', 'off');
+                update_post_meta($quiz_id, 'quiz_show_score', 'on');
+                update_post_meta($quiz_id, 'quiz_show_answers', 'on');
+
+                // Mark as auto-generated
+                update_post_meta($quiz_id, '_generated_by_test_data', 1);
+
+                $created++;
+            }
+        }
+
+        echo "✓ Quiz per lezioni: $created creati\n\n";
+        return $created;
+    }
+
+    /**
+     * NEW: Genera domande per ogni quiz (simple procedural)
+     */
+    public function generate_quiz_questions() {
+        echo "== Generazione Domande per Quiz ==\n";
+
+        $created = 0;
+        $quizzes = get_posts(['post_type' => 'sfwd-quiz', 'numberposts' => -1]);
+
+        if (empty($quizzes)) {
+            echo "⚠ Nessun quiz trovato\n\n";
+            return 0;
+        }
+
+        foreach ($quizzes as $quiz) {
+            $num_questions = rand(3, 5);
+
+            for ($i = 0; $i < $num_questions; $i++) {
+                $question_data = $this->domande_quiz[array_rand($this->domande_quiz)];
+                $question_text = $question_data['domanda'] . ' (' . ($i + 1) . ')';
+
+                $question_id = wp_insert_post([
+                    'post_title'   => $question_text,
+                    'post_content' => $question_text,
+                    'post_type'    => 'sfwd-question',
+                    'post_status'  => 'publish',
+                    'post_parent'  => $quiz->ID,
+                    'post_author'  => 1,
+                    'menu_order'   => $i + 1,
+                ]);
+
+                if (!is_wp_error($question_id)) {
+                    update_post_meta($question_id, 'question_type', 'single');
+                    update_post_meta($question_id, 'question_points', 10);
+                    update_post_meta($question_id, 'question_show_explanation', 'on');
+
+                    $answers = [];
+                    foreach ($question_data['risposte'] as $letter => $risposta) {
+                        $answers[] = [
+                            'text' => $risposta['testo'],
+                            'correct' => $risposta['corretta'] ? 'on' : '',
+                            'sort' => count($answers) + 1,
+                        ];
+                    }
+
+                    update_post_meta($question_id, 'question_answer_type', 'single');
+                    update_post_meta($question_id, 'question_answers', $answers);
+                    update_post_meta($question_id, 'question_explanation', $this->generate_lorem(200));
+
+                    $created++;
+                }
+            }
+        }
+
+        echo "✓ Domande: $created create\n\n";
+        return $created;
     }
 
     /**
@@ -1696,14 +1879,19 @@ class MeridianaTestDataGenerator {
         $comunicazioni = $this->generate_comunicazioni();
         $organigrammi = $this->generate_organigramma();
 
-        // Generate new data - CORSI LEARNDASH
+        // Generate new data - CORSI LEARNDASH (SIMPLIFIED: no topics layer)
         $courses = $this->generate_courses();
         $lessons = $this->generate_lessons();
-        $topics = $this->generate_topics();
-        $quizzes = $this->generate_quizzes();
-        $questions = $this->generate_questions();
+        $topics = 0;  // DISABLED: Topics layer removed for simplicity
+        $quizzes = 0;  // DISABLED: Old quiz generation (will use new procedural system)
+        $questions = 0;  // DISABLED: Old question generation
         $enrollments = $this->generate_course_enrollments();
         $progress = $this->generate_course_progress();
+
+        // DISABLED: Quiz generation removed - quizzes are created manually in LearnDash
+        // Users should add quizzes manually via LearnDash builder
+        // $quizzes = $this->generate_lesson_quizzes();
+        // $questions = $this->generate_quiz_questions();
 
         // Generate analytics
         $views = $this->generate_document_views();

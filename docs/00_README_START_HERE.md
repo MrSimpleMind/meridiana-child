@@ -76,6 +76,13 @@ Roadmap sviluppo fase per fase, checklist pre-lancio, testing, manutenzione, sca
 
 ---
 
+### 📝 **11_WORK_IN_PROGRESS.md** ⭐ **LEGGERE SEMPRE PRIMA DI INIZIARE**
+File collaborativo per documenting work in progress, osservazioni, bug trovati, e task da completare. Mantiene il team sincronizzato su cosa si sta facendo e quali problemi sono stati incontrati durante lo sviluppo.
+
+**Quando leggerlo:** **SEMPRE** all'inizio di ogni sessione di lavoro. Aggiorna questo file mentre lavori per tenere il team informato.
+
+---
+
 ## 📅 Timeline e Stato Avanzamento
 
 **Ultimo Aggiornamento**: 1 Novembre 2025

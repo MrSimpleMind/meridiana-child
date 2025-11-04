@@ -155,7 +155,24 @@ if (!$quiz_pro_id) {
                         <section class="single-quiz__questions">
                             <div class="quiz-form-container">
 
-                                <?php if (!empty($questions)): ?>
+                                <?php if ($quiz_pro_id): ?>
+                                    <!-- WP Pro Quiz - Use LearnDash native rendering -->
+                                    <div class="learndash-quiz-container">
+                                        <?php
+                                        // Setup post globals for LearnDash to work properly
+                                        global $post;
+                                        $post = get_post($quiz_id);
+                                        setup_postdata($post);
+
+                                        // Render the content - LearnDash hooks into the_content filter
+                                        // to display the WP Pro Quiz form
+                                        echo do_shortcode(apply_filters('the_content', $quiz_content));
+
+                                        wp_reset_postdata();
+                                        ?>
+                                    </div>
+
+                                <?php elseif (!empty($questions)): ?>
                                     <!-- Questions from custom meta -->
                                     <form @submit.prevent="submitQuiz" class="quiz-form">
                                         <?php foreach ($questions as $idx => $question): ?>
@@ -188,19 +205,11 @@ if (!$quiz_pro_id) {
                                     </form>
 
                                 <?php else: ?>
-                                    <!-- WP Pro Quiz Notice -->
-                                    <?php if ($quiz_pro_id): ?>
-                                    <div class="alert alert-info">
-                                        <i data-lucide="info"></i>
-                                        <p>Questo quiz utilizza WP Pro Quiz.</p>
-                                        <p>Le domande verranno caricate tramite l'integrazione WP Pro Quiz di LearnDash.</p>
-                                    </div>
-                                    <?php else: ?>
+                                    <!-- No quiz content found -->
                                     <div class="alert alert-warning">
                                         <i data-lucide="alert-triangle"></i>
                                         <p>Nessuna domanda trovata per questo quiz.</p>
                                     </div>
-                                    <?php endif; ?>
                                 <?php endif; ?>
 
                             </div>
