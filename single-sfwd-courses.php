@@ -96,7 +96,13 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
     get_template_part('templates/parts/navigation/desktop-sidebar');
     ?>
 
-    <main class="page-single-course" x-data="courseEnroll(<?php echo $course_id; ?>, '<?php echo get_permalink($course_id); ?>')" x-cloak>
+    <main
+        class="page-single-course"
+        x-data="courseEnroll(<?php echo $course_id; ?>, '<?php echo get_permalink($course_id); ?>')"
+        x-cloak
+        data-nonce="<?php echo wp_create_nonce('wp_rest'); ?>"
+        data-user-id="<?php echo $user_id; ?>"
+        data-rest-url="<?php echo esc_url(rest_url('learnDash/v1/')); ?>">
         <div class="single-course-container">
 
             <!-- BREADCRUMB -->
