@@ -54,6 +54,24 @@ function meridiana_register_learndash_endpoints() {
             return is_user_logged_in();
         },
     ));
+
+    // POST /wp-json/learnDash/v1/topics/{id}/mark-completed
+    register_rest_route('learnDash/v1', '/topics/(?P<topic_id>\d+)/mark-completed', array(
+        'methods' => 'POST',
+        'callback' => 'meridiana_mark_topic_completed',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        },
+    ));
+
+    // POST /wp-json/learnDash/v1/quizzes/{id}/submit
+    register_rest_route('learnDash/v1', '/quizzes/(?P<quiz_id>\d+)/submit', array(
+        'methods' => 'POST',
+        'callback' => 'meridiana_submit_quiz',
+        'permission_callback' => function() {
+            return is_user_logged_in();
+        },
+    ));
 }
 
 add_action('rest_api_init', 'meridiana_register_learndash_endpoints');
@@ -317,6 +335,110 @@ function meridiana_mark_lesson_viewed($request) {
         'user_id' => $user_id,
         'duration' => $duration,
         'marked_at' => current_time('mysql'),
+    );
+
+    return rest_ensure_response($response);
+}
+
+/**
+ * POST /wp-json/learnDash/v1/topics/{id}/mark-completed
+ *
+ * Marca argomento (topic) come completato per utente
+ *
+ * @return WP_REST_Response
+ */
+function meridiana_mark_topic_completed($request) {
+    $topic_id = intval($request->get_param('topic_id'));
+    $user_id = get_current_user_id();
+
+    if (!$topic_id) {
+        return new WP_Error('invalid_topic', 'Invalid topic ID', array('status' => 400));
+    }
+
+    if (!$user_id) {
+        return new WP_Error('invalid_user', 'User not logged in', array('status' => 401));
+    }
+
+    // Verify topic exists
+    $topic = get_post($topic_id);
+    if (!$topic || $topic->post_type !== 'sfwd-topic') {
+        return new WP_Error('invalid_topic_post', 'Topic does not exist', array('status' => 400));
+    }
+
+    // ========================================
+    // SAVE: Mark topic as completed in user meta
+    // ========================================
+
+    update_user_meta($user_id, '_completed_topic_' . $topic_id, current_time('timestamp'));
+
+    $response = array(
+        'success' => true,
+        'message' => 'Argomento marcato come completato',
+        'topic_id' => $topic_id,
+        'user_id' => $user_id,
+        'marked_at' => current_time('mysql'),
+    );
+
+    return rest_ensure_response($response);
+}
+
+/**
+ * POST /wp-json/learnDash/v1/quizzes/{id}/submit
+ *
+ * Invia le risposte del quiz per l'utente
+ *
+ * @return WP_REST_Response
+ */
+function meridiana_submit_quiz($request) {
+    $quiz_id = intval($request->get_param('quiz_id'));
+    $user_id = get_current_user_id();
+    $answers = $request->get_json_params();
+
+    if (!$quiz_id) {
+        return new WP_Error('invalid_quiz', 'Invalid quiz ID', array('status' => 400));
+    }
+
+    if (!$user_id) {
+        return new WP_Error('invalid_user', 'User not logged in', array('status' => 401));
+    }
+
+    // Verify quiz exists
+    $quiz = get_post($quiz_id);
+    if (!$quiz || $quiz->post_type !== 'sfwd-quiz') {
+        return new WP_Error('invalid_quiz_post', 'Quiz does not exist', array('status' => 400));
+    }
+
+    // ========================================
+    // SAVE: Store quiz submission
+    // ========================================
+
+    // Save quiz submission in user meta
+    $submission_data = array(
+        'quiz_id' => $quiz_id,
+        'user_id' => $user_id,
+        'answers' => isset($answers['answers']) ? $answers['answers'] : array(),
+        'submitted_at' => current_time('timestamp'),
+    );
+
+    update_user_meta(
+        $user_id,
+        '_quiz_submission_' . $quiz_id,
+        json_encode($submission_data)
+    );
+
+    // Mark quiz as completed
+    update_user_meta($user_id, '_completed_quiz_' . $quiz_id, current_time('timestamp'));
+
+    $response = array(
+        'success' => true,
+        'message' => 'Quiz completato con successo',
+        'quiz_id' => $quiz_id,
+        'user_id' => $user_id,
+        'submitted_at' => current_time('mysql'),
+        'results' => array(
+            'score' => 0, // TODO: Calculate actual score based on answers
+            'percentage' => 0, // TODO: Calculate percentage
+        ),
     );
 
     return rest_ensure_response($response);
