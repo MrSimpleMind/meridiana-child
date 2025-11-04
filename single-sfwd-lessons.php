@@ -8,11 +8,11 @@
 
 if (!defined('ABSPATH')) exit;
 
-// Helper function to check if quiz is completed by user
-function is_quiz_completed_by_user($quiz_id, $user_id) {
-    $completed = get_user_meta($user_id, '_completed_quiz_' . $quiz_id, true);
-    return !empty($completed);
-}
+// DEPRECATED - Usa meridiana_quiz_is_completed() da learndash-helpers.php
+// function is_quiz_completed_by_user($quiz_id, $user_id) {
+//     $completed = get_user_meta($user_id, '_completed_quiz_' . $quiz_id, true);
+//     return !empty($completed);
+// }
 
 get_header();
 
@@ -32,50 +32,28 @@ $lesson_content = get_post_field('post_content', $lesson_id);
 $course_id = get_post_meta($lesson_id, 'course_id', true);
 $course = $course_id ? get_post($course_id) : null;
 
-// Check if user is enrolled in course
-$enrolled_meta = get_user_meta($user_id, '_enrolled_course_' . $course_id, true);
-$is_enrolled = !empty($enrolled_meta);
+// Check if user is enrolled in course using LearnDash native
+$is_enrolled = meridiana_user_is_enrolled($user_id, $course_id);
 
 // Check if lesson is completed
-$lesson_completed = get_user_meta($user_id, '_completed_lesson_' . $lesson_id, true);
-$is_completed = !empty($lesson_completed);
+$is_completed = meridiana_lesson_is_completed($user_id, $lesson_id);
 
 // ============================================
 // GET QUIZZES IN THIS LESSON (Direct children via post_parent)
 // ============================================
 
-$quizzes_in_lesson = array();
-if ($is_enrolled) {
-    // Query quizzes that are direct children of this lesson (post_parent = lesson_id)
-    $quizzes_query = new WP_Query(array(
-        'post_type' => 'sfwd-quiz',
-        'posts_per_page' => -1,
-        'orderby' => 'menu_order',
-        'order' => 'ASC',
-        'post_parent' => $lesson_id,
-    ));
-    $quizzes_in_lesson = $quizzes_query->posts;
-    wp_reset_postdata();
-}
+// Get quizzes in this lesson using helper function
+$quizzes_in_lesson = $is_enrolled ? meridiana_get_lesson_quizzes($lesson_id) : [];
 
 // ============================================
 // GET ALL LESSONS IN COURSE FOR NAVIGATION
 // ============================================
 
-$all_lessons = array();
-$current_lesson_index = 0;
-if ($course_id) {
-    $lessons_query = new WP_Query(array(
-        'post_type' => 'sfwd-lessons',
-        'posts_per_page' => -1,
-        'orderby' => 'menu_order',
-        'order' => 'ASC',
-        'meta_key' => 'course_id',
-        'meta_value' => $course_id,
-    ));
-    $all_lessons = $lessons_query->posts;
-    wp_reset_postdata();
+// Get all lessons in course using helper function
+$all_lessons = $course_id ? meridiana_get_course_lessons($course_id) : [];
 
+$current_lesson_index = 0;
+if (!empty($all_lessons)) {
     // Find current lesson index
     foreach ($all_lessons as $idx => $l) {
         if ($l->ID === $lesson_id) {

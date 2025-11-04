@@ -486,18 +486,17 @@ function meridiana_render_user_form($action = 'new', $user_id = null) {
     }
 
     // ============================================
-    // Recupera valori ACF per i campi corsi
+    // Recupera corsi iscritti (LearnDash Nativo)
     // ============================================
     $tutti_corsi_value = false;
     $corsi_assegnati = [];
 
     if ($action === 'edit' && $user_id) {
-        $user_context = 'user_' . $user_id;
-        $tutti_corsi_value = function_exists('get_field') ? get_field('tutti_corsi', $user_context) : false;
-        $corsi_raw = function_exists('get_field') ? get_field('corsi_assegnati', $user_context) : [];
-        if (is_array($corsi_raw)) {
-            $corsi_assegnati = $corsi_raw;
-        }
+        // Recupera corsi iscritti da LearnDash nativo
+        $corsi_assegnati = meridiana_get_user_enrolled_course_ids($user_id);
+        // Se l'utente è iscritto a TUTTI i corsi disponibili, mostra il checkbox spuntato
+        $all_course_ids = array_map(function($c) { return $c->ID; }, meridiana_get_all_courses());
+        $tutti_corsi_value = count($corsi_assegnati) === count($all_course_ids) && !empty($corsi_assegnati);
     }
 
     // ============================================
@@ -2603,7 +2602,7 @@ function meridiana_ajax_save_user() {
     }
 
     // ============================================
-    // SALVA E GESTISCI ENROLLMENT CORSI
+    // GESTISCI ENROLLMENT CORSI (LearnDash Nativo)
     // ============================================
 
     // Recupera i valori dei corsi dal form
@@ -2611,19 +2610,6 @@ function meridiana_ajax_save_user() {
     $corsi_selezionati = isset($_POST['corsi_assegnati']) && is_array($_POST['corsi_assegnati'])
         ? array_map('intval', $_POST['corsi_assegnati'])
         : [];
-
-    // Salva i valori ACF per i corsi
-    if (function_exists('update_field')) {
-        update_field('field_tutti_corsi', $tutti_corsi, $user_context);
-        update_field('field_corsi_assegnati', $corsi_selezionati, $user_context);
-    } else {
-        update_user_meta($user_id, 'tutti_corsi', $tutti_corsi ? 1 : 0);
-        update_user_meta($user_id, 'corsi_assegnati', $corsi_selezionati);
-    }
-
-    // ============================================
-    // ENROLLMENT AUTOMATICO NEI CORSI
-    // ============================================
 
     // Recupera tutti i corsi disponibili
     $all_available_courses = get_posts([
@@ -2633,22 +2619,31 @@ function meridiana_ajax_save_user() {
         'fields'         => 'ids',
     ]);
 
-    if (!empty($all_available_courses)) {
-        $courses_to_enroll = [];
-
+    // Determina quali corsi iscrivere
+    $courses_to_enroll = [];
+    if ($tutti_corsi) {
         // Se "Tutti i Corsi" è spuntato, usa tutti i corsi
-        if ($tutti_corsi) {
-            $courses_to_enroll = $all_available_courses;
-        } else {
-            // Altrimenti, usa solo i corsi selezionati
-            $courses_to_enroll = $corsi_selezionati;
-        }
+        $courses_to_enroll = $all_available_courses;
+    } else {
+        // Altrimenti, usa solo i corsi selezionati
+        $courses_to_enroll = $corsi_selezionati;
+    }
 
-        // Enrolla l'utente nei corsi selezionati
-        if (!empty($courses_to_enroll)) {
-            foreach ($courses_to_enroll as $course_id) {
-                // Usa la nostra logica di enrollment tramite user meta
-                update_user_meta($user_id, '_enrolled_course_' . $course_id, current_time('timestamp'));
+    // Recupera i corsi attualmente iscritti (da LearnDash nativo)
+    $currently_enrolled = meridiana_get_user_enrolled_course_ids($user_id);
+
+    // Rimuovi iscrizioni che non sono più selezionate
+    foreach ($currently_enrolled as $enrolled_course_id) {
+        if (!in_array($enrolled_course_id, $courses_to_enroll)) {
+            meridiana_unenroll_user($user_id, $enrolled_course_id);
+        }
+    }
+
+    // Aggiungi nuove iscrizioni
+    if (!empty($courses_to_enroll)) {
+        foreach ($courses_to_enroll as $course_id) {
+            if (!in_array($course_id, $currently_enrolled)) {
+                meridiana_enroll_user($user_id, $course_id);
             }
         }
     }

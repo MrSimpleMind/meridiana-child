@@ -18,6 +18,9 @@ define('MERIDIANA_CHILD_URI', get_stylesheet_directory_uri());
 // Database setup
 require_once MERIDIANA_CHILD_DIR . '/includes/db-setup.php';
 
+// LearnDash helpers
+require_once MERIDIANA_CHILD_DIR . '/includes/learndash-helpers.php';
+
 // Admin test data generator (development only)
 if (is_admin()) {
     require_once MERIDIANA_CHILD_DIR . '/inc/admin-test-data-page.php';
