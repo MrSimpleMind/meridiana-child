@@ -303,8 +303,48 @@ $featured_image = get_the_post_thumbnail_url($course_id, 'large');
                             Scarica Certificato
                         </button>
                         <?php endif; ?>
+
+                        <!-- Unenroll Button -->
+                        <button class="btn btn-outline btn-danger btn-block" @click="showUnenrollModal(<?php echo $course_id; ?>)">
+                            <i data-lucide="log-out"></i>
+                            Abbandona Corso
+                        </button>
                     </div>
                     <?php endif; ?>
+
+                    <!-- Unenroll Confirmation Modal -->
+                    <div class="unenroll-modal-wrapper" x-show="isUnenrollModalOpen" style="display: none;">
+                        <div class="unenroll-modal-overlay" @click="closeUnenrollModal()"></div>
+                        <div class="unenroll-modal">
+                            <div class="unenroll-modal__header">
+                                <h3 class="unenroll-modal__title">
+                                    <i data-lucide="alert-circle"></i>
+                                    Abbandona Corso
+                                </h3>
+                                <button class="unenroll-modal__close" @click="closeUnenrollModal()">
+                                    <i data-lucide="x"></i>
+                                </button>
+                            </div>
+
+                            <div class="unenroll-modal__body">
+                                <p>Sei sicuro di voler abbandonare questo corso?</p>
+                                <p><strong><?php echo esc_html($course_title); ?></strong></p>
+                                <div class="unenroll-modal__warning">
+                                    <i data-lucide="alert-triangle"></i>
+                                    <p>Abbandonando il corso perderai l'accesso al materiale didattico e alla tua iscrizione. I dati di progresso saranno conservati.</p>
+                                </div>
+                            </div>
+
+                            <div class="unenroll-modal__footer">
+                                <button class="btn btn-outline" @click="closeUnenrollModal()">
+                                    Annulla
+                                </button>
+                                <button class="btn btn-danger" @click="confirmUnenroll(<?php echo $course_id; ?>)" :disabled="isUnenrolling">
+                                    <span x-text="isUnenrolling ? 'Abbandono in corso...' : 'Sì, Abbandona'"></span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
 
                 </aside>
 
@@ -320,7 +360,10 @@ document.addEventListener('alpine:init', () => {
         courseId: courseId,
         courseUrl: courseUrl,
         isLoading: false,
+        isUnenrolling: false,
+        isUnenrollModalOpen: false,
         errorMessage: '',
+        successMessage: '',
 
         async enrollCourse(id) {
             if (!id) return;
@@ -355,6 +398,98 @@ document.addEventListener('alpine:init', () => {
             } catch (error) {
                 console.error('Error enrolling in course:', error);
                 this.errorMessage = 'Errore nell\'iscrizione. Per favore riprova.';
+                this.isLoading = false;
+            }
+        },
+
+        // Modal management
+        showUnenrollModal(id) {
+            this.isUnenrollModalOpen = true;
+        },
+
+        closeUnenrollModal() {
+            this.isUnenrollModalOpen = false;
+            this.errorMessage = '';
+        },
+
+        // Unenroll from course
+        async confirmUnenroll(id) {
+            if (!id) return;
+
+            this.isUnenrolling = true;
+            this.errorMessage = '';
+
+            try {
+                const nonce = document.querySelector('[data-nonce]')?.dataset.nonce || '';
+                const userId = parseInt(document.querySelector('[data-user-id]')?.dataset.userId || 0);
+                const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
+
+                const response = await fetch(
+                    `${restUrl}user/${userId}/courses/${id}/unenroll`,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'X-WP-Nonce': nonce,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                // Reload page to update enrollment status
+                this.successMessage = 'Sei stato rimosso dal corso';
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1500);
+
+            } catch (error) {
+                console.error('Error unenrolling from course:', error);
+                this.errorMessage = 'Errore nell\'abbandono del corso. Per favore riprova.';
+                this.isUnenrolling = false;
+            }
+        },
+
+        // Download certificate
+        async downloadCourseCertificate(id) {
+            if (!id) return;
+
+            this.isLoading = true;
+
+            try {
+                const nonce = document.querySelector('[data-nonce]')?.dataset.nonce || '';
+                const restUrl = document.querySelector('[data-rest-url]')?.dataset.restUrl || '/wp-json/learnDash/v1/';
+
+                const response = await fetch(
+                    `${restUrl}courses/${id}/certificate`,
+                    {
+                        method: 'GET',
+                        headers: {
+                            'X-WP-Nonce': nonce,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Error downloading certificate');
+                }
+
+                const data = await response.json();
+                if (data.download_url) {
+                    const link = document.createElement('a');
+                    link.href = data.download_url;
+                    link.download = data.filename || 'certificato.pdf';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                }
+
+            } catch (error) {
+                console.error('Error downloading certificate:', error);
+                this.errorMessage = 'Errore nel download del certificato. Per favore riprova.';
+            } finally {
                 this.isLoading = false;
             }
         }

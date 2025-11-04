@@ -37,6 +37,16 @@ function meridiana_register_learndash_endpoints() {
         },
     ));
 
+    // POST /wp-json/learnDash/v1/user/{id}/courses/{courseId}/unenroll
+    register_rest_route('learnDash/v1', '/user/(?P<user_id>\d+)/courses/(?P<course_id>\d+)/unenroll', array(
+        'methods' => 'POST',
+        'callback' => 'meridiana_unenroll_user_from_course',
+        'permission_callback' => function($request) {
+            $user_id = $request->get_param('user_id');
+            return is_user_logged_in() && (get_current_user_id() == $user_id || current_user_can('manage_options'));
+        },
+    ));
+
     // GET /wp-json/learnDash/v1/courses/{id}/certificate
     register_rest_route('learnDash/v1', '/courses/(?P<course_id>\d+)/certificate', array(
         'methods' => 'GET',
@@ -261,6 +271,77 @@ function meridiana_enroll_user_in_course($request) {
     } catch (Exception $e) {
         error_log('LearnDash Enrollment Exception: ' . $e->getMessage());
         return new WP_Error('enrollment_exception', 'Exception: ' . $e->getMessage(), array('status' => 500));
+    }
+}
+
+/**
+ * POST /wp-json/learnDash/v1/user/{id}/courses/{courseId}/unenroll
+ *
+ * Discrivi utente da corso
+ *
+ * @return WP_REST_Response
+ */
+function meridiana_unenroll_user_from_course($request) {
+    try {
+        $user_id = intval($request->get_param('user_id'));
+        $course_id = intval($request->get_param('course_id'));
+
+        if (!$user_id || !$course_id) {
+            return new WP_Error('invalid_params', 'Missing user_id or course_id', array('status' => 400));
+        }
+
+        // Verify course exists
+        $course = get_post($course_id);
+        if (!$course || $course->post_type !== 'sfwd-courses') {
+            return new WP_Error('invalid_course', 'Course does not exist', array('status' => 400));
+        }
+
+        // Check if user exists
+        $user = get_user_by('id', $user_id);
+        if (!$user) {
+            return new WP_Error('invalid_user', 'User does not exist', array('status' => 400));
+        }
+
+        // Check if user is enrolled (via user meta)
+        $enrolled_meta = get_user_meta($user_id, '_enrolled_course_' . $course_id, true);
+        if (empty($enrolled_meta)) {
+            return new WP_Error('not_enrolled', 'User is not enrolled in this course', array('status' => 400));
+        }
+
+        // ========================================
+        // UNENROLL: Delete enrollment and progress data
+        // ========================================
+
+        // Delete enrollment meta
+        delete_user_meta($user_id, '_enrolled_course_' . $course_id);
+
+        // Optional: Delete progress data (lessons, topics, quizzes completed)
+        // Uncomment if you want to delete all progress when unenrolling
+        /*
+        $lessons = get_posts(array(
+            'post_type' => 'sfwd-lessons',
+            'numberposts' => -1,
+            'meta_key' => 'course_id',
+            'meta_value' => $course_id,
+        ));
+        foreach ($lessons as $lesson) {
+            delete_user_meta($user_id, '_completed_lesson_' . $lesson->ID);
+        }
+        */
+
+        $response = array(
+            'success' => true,
+            'message' => 'Discritto dal corso con successo',
+            'user_id' => $user_id,
+            'course_id' => $course_id,
+            'unenrolled_date' => current_time('mysql'),
+        );
+
+        return rest_ensure_response($response);
+
+    } catch (Exception $e) {
+        error_log('LearnDash Unenrollment Exception: ' . $e->getMessage());
+        return new WP_Error('unenrollment_exception', 'Exception: ' . $e->getMessage(), array('status' => 500));
     }
 }
 
