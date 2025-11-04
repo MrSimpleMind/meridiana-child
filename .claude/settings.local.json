@@ -34,7 +34,10 @@
       "Bash(\"C:\\Users\\strik\\Local Sites\\nuova-formazione\\app\\public\\wp-content\\themes\\meridiana-child\\includes\\gestore-acf-forms.php\")",
       "WebSearch",
       "WebFetch(domain:documentation.onesignal.com)",
-      "WebFetch(domain:superpwa.com)"
+      "WebFetch(domain:superpwa.com)",
+      "mcp__local-wp__mysql_schema",
+      "mcp__local-wp__mysql_query",
+      "Bash(curl:*)"
     ]
   },
   "outputStyle": "default"

@@ -180,9 +180,9 @@ function meridiana_get_user_enrolled_course_ids( $user_id ) {
 	}
 
 	// Try LearnDash native first
-	$courses = learndash_get_user_courses( [ 'user_id' => $user_id ] );
-	if ( ! empty( $courses ) ) {
-		return array_keys( $courses );
+	$courses = learndash_user_get_enrolled_courses( $user_id, array(), true );
+	if ( ! empty( $courses ) && is_array( $courses ) ) {
+		return $courses; // Already returns array of course IDs
 	}
 
 	// Fallback to custom meta enrollment (legacy system)

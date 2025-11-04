@@ -151,7 +151,7 @@ if ($current_tab === 'risultati' && $course_progress === 100) {
                             // Trova la prima lezione non completata (current lesson)
                             if ($is_enrolled) {
                                 foreach ($all_lessons as $idx => $lesson) {
-                                    if (!is_lesson_completed_by_user($lesson->ID, $user_id)) {
+                                    if (!meridiana_lesson_is_completed($user_id, $lesson->ID)) {
                                         $current_lesson_index = $idx;
                                         break;
                                     }
@@ -161,7 +161,7 @@ if ($current_tab === 'risultati' && $course_progress === 100) {
                             foreach ($all_lessons as $idx => $lesson):
                                 $lesson_id = $lesson->ID;
                                 $lesson_title = $lesson->post_title;
-                                $lesson_completed = $is_enrolled ? is_lesson_completed_by_user($lesson_id, $user_id) : false;
+                                $lesson_completed = $is_enrolled ? meridiana_lesson_is_completed($user_id, $lesson_id) : false;
                                 $lesson_url = get_permalink($lesson_id);
 
                                 // PROCEDURAL: lesson is accessible only if:

@@ -114,7 +114,7 @@ $completed_items = 0;
 
 if ($total_items > 0) {
     foreach ($quizzes_in_lesson as $quiz) {
-        if (is_quiz_completed_by_user($quiz->ID, $user_id)) {
+        if (meridiana_quiz_is_completed($user_id, $quiz->ID)) {
             $completed_items++;
         }
     }
@@ -204,7 +204,7 @@ if ($total_items > 0) {
                             $quiz_index = 1;
                             foreach ($quizzes_in_lesson as $quiz):
                                 $quiz_id = $quiz->ID;
-                                $quiz_completed = is_quiz_completed_by_user($quiz_id, $user_id);
+                                $quiz_completed = meridiana_quiz_is_completed($user_id, $quiz_id);
                             ?>
                             <div class="quiz-item <?php echo $quiz_completed ? 'quiz-item--completed' : ''; ?>">
                                 <div class="quiz-item__icon">
@@ -308,13 +308,8 @@ if ($total_items > 0) {
 
                         <div class="lessons-navigation">
                             <?php
-                            // Helper function to check if lesson is completed
-                            $check_lesson_completed = function($l_id) use ($user_id) {
-                                return !empty(get_user_meta($user_id, '_completed_lesson_' . $l_id, true));
-                            };
-
                             foreach ($all_course_lessons as $idx => $l):
-                                $is_completed = $check_lesson_completed($l->ID);
+                                $is_completed = meridiana_lesson_is_completed($user_id, $l->ID);
                                 $is_current = ($l->ID === $lesson_id);
                             ?>
                             <div class="lessons-navigation__item <?php echo $is_current ? 'active' : ''; echo $is_completed ? 'completed' : ''; ?>">
@@ -341,6 +336,9 @@ if ($total_items > 0) {
                         <div x-data="lessonCompleteHandler({
                             isCompleted: <?php echo $is_completed ? 'true' : 'false'; ?>,
                             hasQuizzes: <?php echo $total_items > 0 ? 'true' : 'false'; ?>,
+                            allQuizzesCompleted: <?php echo ($total_items > 0 && $completed_items === $total_items) ? 'true' : 'false'; ?>,
+                            totalQuizzes: <?php echo $total_items; ?>,
+                            completedQuizzes: <?php echo $completed_items; ?>,
                             isLastLesson: <?php echo $is_last_lesson ? 'true' : 'false'; ?>,
                             nextLessonUrl: '<?php echo esc_js($next_lesson ? get_permalink($next_lesson->ID) : get_permalink($course_id)); ?>'
                         })">
@@ -350,7 +348,7 @@ if ($total_items > 0) {
                                 <button class="btn btn-primary btn-block"
                                         type="button"
                                         @click="handleClick()"
-                                        :disabled="isLoading || (hasQuizzes && !isCompleted)"
+                                        :disabled="isLoading || (hasQuizzes && !allQuizzesCompleted)"
                                         :class="{ 'is-loading': isLoading }">
                                     <i data-lucide="check"></i>
                                     <span x-text="getButtonText()"></span>
@@ -370,11 +368,11 @@ if ($total_items > 0) {
                                 </div>
                             </template>
 
-                            <!-- Quiz Warning (shows when quizzes exist but not completed) -->
-                            <template x-if="hasQuizzes && !isCompleted">
+                            <!-- Quiz Warning (shows when quizzes exist but not all completed) -->
+                            <template x-if="hasQuizzes && !allQuizzesCompleted">
                                 <div class="lesson-quiz-warning" style="margin-top: 10px; padding: 10px; background-color: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
                                     <i data-lucide="alert-circle" style="color: #ffc107;"></i>
-                                    <p style="margin: 5px 0 0 0; font-size: 0.875rem;">Completa i <?php echo $total_items; ?> quiz prima di procedere</p>
+                                    <p style="margin: 5px 0 0 0; font-size: 0.875rem;" x-text="`Completa i quiz prima di procedere (${completedQuizzes}/${totalQuizzes})`"></p>
                                 </div>
                             </template>
 
@@ -544,6 +542,9 @@ document.addEventListener('alpine:init', () => {
     Alpine.data('lessonCompleteHandler', (initialState = {}) => ({
         isCompleted: initialState.isCompleted || false,
         hasQuizzes: initialState.hasQuizzes || false,
+        allQuizzesCompleted: initialState.allQuizzesCompleted || false,
+        totalQuizzes: initialState.totalQuizzes || 0,
+        completedQuizzes: initialState.completedQuizzes || 0,
         isLastLesson: initialState.isLastLesson || false,
         nextLessonUrl: initialState.nextLessonUrl || '',
         isLoading: false,
@@ -560,11 +561,11 @@ document.addEventListener('alpine:init', () => {
         },
 
         async handleClick() {
-            console.log('Button clicked! hasQuizzes:', this.hasQuizzes, 'isCompleted:', this.isCompleted);
+            console.log('Button clicked! hasQuizzes:', this.hasQuizzes, 'allQuizzesCompleted:', this.allQuizzesCompleted);
 
-            // Se ha quiz ma non completati, non fare nulla
-            if (this.hasQuizzes && !this.isCompleted) {
-                console.log('Quiz exist but not completed - returning');
+            // Se ha quiz ma non tutti completati, non fare nulla
+            if (this.hasQuizzes && !this.allQuizzesCompleted) {
+                console.log('Quizzes exist but not all completed - returning. Completed:', this.completedQuizzes, '/', this.totalQuizzes);
                 return;
             }
 
