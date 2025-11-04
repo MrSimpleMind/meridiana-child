@@ -681,9 +681,18 @@ function meridiana_run_db_update_once() {
  *
  * When user completes the final quiz (Quizzo) with a passing score,
  * mark the course as completed in user meta
+ *
+ * Hook: learndash_quiz_completed passes ($quiz_id, $user_obj)
  */
-add_action('learndash_quiz_completed', 'meridiana_mark_course_complete_on_quiz', 10, 3);
-function meridiana_mark_course_complete_on_quiz($quiz_id, $user_id, $quiz_data) {
+add_action('learndash_quiz_completed', 'meridiana_mark_course_complete_on_quiz', 10, 2);
+function meridiana_mark_course_complete_on_quiz($quiz_id, $user_obj) {
+    // Extract user ID from user object
+    if (is_object($user_obj) && isset($user_obj->ID)) {
+        $user_id = $user_obj->ID;
+    } else {
+        return; // Invalid user object
+    }
+
     // Get the quiz post
     $quiz = get_post($quiz_id);
     if (!$quiz || $quiz->post_type !== 'sfwd-quiz') {
@@ -718,16 +727,12 @@ function meridiana_mark_course_complete_on_quiz($quiz_id, $user_id, $quiz_data) 
         }
     }
 
-    // If we found a course, mark it as completed if quiz was passed
+    // If we found a course, mark it as completed
     if ($course_id) {
-        // Check if quiz was passed (score >= passing score)
-        // $quiz_data contains the quiz results
-        if (!empty($quiz_data['pass']) || !empty($quiz_data['passed'])) {
-            // Mark the entire course as completed
-            update_user_meta($user_id, '_completed_course_' . $course_id, current_time('timestamp'));
+        // Mark the entire course as completed
+        update_user_meta($user_id, '_completed_course_' . $course_id, current_time('timestamp'));
 
-            error_log('LearnDash: Course ' . $course_id . ' marked as completed for user ' . $user_id . ' after passing quiz ' . $quiz_id);
-        }
+        error_log('LearnDash: Course ' . $course_id . ' marked as completed for user ' . $user_id . ' after passing quiz ' . $quiz_id);
     }
 }
 

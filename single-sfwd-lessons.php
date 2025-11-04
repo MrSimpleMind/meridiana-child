@@ -152,13 +152,13 @@ if ($total_items > 0) {
     get_template_part('templates/parts/navigation/desktop-sidebar');
     ?>
 
-    <main class="page-single-lesson"
+    <main class="page-single-lesson single-lesson-page"
           data-user-id="<?php echo esc_attr($user_id); ?>"
           data-lesson-id="<?php echo esc_attr($lesson_id); ?>"
           data-course-id="<?php echo esc_attr($course_id); ?>"
           data-nonce="<?php echo esc_attr(wp_create_nonce('wp_rest')); ?>"
           data-rest-url="<?php echo esc_attr('/wp-json/learnDash/v1/'); ?>">
-        <div class="single-lesson-container">
+        <div class="single-lesson-container page-container">
 
             <!-- BREADCRUMB / BACK BUTTON -->
             <div class="back-link-wrapper">
