@@ -137,7 +137,7 @@ document.addEventListener('alpine:init', () => {
         // COURSE ENROLLMENT
         // ========================================
 
-        async enrollCourse(courseId) {
+        async enrollCourse(courseId, courseUrl = null) {
             if (!courseId || !this.userId) {
                 console.error('Missing course ID or user ID');
                 return;
@@ -163,7 +163,13 @@ document.addEventListener('alpine:init', () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Ricarica i corsi per aggiornare lo stato
+                // Se è fornito l'URL del corso, naviga direttamente a esso
+                if (courseUrl) {
+                    window.location.href = courseUrl;
+                    return;
+                }
+
+                // Altrimenti, ricarica i corsi per aggiornare lo stato (fallback)
                 await this.loadAllCourses();
                 this.successMessage = 'Ti sei iscritto al corso! Puoi iniziare subito.';
 

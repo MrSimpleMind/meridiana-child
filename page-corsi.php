@@ -111,7 +111,7 @@ $user_id = $current_user->ID;
                                                 </template>
                                                 <!-- Se non iscritto: bottone Iscriviti -->
                                                 <template x-if="!course.is_enrolled">
-                                                    <button @click="enrollCourse(course.id)" class="btn btn-primary btn-sm">
+                                                    <button @click="enrollCourse(course.id, course.url)" class="btn btn-primary btn-sm">
                                                         <i data-lucide="plus-circle"></i>
                                                         Iscriviti
                                                     </button>
