@@ -511,6 +511,39 @@ function meridiana_mark_topic_completed($request) {
 
     update_user_meta($user_id, '_completed_topic_' . $topic_id, current_time('timestamp'));
 
+    // ========================================
+    // CHECK: If all topics in lesson are completed, mark lesson as completed
+    // ========================================
+
+    // Get lesson ID from topic
+    $lesson_id = get_post_meta($topic_id, 'lesson_id', true);
+
+    if ($lesson_id) {
+        // Get all topics in this lesson
+        $all_topics = get_posts([
+            'post_type' => 'sfwd-topic',
+            'posts_per_page' => -1,
+            'meta_key' => 'lesson_id',
+            'meta_value' => $lesson_id,
+            'fields' => 'ids',
+        ]);
+
+        // Check if all topics are completed
+        $all_completed = true;
+        foreach ($all_topics as $t_id) {
+            $is_completed = get_user_meta($user_id, '_completed_topic_' . $t_id, true);
+            if (empty($is_completed)) {
+                $all_completed = false;
+                break;
+            }
+        }
+
+        // If all topics completed, mark lesson as completed
+        if ($all_completed && !empty($all_topics)) {
+            update_user_meta($user_id, '_completed_lesson_' . $lesson_id, current_time('timestamp'));
+        }
+    }
+
     $response = array(
         'success' => true,
         'message' => 'Argomento marcato come completato',
