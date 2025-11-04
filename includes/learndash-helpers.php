@@ -35,17 +35,13 @@ function meridiana_get_user_dashboard( $user_id ) {
 		'certificates' => [],
 	];
 
-	// Get all courses enrolled by user
-	$user_courses = learndash_get_user_courses( [ 'user_id' => $user_id ] );
+	// Get enrolled course IDs using helper (supports both native LD and custom meta)
+	$enrolled_course_ids = meridiana_get_user_enrolled_course_ids( $user_id );
 
-	if ( ! empty( $user_courses ) ) {
-		foreach ( $user_courses as $course_id => $course_data ) {
+	if ( ! empty( $enrolled_course_ids ) ) {
+		foreach ( $enrolled_course_ids as $course_id ) {
 			// Get course progress
-			$progress = learndash_get_course_progress( [
-				'user_id'   => $user_id,
-				'course_id' => $course_id,
-				'array'     => true,
-			] );
+			$progress = meridiana_get_user_course_progress( $user_id, $course_id );
 
 			$course_info = [
 				'id'               => $course_id,
@@ -53,9 +49,9 @@ function meridiana_get_user_dashboard( $user_id ) {
 				'description'      => wp_trim_words( get_the_excerpt( $course_id ), 20 ),
 				'url'              => get_the_permalink( $course_id ),
 				'featured_image'   => get_the_post_thumbnail_url( $course_id, 'medium' ),
-				'progress'         => isset( $progress['percentage'] ) ? (int) $progress['percentage'] : 0,
-				'lessons_total'    => isset( $progress['total'] ) ? (int) $progress['total'] : 0,
-				'lessons_done'     => isset( $progress['completed'] ) ? (int) $progress['completed'] : 0,
+				'progress'         => $progress['percentage'],
+				'lessons_total'    => $progress['total'],
+				'lessons_done'     => $progress['completed'],
 				'is_enrolled'      => true,
 				'completed_date'   => null,
 			];
@@ -84,6 +80,10 @@ function meridiana_get_user_dashboard( $user_id ) {
 /**
  * Check if user is enrolled in course
  *
+ * Supports both:
+ * - LearnDash native enrollment (new system)
+ * - Custom meta enrollment (legacy: _enrolled_course_{id})
+ *
  * @param int $user_id User ID
  * @param int $course_id Course ID
  * @return bool True if enrolled, false otherwise
@@ -96,7 +96,14 @@ function meridiana_user_is_enrolled( $user_id, $course_id ) {
 		return false;
 	}
 
-	return sfwd_lms_has_access( $course_id, $user_id );
+	// Check LearnDash native first
+	if ( sfwd_lms_has_access( $course_id, $user_id ) ) {
+		return true;
+	}
+
+	// Fallback to custom meta enrollment (legacy)
+	$enrolled_meta = get_user_meta( $user_id, '_enrolled_course_' . $course_id, true );
+	return ! empty( $enrolled_meta );
 }
 
 /**
@@ -157,27 +164,60 @@ function meridiana_unenroll_user( $user_id, $course_id ) {
 /**
  * Get user's enrolled course IDs
  *
+ * Supports both:
+ * - LearnDash native enrollment (new system)
+ * - Custom meta enrollment (legacy: _enrolled_course_{id})
+ *
  * @param int $user_id User ID
  * @return array Array of course IDs
  */
 function meridiana_get_user_enrolled_course_ids( $user_id ) {
+	global $wpdb;
 	$user_id = absint( $user_id );
 
 	if ( ! $user_id ) {
 		return [];
 	}
 
+	// Try LearnDash native first
 	$courses = learndash_get_user_courses( [ 'user_id' => $user_id ] );
+	if ( ! empty( $courses ) ) {
+		return array_keys( $courses );
+	}
 
-	if ( empty( $courses ) ) {
+	// Fallback to custom meta enrollment (legacy system)
+	// Query for all _enrolled_course_{id} meta keys
+	$enrolled_meta = $wpdb->get_col(
+		$wpdb->prepare(
+			"SELECT meta_key FROM {$wpdb->usermeta}
+			 WHERE user_id = %d AND meta_key LIKE %s",
+			$user_id,
+			'_enrolled_course_%'
+		)
+	);
+
+	if ( empty( $enrolled_meta ) ) {
 		return [];
 	}
 
-	return array_keys( $courses );
+	// Extract course IDs from meta keys
+	$course_ids = [];
+	foreach ( $enrolled_meta as $meta_key ) {
+		$course_id = str_replace( '_enrolled_course_', '', $meta_key );
+		if ( ! empty( $course_id ) && is_numeric( $course_id ) ) {
+			$course_ids[] = (int) $course_id;
+		}
+	}
+
+	return array_unique( $course_ids );
 }
 
 /**
  * Get course progress for user
+ *
+ * Supports both:
+ * - LearnDash native progress (new system)
+ * - Custom meta progress (legacy: _completed_lesson_{id}, _completed_quiz_{id})
  *
  * @param int $user_id User ID
  * @param int $course_id Course ID
@@ -195,16 +235,47 @@ function meridiana_get_user_course_progress( $user_id, $course_id ) {
 		];
 	}
 
+	// Try LearnDash native first
 	$progress = learndash_get_course_progress( [
 		'user_id'   => $user_id,
 		'course_id' => $course_id,
 		'array'     => true,
 	] );
 
+	// If LearnDash returns valid data, use it
+	if ( ! empty( $progress['total'] ) ) {
+		return [
+			'percentage' => isset( $progress['percentage'] ) ? (int) $progress['percentage'] : 0,
+			'total'      => isset( $progress['total'] ) ? (int) $progress['total'] : 0,
+			'completed'  => isset( $progress['completed'] ) ? (int) $progress['completed'] : 0,
+		];
+	}
+
+	// Fallback to custom meta progress (legacy system)
+	$lessons = meridiana_get_course_lessons( $course_id );
+	$total_lessons = count( $lessons );
+
+	if ( $total_lessons === 0 ) {
+		return [
+			'percentage' => 0,
+			'total'      => 0,
+			'completed'  => 0,
+		];
+	}
+
+	$completed_lessons = 0;
+	foreach ( $lessons as $lesson ) {
+		if ( meridiana_lesson_is_completed( $user_id, $lesson->ID ) ) {
+			$completed_lessons++;
+		}
+	}
+
+	$percentage = $total_lessons > 0 ? round( ( $completed_lessons / $total_lessons ) * 100 ) : 0;
+
 	return [
-		'percentage' => isset( $progress['percentage'] ) ? (int) $progress['percentage'] : 0,
-		'total'      => isset( $progress['total'] ) ? (int) $progress['total'] : 0,
-		'completed'  => isset( $progress['completed'] ) ? (int) $progress['completed'] : 0,
+		'percentage' => (int) $percentage,
+		'total'      => $total_lessons,
+		'completed'  => $completed_lessons,
 	];
 }
 
