@@ -143,7 +143,9 @@ function meridiana_get_user_courses($request) {
         $is_enrolled = !empty($enrolled_meta);
 
         if ($is_enrolled) {
-            // User is enrolled - Get progress from lesson completion
+            // User is enrolled - Get progress from lesson + topic + quiz completion
+
+            // Get all lessons in course
             $lessons = get_posts(array(
                 'post_type'      => 'sfwd-lessons',
                 'numberposts'    => -1,
@@ -154,19 +156,72 @@ function meridiana_get_user_courses($request) {
                 'fields'         => 'ids',
             ));
 
-            $lessons_count = count($lessons);
-            $lessons_completed = 0;
+            // Get all topics in course
+            $topics = get_posts(array(
+                'post_type'      => 'sfwd-topic',
+                'numberposts'    => -1,
+                'orderby'        => 'menu_order',
+                'order'          => 'ASC',
+                'meta_key'       => 'course_id',
+                'meta_value'     => $course_id,
+                'fields'         => 'ids',
+            ));
 
-            // Count completed lessons using user_meta
+            // Get all quizzes in course
+            $quizzes = get_posts(array(
+                'post_type'      => 'sfwd-quiz',
+                'numberposts'    => -1,
+                'orderby'        => 'menu_order',
+                'order'          => 'ASC',
+                'meta_key'       => 'course_id',
+                'meta_value'     => $course_id,
+                'fields'         => 'ids',
+            ));
+
+            // Count totals
+            $lessons_count = count($lessons);
+            $topics_count = count($topics);
+            $quizzes_count = count($quizzes);
+            $total_items = $lessons_count + $topics_count + $quizzes_count;
+
+            $lessons_completed = 0;
+            $topics_completed = 0;
+            $quizzes_completed = 0;
+
+            // Count completed lessons
             if ($lessons_count > 0) {
                 foreach ($lessons as $lesson_id) {
-                    // Check if lesson is marked complete in user meta
                     $lesson_completed = get_user_meta($user_id, '_completed_lesson_' . $lesson_id, true);
                     if (!empty($lesson_completed)) {
                         $lessons_completed++;
                     }
                 }
-                $progress_percent = round(($lessons_completed / $lessons_count) * 100);
+            }
+
+            // Count completed topics
+            if ($topics_count > 0) {
+                foreach ($topics as $topic_id) {
+                    $topic_completed = get_user_meta($user_id, '_completed_topic_' . $topic_id, true);
+                    if (!empty($topic_completed)) {
+                        $topics_completed++;
+                    }
+                }
+            }
+
+            // Count completed quizzes
+            if ($quizzes_count > 0) {
+                foreach ($quizzes as $quiz_id) {
+                    $quiz_completed = get_user_meta($user_id, '_completed_quiz_' . $quiz_id, true);
+                    if (!empty($quiz_completed)) {
+                        $quizzes_completed++;
+                    }
+                }
+            }
+
+            // Calculate progress percentage (0-100)
+            if ($total_items > 0) {
+                $total_completed = $lessons_completed + $topics_completed + $quizzes_completed;
+                $progress_percent = round(($total_completed / $total_items) * 100);
             } else {
                 $progress_percent = 0;
             }
@@ -174,6 +229,10 @@ function meridiana_get_user_courses($request) {
             $course_data['progress'] = $progress_percent;
             $course_data['lessons_total'] = $lessons_count;
             $course_data['lessons_done'] = $lessons_completed;
+            $course_data['topics_total'] = $topics_count;
+            $course_data['topics_done'] = $topics_completed;
+            $course_data['quizzes_total'] = $quizzes_count;
+            $course_data['quizzes_done'] = $quizzes_completed;
             $course_data['is_enrolled'] = true;
 
             // Separate by completion status

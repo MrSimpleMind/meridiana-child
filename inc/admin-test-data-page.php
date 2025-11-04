@@ -81,6 +81,7 @@ function meridiana_render_test_data_page() {
                 echo "\n\n🎓 CORSI LEARNDASH:";
                 echo "\n  • Corsi: " . $result['courses'];
                 echo "\n  • Lezioni: " . $result['lessons'];
+                echo "\n  • Argomenti (Topics): " . $result['topics'];
                 echo "\n  • Quiz: " . $result['quizzes'];
                 echo "\n  • Domande Quiz: " . $result['questions'];
                 echo "\n  • Iscrizioni Utenti: " . $result['enrollments'];
@@ -1106,6 +1107,52 @@ class MeridianaTestDataGenerator {
     }
 
     /**
+     * Genera topics (argomenti) per ogni lezione
+     */
+    public function generate_topics() {
+        echo "== Generazione Argomenti (Topics) ==\n";
+
+        $created = 0;
+        $lessons = get_posts(['post_type' => 'sfwd-lessons', 'numberposts' => -1]);
+
+        foreach ($lessons as $lesson) {
+            $lesson_id = $lesson->ID;
+            $course_id = get_post_meta($lesson_id, 'course_id', true);
+
+            if (!$course_id) {
+                continue;
+            }
+
+            $num_topics = rand(2, 4); // 2-4 topics per lesson
+
+            for ($i = 1; $i <= $num_topics; $i++) {
+                $topic_title = 'Argomento ' . $i . ' - ' . $lesson->post_title;
+
+                $topic_id = wp_insert_post([
+                    'post_title'   => $topic_title,
+                    'post_content' => '<p>' . $this->generate_lorem(400) . '</p>',
+                    'post_type'    => 'sfwd-topic',
+                    'post_status'  => 'publish',
+                    'post_parent'  => $lesson->ID, // Link to lesson
+                    'post_author'  => 1,
+                    'menu_order'   => $i, // Topic order
+                ]);
+
+                if (!is_wp_error($topic_id)) {
+                    // LearnDash topic meta
+                    update_post_meta($topic_id, 'course_id', $course_id);
+                    update_post_meta($topic_id, 'lesson_id', $lesson_id);
+
+                    $created++;
+                }
+            }
+        }
+
+        echo "✓ Argomenti (Topics): $created creati\n\n";
+        return $created;
+    }
+
+    /**
      * Genera quiz per ogni corso
      */
     public function generate_quizzes() {
@@ -1652,6 +1699,7 @@ class MeridianaTestDataGenerator {
         // Generate new data - CORSI LEARNDASH
         $courses = $this->generate_courses();
         $lessons = $this->generate_lessons();
+        $topics = $this->generate_topics();
         $quizzes = $this->generate_quizzes();
         $questions = $this->generate_questions();
         $enrollments = $this->generate_course_enrollments();
@@ -1678,6 +1726,7 @@ class MeridianaTestDataGenerator {
             'organigrammi' => $organigrammi,
             'courses' => $courses,
             'lessons' => $lessons,
+            'topics' => $topics,
             'quizzes' => $quizzes,
             'questions' => $questions,
             'enrollments' => $enrollments,
