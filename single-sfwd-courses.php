@@ -439,11 +439,12 @@ document.addEventListener('alpine:init', () => {
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
 
-                // Reload page to update enrollment status
-                this.successMessage = 'Sei stato rimosso dal corso';
+                // Close modal and redirect to courses page
+                this.isUnenrollModalOpen = false;
+                this.successMessage = 'Sei stato rimosso dal corso. Reindirizzamento...';
                 setTimeout(() => {
-                    window.location.reload();
-                }, 1500);
+                    window.location.href = '/corsi/';
+                }, 1000);
 
             } catch (error) {
                 console.error('Error unenrolling from course:', error);
