@@ -226,129 +226,78 @@ if ($lesson_id) {
                 <!-- SIDEBAR -->
                 <aside class="single-topic__sidebar">
 
-                    <!-- LESSON STATUS WIDGET -->
+                    <!-- TOPIC STATUS WIDGET -->
+                    <?php if ($is_enrolled): ?>
                     <div class="single-topic__widget">
                         <h3 class="single-topic__widget-title">
-                            <i data-lucide="activity"></i>
-                            Stato Lezione
+                            <i data-lucide="flag"></i>
+                            Stato
                         </h3>
 
-                        <?php if ($is_enrolled): ?>
-                            <div class="lesson-status">
-                                <?php if ($total_items > 0): ?>
-                                    <p class="lesson-status__label">Progresso:</p>
-                                    <div class="progress-bar">
-                                        <div class="progress-bar__fill" style="width: <?php echo $lesson_progress; ?>%"></div>
-                                    </div>
-                                    <p class="lesson-status__percentage"><?php echo $lesson_progress; ?>%</p>
-                                    <p class="lesson-status__details">
-                                        <?php echo $completed_items; ?> / <?php echo $total_items; ?> elementi completati
-                                    </p>
-                                <?php endif; ?>
-
-                                <?php if ($is_completed): ?>
-                                <div class="lesson-completed-badge">
-                                    <i data-lucide="award"></i>
-                                    <span>Lezione Completata!</span>
-                                </div>
-                                <?php endif; ?>
+                        <?php if ($is_completed): ?>
+                            <div class="topic-completed-badge">
+                                <i data-lucide="check"></i>
+                                Completato
                             </div>
                         <?php else: ?>
-                            <p class="lesson-status__message">Non sei iscritto a questo corso</p>
+                            <p class="single-topic__widget-message">
+                                Contrassegna questo argomento come completato quando hai finito
+                            </p>
+                            <button class="btn btn-primary btn-block" onclick="markTopicComplete(<?php echo $topic_id; ?>)">
+                                <i data-lucide="check"></i>
+                                Segna come Completato
+                            </button>
                         <?php endif; ?>
                     </div>
+                    <?php endif; ?>
 
-                    <!-- LESSON INFO WIDGET -->
+                    <!-- TOPIC INFO WIDGET -->
                     <div class="single-topic__widget">
                         <h3 class="single-topic__widget-title">
                             <i data-lucide="info"></i>
                             Informazioni
                         </h3>
 
-                        <?php if (!empty($topics_in_lesson)): ?>
-                        <div class="single-topic__info-item">
-                            <strong>Argomenti:</strong>
-                            <span><?php echo count($topics_in_lesson); ?></span>
-                        </div>
-                        <?php endif; ?>
-
-                        <?php if (!empty($quizzes_in_lesson)): ?>
+                        <?php if (!empty($quizzes_in_topic)): ?>
                         <div class="single-topic__info-item">
                             <strong>Quiz:</strong>
-                            <span><?php echo count($quizzes_in_lesson); ?></span>
+                            <span><?php echo count($quizzes_in_topic); ?></span>
                         </div>
                         <?php endif; ?>
 
                         <div class="single-topic__info-item">
-                            <strong>Data Pubblicazione:</strong>
+                            <strong>Data:</strong>
                             <span><?php echo get_the_date('d M Y'); ?></span>
                         </div>
                     </div>
 
-                    <!-- LESSON NAVIGATION WIDGET -->
-                    <?php if (!empty($all_lessons) && count($all_lessons) > 1): ?>
+                    <!-- TOPICS NAVIGATION WIDGET -->
+                    <?php if (!empty($all_topics) && $is_enrolled): ?>
                     <div class="single-topic__widget">
                         <h3 class="single-topic__widget-title">
                             <i data-lucide="list"></i>
-                            Lezioni del Corso
+                            Argomenti della Lezione
                         </h3>
 
-                        <div class="lessons-navigation">
-                            <?php foreach ($all_lessons as $idx => $l): ?>
-                            <a href="<?php echo esc_url(get_permalink($l->ID)); ?>"
-                               class="lessons-navigation__item <?php echo $l->ID === $lesson_id ? 'active' : ''; ?>">
-                                <span class="lessons-navigation__number"><?php echo $idx + 1; ?></span>
-                                <span class="lessons-navigation__title"><?php echo esc_html($l->post_title); ?></span>
+                        <nav class="topics-navigation">
+                            <?php
+                            foreach ($all_topics as $nav_idx => $nav_topic):
+                                $nav_topic_id = $nav_topic->ID;
+                                $is_current = ($nav_topic_id === $topic_id);
+                                $nav_completed = get_user_meta($user_id, '_completed_topic_' . $nav_topic_id, true);
+                            ?>
+                            <a href="<?php echo esc_url(get_permalink($nav_topic_id)); ?>"
+                               class="topics-navigation__item <?php echo $is_current ? 'active' : ''; ?>">
+                                <span class="topics-navigation__number"><?php echo $nav_idx + 1; ?></span>
+                                <span class="topics-navigation__title"><?php echo esc_html($nav_topic->post_title); ?></span>
+                                <?php if ($nav_completed): ?>
+                                <span class="topics-navigation__status">
+                                    <i data-lucide="check"></i>
+                                </span>
+                                <?php endif; ?>
                             </a>
                             <?php endforeach; ?>
-                        </div>
-                    </div>
-                    <?php endif; ?>
-
-                    <!-- LESSON ACTIONS WIDGET -->
-                    <?php if ($is_enrolled): ?>
-                    <div class="single-topic__widget">
-                        <h3 class="single-topic__widget-title">
-                            <i data-lucide="zap"></i>
-                            Azioni
-                        </h3>
-
-                        <?php if (!$is_completed && $total_items === 0): ?>
-                        <button class="btn btn-primary btn-block"
-                                @click="markLessonComplete(<?php echo $lesson_id; ?>, <?php echo $course_id; ?>)"
-                                x-data="lessonComplete()"
-                                :class="{ 'disabled': isLoading }">
-                            <i data-lucide="check"></i>
-                            Segna come Completata
-                        </button>
-                        <?php elseif ($is_completed): ?>
-                        <div class="lesson-completed-badge">
-                            <i data-lucide="award"></i>
-                            <span>Lezione Completata!</span>
-                        </div>
-                        <?php endif; ?>
-
-                        <!-- Navigation Buttons -->
-                        <?php if ($current_lesson_index > 0): ?>
-                        <a href="<?php echo esc_url(get_permalink($all_lessons[$current_lesson_index - 1]->ID)); ?>" class="btn btn-secondary btn-block btn-sm">
-                            <i data-lucide="arrow-left"></i>
-                            Lezione Precedente
-                        </a>
-                        <?php endif; ?>
-
-                        <?php if ($current_lesson_index < count($all_lessons) - 1): ?>
-                        <a href="<?php echo esc_url(get_permalink($all_lessons[$current_lesson_index + 1]->ID)); ?>" class="btn btn-secondary btn-block btn-sm">
-                            <i data-lucide="arrow-right"></i>
-                            Lezione Successiva
-                        </a>
-                        <?php endif; ?>
-
-                        <?php if ($course): ?>
-                        <a href="<?php echo esc_url(get_permalink($course_id)); ?>" class="btn btn-outline btn-block btn-sm">
-                            <i data-lucide="arrow-up"></i>
-                            Torna al Corso
-                        </a>
-                        <?php endif; ?>
+                        </nav>
                     </div>
                     <?php endif; ?>
 
