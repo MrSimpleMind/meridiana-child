@@ -40,7 +40,7 @@ function meridiana_register_learndash_endpoints() {
 	// POST /wp-json/learnDash/v1/user/{id}/courses/{courseId}/reset
 	register_rest_route( 'learnDash/v1', '/user/(?P<user_id>\d+)/courses/(?P<course_id>\d+)/reset', [
 		'methods'             => 'POST',
-		'callback'            => 'meridiana_reset_course_progress',
+		'callback'            => 'meridiana_reset_course_progress_api',
 		'permission_callback' => function( $request ) {
 			$user_id = $request->get_param( 'user_id' );
 			return is_user_logged_in() && ( get_current_user_id() == $user_id || current_user_can( 'manage_options' ) );
@@ -161,7 +161,7 @@ function meridiana_enroll_user_in_course( $request ) {
  * @param WP_REST_Request $request REST request object
  * @return WP_REST_Response
  */
-function meridiana_reset_course_progress( $request ) {
+function meridiana_reset_course_progress_api( $request ) {
 	try {
 		$user_id   = absint( $request->get_param( 'user_id' ) );
 		$course_id = absint( $request->get_param( 'course_id' ) );
