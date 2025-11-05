@@ -71,6 +71,7 @@ $all_course_lessons = array();
 $lesson_index = 0;
 $is_last_lesson = false;
 $next_lesson = null;
+$has_course_quizzes = false;  // FIXED: Controlla se il CORSO ha quiz (non solo slug "quizzo")
 
 if ($course_id) {
     $lessons_query = new WP_Query(array(
@@ -84,6 +85,16 @@ if ($course_id) {
     $all_course_lessons = $lessons_query->posts;
     wp_reset_postdata();
 
+    // Check if course has ANY quizzes
+    $course_quizzes = get_posts(array(
+        'post_type' => 'sfwd-quiz',
+        'posts_per_page' => 1,
+        'meta_key' => 'course_id',
+        'meta_value' => $course_id,
+        'fields' => 'ids',
+    ));
+    $has_course_quizzes = !empty($course_quizzes);
+
     // Find current lesson position
     foreach ($all_course_lessons as $idx => $l) {
         if ($l->ID === $lesson_id) {
@@ -93,10 +104,18 @@ if ($course_id) {
             if (!$is_last_lesson) {
                 $next_lesson = $all_course_lessons[$idx + 1];
             } else {
-                // If last lesson, look for final quiz by slug "quizzo"
-                $final_quiz = get_page_by_path('quizzo', OBJECT, 'sfwd-quiz');
-                if ($final_quiz) {
-                    $next_lesson = $final_quiz;
+                // If last lesson and course has quizzes, look for final quiz by slug "quizzo"
+                if ($has_course_quizzes) {
+                    $final_quiz = get_page_by_path('quizzo', OBJECT, 'sfwd-quiz');
+                    if ($final_quiz) {
+                        $next_lesson = $final_quiz;
+                    } else {
+                        // Se non c'è un quiz con slug "quizzo", rimanda al corso
+                        $next_lesson = get_post($course_id);
+                    }
+                } else {
+                    // Se il corso non ha nessun quiz, rimanda al corso
+                    $next_lesson = get_post($course_id);
                 }
             }
             break;
@@ -340,6 +359,7 @@ if ($total_items > 0) {
                             totalQuizzes: <?php echo $total_items; ?>,
                             completedQuizzes: <?php echo $completed_items; ?>,
                             isLastLesson: <?php echo $is_last_lesson ? 'true' : 'false'; ?>,
+                            hasCourseQuizzes: <?php echo $has_course_quizzes ? 'true' : 'false'; ?>,
                             nextLessonUrl: '<?php echo esc_js($next_lesson ? get_permalink($next_lesson->ID) : get_permalink($course_id)); ?>'
                         })">
 
@@ -546,6 +566,7 @@ document.addEventListener('alpine:init', () => {
         totalQuizzes: initialState.totalQuizzes || 0,
         completedQuizzes: initialState.completedQuizzes || 0,
         isLastLesson: initialState.isLastLesson || false,
+        hasCourseQuizzes: initialState.hasCourseQuizzes || false,  // FIXED: Flag se il CORSO ha quiz
         nextLessonUrl: initialState.nextLessonUrl || '',
         isLoading: false,
         errorMessage: '',
@@ -554,10 +575,15 @@ document.addEventListener('alpine:init', () => {
             if (this.isLoading) {
                 return 'Elaborazione...';
             }
-            if (this.isLastLesson) {
-                return 'Vai al Quiz';
+            // FIXED LOGIC: Se è ultima lezione e il CORSO ha quiz
+            if (this.isLastLesson && this.hasCourseQuizzes) {
+                return 'Vai al Quiz Finale';
             }
-            return 'Completa Lezione';
+            // Se è ultima lezione ma il CORSO NON ha quiz
+            if (this.isLastLesson && !this.hasCourseQuizzes) {
+                return 'Completa Corso';
+            }
+            return 'Prossima Lezione';
         },
 
         async handleClick() {

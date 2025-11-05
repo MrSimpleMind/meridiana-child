@@ -576,12 +576,22 @@ document.addEventListener('alpine:init', () => {
                 formData.set('post_id', this.selectedPostId || 0);
                 formData.set('nonce', meridiana.nonce);
 
+                // DEBUG: Log what we're sending
+                console.log('[Gestore] Submitting form:', {
+                    postType: this.selectedPostType,
+                    formDataKeys: Array.from(formData.keys()),
+                    nonce: meridiana.nonce,
+                    ajaxurl: meridiana.ajaxurl
+                });
+
                 const response = await fetch(meridiana.ajaxurl, {
                     method: 'POST',
                     body: formData,
                 });
 
                 const result = await response.json();
+                console.log('[Gestore] Response:', result);
+
                 if (result.success) {
                     const selectedType = this.selectedPostType;
                     let nextTab = this.allowedTabs.includes(selectedType) ? selectedType : this.activeTab;

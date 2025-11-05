@@ -127,7 +127,7 @@ function meridiana_enroll_user( $user_id, $course_id ) {
 	}
 
 	// Enroll using LearnDash native function
-	$enrollment = ld_update_user_course_access( $user_id, $course_id, false );
+	$enrollment = ld_update_course_access( $user_id, $course_id, false );
 
 	if ( ! $enrollment ) {
 		return new WP_Error( 'enrollment_failed', 'Failed to enroll user in course' );
@@ -152,7 +152,7 @@ function meridiana_unenroll_user( $user_id, $course_id ) {
 	}
 
 	// Unenroll using LearnDash native function (third param true = remove)
-	$unenrollment = ld_update_user_course_access( $user_id, $course_id, true );
+	$unenrollment = ld_update_course_access( $user_id, $course_id, true );
 
 	if ( ! $unenrollment ) {
 		return new WP_Error( 'unenrollment_failed', 'Failed to unenroll user from course' );

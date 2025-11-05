@@ -75,17 +75,27 @@ function meridiana_ajax_load_form() {
 add_action('wp_ajax_gestore_save_form', 'meridiana_ajax_save_form');
 
 function meridiana_ajax_save_form() {
+    // DEBUG logging
+    error_log('[Gestore AJAX] Save form called');
+    error_log('[Gestore AJAX] POST data keys: ' . implode(', ', array_keys($_POST)));
+    error_log('[Gestore AJAX] Current user: ' . get_current_user_id());
+    $current_user = wp_get_current_user();
+    error_log('[Gestore AJAX] User capabilities: ' . json_encode($current_user->get_role_list() ?? [], JSON_PRETTY_PRINT));
+
     // Security: Nonce check
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
+        error_log('[Gestore AJAX] Nonce verification failed');
         wp_send_json_error(['message' => 'Nonce non valido'], 403);
     }
 
     // Security: Capability check
     if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+        error_log('[Gestore AJAX] Insufficient permissions');
         wp_send_json_error(['message' => 'Permessi insufficienti'], 403);
     }
 
     $post_type = isset($_POST['post_type']) ? sanitize_text_field($_POST['post_type']) : '';
+    error_log('[Gestore AJAX] Post type: ' . $post_type);
 
     // Load functions if not already loaded
     if (!function_exists('meridiana_ajax_save_documento')) {
@@ -103,6 +113,7 @@ function meridiana_ajax_save_form() {
     } elseif ($post_type === 'salute') {
         meridiana_ajax_save_salute();
     } else {
+        error_log('[Gestore AJAX] Invalid post type: ' . $post_type);
         wp_send_json_error(['message' => 'Tipo form non valido'], 400);
     }
 }
