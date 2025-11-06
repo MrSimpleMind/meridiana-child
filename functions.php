@@ -120,8 +120,7 @@ function meridiana_enqueue_scripts() {
     // Alpine inizializza DOPO che gestore-dashboard.js è caricato
     
     $js_file = MERIDIANA_CHILD_DIR . '/assets/js/dist/main.min.js';
-    $js_version = file_exists($js_file) ? filemtime($js_file) : MERIDIANA_CHILD_VERSION;
-    $js_version = time();
+    $js_version = file_exists($js_file) ? md5_file($js_file) : MERIDIANA_CHILD_VERSION;
     
     wp_enqueue_script(
         'meridiana-child-scripts',
@@ -177,21 +176,15 @@ function meridiana_enqueue_scripts() {
 
     // Enqueue Analitiche scripts only on the Analitiche page
     if (meridiana_is_analytics_page()) {
-        // Enqueue Chart.js library
-        wp_enqueue_script(
-            'chartjs',
-            'https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js',
-            array(),
-            '4.4.1',
-            true
-        );
+        // Enqueue Analitiche custom script (Chart.js is now bundled via Webpack)
+        $analitiche_file = MERIDIANA_CHILD_DIR . '/assets/js/dist/analitiche.min.js';
+        $analitiche_version = file_exists($analitiche_file) ? md5_file($analitiche_file) : MERIDIANA_CHILD_VERSION;
 
-        // Enqueue Analitiche custom script
         wp_enqueue_script(
             'meridiana-analitiche-scripts',
-            MERIDIANA_CHILD_URI . '/assets/js/dist/analitiche.min.js', // Will be compiled by Webpack
-            array('chartjs'), // Depends on Chart.js
-            MERIDIANA_CHILD_VERSION, // Use theme version for cache busting
+            MERIDIANA_CHILD_URI . '/assets/js/dist/analitiche.min.js',
+            array(), // No dependencies - Chart.js is bundled
+            $analitiche_version, // Use file hash for cache busting
             true
         );
 
