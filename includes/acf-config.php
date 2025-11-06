@@ -221,7 +221,7 @@ function validate_pdf_upload($errors, $file, $attachment) {
     
     return $errors;
 }
-// add_filter('acf/validate_attachment', 'validate_pdf_upload', 10, 3);
+add_filter('acf/validate_attachment', 'validate_pdf_upload', 10, 3);
 
 /**
  * Esempio: Popolare select dinamicamente con taxonomy

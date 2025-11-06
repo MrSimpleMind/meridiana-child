@@ -73,11 +73,12 @@ function meridiana_save_user_avatar_robust($user_id, $avatar_filename) {
         );
     }
     
-    // 6. Verifica che sia un'immagine valida
-    $mime = mime_content_type($avatar_path);
+    // 6. Verifica che sia un'immagine valida usando wp_check_filetype()
+    $filetype = wp_check_filetype($avatar_path);
+    $mime = $filetype['type'];
     $allowed_mimes = array('image/jpeg', 'image/png', 'image/gif');
-    
-    if (!in_array($mime, $allowed_mimes)) {
+
+    if (!$mime || !in_array($mime, $allowed_mimes)) {
         error_log('[Avatar Persistence] ✗ MIME type non valido: ' . $mime);
         return array(
             'success' => false,
@@ -196,12 +197,19 @@ function meridiana_display_user_avatar_persistent($user_id = null, $size = 'medi
  * Parameters: avatar (filename), nonce
  */
 function handle_save_user_avatar_ajax() {
+    // 0. Rate limiting (max 30 richieste all'ora)
+    $rate_limit_check = meridiana_check_ajax_rate_limit('save_user_avatar', 30, HOUR_IN_SECONDS);
+    if (is_wp_error($rate_limit_check)) {
+        wp_send_json_error($rate_limit_check->get_error_message());
+        return;
+    }
+
     // 1. Verifica nonce
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'meridiana_avatar_save')) {
         wp_send_json_error('Nonce non valido. Ricarica la pagina e riprova.');
         return;
     }
-    
+
     // 2. Verifica utente loggato
     if (!is_user_logged_in()) {
         wp_send_json_error('Devi essere loggato per cambiare avatar.');
@@ -362,26 +370,39 @@ add_filter('wp_privacy_personal_data_exporters', function($exporters) {
 
 function export_user_avatar_for_gdpr($email_address, $page = 1) {
     $user = get_user_by('email', $email_address);
-    
+
     if (!$user) {
         return array(
             'data' => array(),
             'done' => true
         );
     }
-    
+
     $avatar = meridiana_get_user_avatar_persistent($user->ID);
-    
-    $data = array();
+
+    $data_to_export = array();
+    $item_data = array();
+
     if ($avatar) {
-        $data[] = array(
-            'name' => 'Avatar Profilo',
-            'value' => $avatar['label'] . ' (' . $avatar['filename'] . ')'
+        $item_data[] = array(
+            'name' => __('Avatar Filename', 'meridiana-child'),
+            'value' => $avatar['filename']
+        );
+        $item_data[] = array(
+            'name' => __('Avatar Label', 'meridiana-child'),
+            'value' => $avatar['label']
+        );
+
+        $data_to_export[] = array(
+            'group_id' => 'meridiana-avatar',
+            'group_label' => __('Avatar Profilo', 'meridiana-child'),
+            'item_id' => 'avatar-' . $user->ID,
+            'data' => $item_data
         );
     }
-    
+
     return array(
-        'data' => $data,
+        'data' => $data_to_export,
         'done' => true
     );
 }

@@ -1,3 +1,6 @@
+// Import DOMPurify for XSS protection
+import DOMPurify from 'dompurify';
+
 const ANALYTICS_CHART_COLORS = [
     "rgba(6, 182, 212, 0.8)",
     "rgba(16, 185, 129, 0.8)",
@@ -308,7 +311,7 @@ document.addEventListener("alpine:init", () => {
             console.log("[renderProtocolGrid] Protocols data:", protocols);
 
             if (!protocols || protocols.length === 0) {
-                container.innerHTML = '<div class="analytics-empty"><p>Nessun protocollo pubblicato nel sistema.</p></div>';
+                container.innerHTML = DOMPurify.sanitize('<div class="analytics-empty"><p>Nessun protocollo pubblicato nel sistema.</p></div>');
                 return;
             }
 
@@ -515,7 +518,7 @@ document.addEventListener("alpine:init", () => {
                 </div>
             `;
 
-            container.innerHTML = html;
+            container.innerHTML = DOMPurify.sanitize(html);
             console.log("[renderProtocolGrid] COMPLETE - Rendered " + protocols.length + " protocols");
 
             // Sincronizza scroll verticale tra tabella fissa e scrollabile
@@ -650,7 +653,7 @@ document.addEventListener("alpine:init", () => {
                 })
                 .catch((error) => {
                     this.globalStatsError = typeof error === "string" ? error : "Errore nel caricamento delle statistiche.";
-                    target.innerHTML = '<div class="notification notification-error">' + this.globalStatsError + "</div>";
+                    target.innerHTML = DOMPurify.sanitize('<div class="notification notification-error">' + this.globalStatsError + "</div>");
                 });
         },
 
@@ -678,7 +681,7 @@ document.addEventListener("alpine:init", () => {
                 })
                 .join("");
 
-            target.innerHTML = markup;
+            target.innerHTML = DOMPurify.sanitize(markup);
         },
 
         // -------------------- Breakdown Utenti per Profilo --------------------
@@ -819,7 +822,7 @@ document.addEventListener("alpine:init", () => {
 
         renderDistributionChart(canvas, dataset) {
             if (!dataset.length) {
-                canvas.parentElement.innerHTML = '<p class="analytics-empty">Nessuna visualizzazione registrata finora.</p>';
+                canvas.parentElement.innerHTML = DOMPurify.sanitize('<p class="analytics-empty">Nessuna visualizzazione registrata finora.</p>');
                 return;
             }
 
