@@ -345,9 +345,48 @@ function meridiana_rate_limit_rest_api($result, $server, $request) {
 // NOTA: Abilitare se noti abusi API
 
 /**
+ * Rate Limiting per AJAX endpoints
+ * Previene abusi e attacchi DoS su endpoint AJAX sensibili
+ *
+ * @param string $action Action name (es. 'gestore_save_form')
+ * @param int $max_requests Numero massimo richieste
+ * @param int $period Periodo in secondi (default: 1 ora)
+ * @return bool|WP_Error True se permesso, WP_Error se rate limit superato
+ */
+function meridiana_check_ajax_rate_limit($action, $max_requests = 60, $period = HOUR_IN_SECONDS) {
+    $user_id = get_current_user_id();
+    $ip = $_SERVER['REMOTE_ADDR'] ?? 'unknown';
+    $key = 'ajax_rate_limit_' . $action . '_' . ($user_id ?: md5($ip));
+
+    $count = get_transient($key);
+
+    if ($count === false) {
+        set_transient($key, 1, $period);
+        return true;
+    }
+
+    if ($count >= $max_requests) {
+        $remaining_time = get_option('_transient_timeout_' . $key) - time();
+        $minutes = ceil($remaining_time / 60);
+
+        return new WP_Error(
+            'ajax_rate_limit',
+            sprintf(
+                __('Troppe richieste. Riprova tra %d minuti.', 'meridiana-child'),
+                $minutes
+            ),
+            array('status' => 429)
+        );
+    }
+
+    set_transient($key, $count + 1, $period);
+    return true;
+}
+
+/**
  * Verifica permessi prima di modifiche critiche
  * Helper per verificare capabilities in operazioni sensibili
- * 
+ *
  * @param string $capability Capability richiesta
  * @param string $error_message Messaggio errore
  * @return bool|WP_Error

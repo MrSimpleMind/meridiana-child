@@ -3,6 +3,8 @@
  * FIX: Aggiunto Step 1 scelta CPT, form rendering corretto, media picker fix
  */
 
+import DOMPurify from 'dompurify';
+
 // ============================================
 // HELPER: Media Picker per File Field
 // ============================================
@@ -49,7 +51,7 @@ window.meridiana_open_media_picker = function(trigger) {
         if (previewElement) {
             if (mediaType === 'image') {
                 const previewUrl = (attachment.sizes && (attachment.sizes.medium?.url || attachment.sizes.thumbnail?.url)) || attachment.icon || attachment.url;
-                previewElement.innerHTML = previewUrl ? `<img src="${previewUrl}" alt="">` : '';
+                previewElement.innerHTML = DOMPurify.sanitize(previewUrl ? `<img src="${previewUrl}" alt="">` : '');
             } else {
                 previewElement.textContent = attachment.filename || attachment.title || attachment.name || '';
             }
@@ -206,7 +208,7 @@ document.addEventListener('alpine:init', () => {
                                     fileName.textContent = placeholder || fileName.textContent;
                                 }
                                 if (preview) {
-                                    preview.innerHTML = '';
+                                    preview.innerHTML = DOMPurify.sanitize('');
                                 }
                                 toggleClear();
                             });
@@ -367,7 +369,7 @@ document.addEventListener('alpine:init', () => {
                         const nextIndex = rowsContainer.querySelectorAll('[data-repeater-row]').length;
                         const markup = templateNode.innerHTML.replace(/__index__/g, nextIndex);
                         const fragmentWrapper = document.createElement('div');
-                        fragmentWrapper.innerHTML = markup.trim();
+                        fragmentWrapper.innerHTML = DOMPurify.sanitize(markup.trim());
                         const newRow = fragmentWrapper.firstElementChild;
                         if (!newRow) {
                             return;

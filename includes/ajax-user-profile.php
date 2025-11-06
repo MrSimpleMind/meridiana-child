@@ -55,12 +55,19 @@ function handle_update_user_avatar_only() {
 add_action('wp_ajax_update_user_profile', 'handle_update_user_profile');
 
 function handle_update_user_profile() {
+    // Rate limiting (max 20 richieste all'ora)
+    $rate_limit_check = meridiana_check_ajax_rate_limit('update_user_profile', 20, HOUR_IN_SECONDS);
+    if (is_wp_error($rate_limit_check)) {
+        wp_send_json_error($rate_limit_check->get_error_message());
+        return;
+    }
+
     // Verifica nonce
     if (!isset($_POST['profile_nonce']) || !wp_verify_nonce($_POST['profile_nonce'], 'update_user_profile')) {
         wp_send_json_error('Nonce non valido. Ricarica la pagina e riprova.');
         return;
     }
-    
+
     // Verifica utente loggato
     if (!is_user_logged_in()) {
         wp_send_json_error('Devi essere loggato per aggiornare il profilo.');

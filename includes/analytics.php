@@ -18,9 +18,15 @@ function meridiana_create_analytics_table() {
     
     $table_name = $wpdb->prefix . 'document_views';
     $charset_collate = $wpdb->get_charset_collate();
-    
-    // Verifica se esiste già
-    if ($wpdb->get_var("SHOW TABLES LIKE '$table_name'") === $table_name) {
+
+    // Verifica se esiste già usando INFORMATION_SCHEMA (più sicuro)
+    $table_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s",
+        $table_name
+    ));
+
+    if ($table_exists) {
         return; // Già esiste
     }
     
@@ -47,30 +53,81 @@ function meridiana_create_analytics_table() {
     dbDelta($sql);
 
     // Aggiungi la colonna user_profile se non esiste (per compatibilità con versioni precedenti)
-    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'user_profile'") === null) {
-        $wpdb->query("ALTER TABLE $table_name ADD COLUMN user_profile VARCHAR(100) DEFAULT NULL AFTER document_type");
-        $wpdb->query("ALTER TABLE $table_name ADD INDEX profile_idx (user_profile)");
+    $column_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+        $table_name,
+        'user_profile'
+    ));
+    if (!$column_exists) {
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD COLUMN user_profile VARCHAR(100) DEFAULT NULL AFTER document_type",
+            $table_name
+        ));
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD INDEX profile_idx (user_profile)",
+            $table_name
+        ));
     }
 
     // Aggiungi la colonna user_udo se non esiste
-    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'user_udo'") === null) {
-        $wpdb->query("ALTER TABLE $table_name ADD COLUMN user_udo VARCHAR(100) DEFAULT NULL AFTER user_profile");
-        $wpdb->query("ALTER TABLE $table_name ADD INDEX udo_idx (user_udo)");
+    $column_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+        $table_name,
+        'user_udo'
+    ));
+    if (!$column_exists) {
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD COLUMN user_udo VARCHAR(100) DEFAULT NULL AFTER user_profile",
+            $table_name
+        ));
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD INDEX udo_idx (user_udo)",
+            $table_name
+        ));
     }
 
     // Aggiungi la colonna document_version se non esiste
-    if ($wpdb->get_var("SHOW COLUMNS FROM $table_name LIKE 'document_version'") === null) {
-        $wpdb->query("ALTER TABLE $table_name ADD COLUMN document_version DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER document_type");
+    $column_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND COLUMN_NAME = %s",
+        $table_name,
+        'document_version'
+    ));
+    if (!$column_exists) {
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD COLUMN document_version DATETIME NOT NULL DEFAULT '0000-00-00 00:00:00' AFTER document_type",
+            $table_name
+        ));
     }
 
     // Rimuovi il vecchio indice user_doc_idx se esiste
-    if ($wpdb->get_var("SHOW INDEX FROM $table_name WHERE Key_name = 'user_doc_idx'") !== null) {
-        $wpdb->query("ALTER TABLE $table_name DROP INDEX user_doc_idx");
+    $index_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND INDEX_NAME = %s",
+        $table_name,
+        'user_doc_idx'
+    ));
+    if ($index_exists) {
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i DROP INDEX user_doc_idx",
+            $table_name
+        ));
     }
 
     // Aggiungi l'indice UNIQUE unique_view_idx se non esiste
-    if ($wpdb->get_var("SHOW INDEX FROM $table_name WHERE Key_name = 'unique_view_idx'") === null) {
-        $wpdb->query("ALTER TABLE $table_name ADD UNIQUE KEY unique_view_idx (user_id, document_id, document_version)");
+    $index_exists = $wpdb->get_var($wpdb->prepare(
+        "SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
+         WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = %s AND INDEX_NAME = %s",
+        $table_name,
+        'unique_view_idx'
+    ));
+    if (!$index_exists) {
+        $wpdb->query($wpdb->prepare(
+            "ALTER TABLE %i ADD UNIQUE KEY unique_view_idx (user_id, document_id, document_version)",
+            $table_name
+        ));
     }
 }
 
@@ -104,16 +161,31 @@ function meridiana_get_stats_utenti() {
         'number' => -1,
         'fields' => 'ID',
     ));
-    
-    foreach ($users as $user_id) {
-        $stato = get_field('stato_utente', 'user_' . $user_id);
-        
-        if ($stato === 'attivo') {
-            $totals['attivi']++;
-        } elseif ($stato === 'sospeso') {
-            $totals['sospesi']++;
-        } elseif ($stato === 'licenziato') {
-            $totals['licenziati']++;
+
+    // Ottimizzazione: Fetch all user meta in una singola query per evitare N+1
+    global $wpdb;
+    $user_ids = array_map('intval', $users);
+
+    if (!empty($user_ids)) {
+        $user_ids_str = implode(',', $user_ids);
+        $user_stati = $wpdb->get_results($wpdb->prepare(
+            "SELECT user_id, meta_value
+             FROM {$wpdb->usermeta}
+             WHERE meta_key = %s
+               AND user_id IN ($user_ids_str)",
+            'stato_utente'
+        ), OBJECT_K);
+
+        foreach ($users as $user_id) {
+            $stato = isset($user_stati[$user_id]) ? $user_stati[$user_id]->meta_value : '';
+
+            if ($stato === 'attivo') {
+                $totals['attivi']++;
+            } elseif ($stato === 'sospeso') {
+                $totals['sospesi']++;
+            } elseif ($stato === 'licenziato') {
+                $totals['licenziati']++;
+            }
         }
     }
     
@@ -158,11 +230,26 @@ function meridiana_get_stats_protocolli_ats() {
     
     $protocolli = get_posts($args);
     $ats_count = 0;
-    
-    foreach ($protocolli as $post_id) {
-        $is_ats = get_field('pianificazione_ats', $post_id);
-        if ($is_ats) {
-            $ats_count++;
+
+    // Ottimizzazione: Fetch all post meta in una singola query per evitare N+1
+    if (!empty($protocolli)) {
+        global $wpdb;
+        $post_ids = array_map('intval', $protocolli);
+        $post_ids_str = implode(',', $post_ids);
+
+        $ats_values = $wpdb->get_results($wpdb->prepare(
+            "SELECT post_id, meta_value
+             FROM {$wpdb->postmeta}
+             WHERE meta_key = %s
+               AND post_id IN ($post_ids_str)",
+            'pianificazione_ats'
+        ), OBJECT_K);
+
+        foreach ($protocolli as $post_id) {
+            $is_ats = isset($ats_values[$post_id]) ? $ats_values[$post_id]->meta_value : false;
+            if ($is_ats) {
+                $ats_count++;
+            }
         }
     }
     
@@ -184,25 +271,33 @@ function meridiana_get_document_views($document_id, $args = array()) {
     $args = wp_parse_args($args, $defaults);
     $table = $wpdb->prefix . 'document_views';
     
-    if ($args['unique']) {
-        $sql = "SELECT COUNT(DISTINCT user_id, document_version) as count 
-                FROM $table 
-                WHERE document_id = %d";
-    } else {
-        $sql = "SELECT COUNT(*) as count 
-                FROM $table 
-                WHERE document_id = %d";
-    }
-    
+    // Build query with proper parameter binding
+    $where_conditions = array('document_id = %d');
+    $where_values = array($document_id);
+
     if ($args['date_from']) {
-        $sql .= $wpdb->prepare(" AND view_timestamp >= %s", $args['date_from']);
+        $where_conditions[] = 'view_timestamp >= %s';
+        $where_values[] = $args['date_from'];
     }
-    
+
     if ($args['date_to']) {
-        $sql .= $wpdb->prepare(" AND view_timestamp <= %s", $args['date_to']);
+        $where_conditions[] = 'view_timestamp <= %s';
+        $where_values[] = $args['date_to'];
     }
-    
-    $result = $wpdb->get_var($wpdb->prepare($sql, $document_id));
+
+    $where_clause = implode(' AND ', $where_conditions);
+
+    if ($args['unique']) {
+        $sql = "SELECT COUNT(DISTINCT user_id, document_version) as count
+                FROM {$wpdb->prefix}document_views
+                WHERE {$where_clause}";
+    } else {
+        $sql = "SELECT COUNT(*) as count
+                FROM {$wpdb->prefix}document_views
+                WHERE {$where_clause}";
+    }
+
+    $result = $wpdb->get_var($wpdb->prepare($sql, ...$where_values));
     return intval($result);
 }
 
@@ -285,14 +380,14 @@ function meridiana_get_users_who_not_viewed($document_id) {
         return array();
     }
     
-    // Get user details with user_profile
-    $placeholders = implode(',', array_map('intval', $not_viewed));
+    // Get user details with user_profile - use proper prepare with placeholders
+    $placeholders = implode(',', array_fill(0, count($not_viewed), '%d'));
     $sql = "SELECT u.ID, u.display_name, u.user_email, um.meta_value as user_profile
             FROM {$wpdb->users} u
             LEFT JOIN {$wpdb->usermeta} um ON u.ID = um.user_id AND um.meta_key = 'profilo_professionale'
             WHERE u.ID IN ($placeholders)";
 
-    return $wpdb->get_results($sql);
+    return $wpdb->get_results($wpdb->prepare($sql, ...$not_viewed));
 }
 
 /**
@@ -300,16 +395,15 @@ function meridiana_get_users_who_not_viewed($document_id) {
  */
 function meridiana_get_views_per_document_type() {
     global $wpdb;
-    $table = $wpdb->prefix . 'document_views';
-    
-    $sql = "SELECT 
+
+    $sql = "SELECT
                 document_type,
                 COUNT(*) as view_count,
                 COUNT(DISTINCT user_id, document_version) as unique_users
-            FROM $table
+            FROM {$wpdb->prefix}document_views
             GROUP BY document_type
             ORDER BY view_count DESC";
-    
+
     return $wpdb->get_results($sql);
 }
 
@@ -415,15 +509,15 @@ function meridiana_search_documents($query, $args = array()) {
         'orderby' => 'modified',
         'order' => 'DESC',
         'no_found_rows' => true,
-        'fields' => 'ids',
+        // Ottimizzazione: Rimosso 'fields' => 'ids' per evitare N+1 query con get_post()
     );
 
     $results = array();
     $documents = new WP_Query($search_args);
 
     if ($documents->have_posts()) {
-        foreach ($documents->posts as $post_id) {
-            $post = get_post($post_id);
+        foreach ($documents->posts as $post) {
+            // Ottimizzazione: $post è già l'oggetto completo, non serve get_post()
             if (!$post) {
                 continue;
             }

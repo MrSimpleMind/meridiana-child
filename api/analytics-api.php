@@ -107,13 +107,15 @@ function api_get_protocol_grid($request) {
     $table_name = $wpdb->prefix . 'document_views';
 
     // 1. Query: Prendi TUTTI i protocolli pubblicati (ordinati per titolo)
-    $all_protocols = $wpdb->get_results("
-        SELECT ID, post_title
-        FROM {$wpdb->posts}
-        WHERE post_type = 'protocollo'
-            AND post_status = 'publish'
-        ORDER BY post_title ASC
-    ");
+    $all_protocols = $wpdb->get_results($wpdb->prepare(
+        "SELECT ID, post_title
+         FROM {$wpdb->posts}
+         WHERE post_type = %s
+           AND post_status = %s
+         ORDER BY post_title ASC",
+        'protocollo',
+        'publish'
+    ));
 
     if (!is_array($all_protocols)) {
         $all_protocols = array();
@@ -159,16 +161,17 @@ function api_get_protocol_grid($request) {
     $all_profiles = $all_profiles_keys;
 
     // Query: Conta quanti utenti hanno assegnato ogni profilo (anche 0)
-    $profile_counts = $wpdb->get_results("
-        SELECT
+    $profile_counts = $wpdb->get_results($wpdb->prepare(
+        "SELECT
             meta_value as profile_name,
             COUNT(DISTINCT user_id) as total_users
-        FROM {$wpdb->usermeta}
-        WHERE meta_key = 'profilo_professionale'
-            AND meta_value IS NOT NULL
-            AND meta_value != ''
-        GROUP BY meta_value
-    ");
+         FROM {$wpdb->usermeta}
+         WHERE meta_key = %s
+           AND meta_value IS NOT NULL
+           AND meta_value != ''
+         GROUP BY meta_value",
+        'profilo_professionale'
+    ));
 
     // Crea una mappa veloce dei conteggi effettivi
     $profile_counts_map = array();
@@ -188,15 +191,16 @@ function api_get_protocol_grid($request) {
     // Ogni utente una sola volta per documento (indipendentemente da quante volte ha visto)
     // NOTA: Non filtriamo per versione attuale perché potrebbe escludere visualizzazioni
     // se il documento è stato modificato dopo la visualizzazione
-    $views_users = $wpdb->get_results("
-        SELECT DISTINCT
+    $views_users = $wpdb->get_results($wpdb->prepare(
+        "SELECT DISTINCT
             dv.document_id,
             dv.user_id
-        FROM {$table_name} dv
-        INNER JOIN {$wpdb->posts} p ON dv.document_id = p.ID
-        WHERE dv.document_type = 'protocollo'
-            AND dv.document_id IS NOT NULL
-    ");
+         FROM {$table_name} dv
+         INNER JOIN {$wpdb->posts} p ON dv.document_id = p.ID
+         WHERE dv.document_type = %s
+           AND dv.document_id IS NOT NULL",
+        'protocollo'
+    ));
 
     error_log('[api_get_protocol_grid] Views found: ' . ($views_users ? count($views_users) : 0));
 
