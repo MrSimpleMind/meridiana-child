@@ -36,8 +36,12 @@ export default (documentId) => ({
             return;
         }
 
+        // Use REST URL from localized script (works across all environments)
+        const restUrl = window.meridiana?.resturl || '/wp-json/piattaforma/v1/';
+        const endpoint = restUrl + 'track-view';
+
         try {
-            await fetch('/wp-json/piattaforma/v1/track-view', {
+            await fetch(endpoint, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

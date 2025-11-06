@@ -155,6 +155,7 @@ document.addEventListener("alpine:init", () => {
         activeTab: "overview",
         ajaxUrl: "",
         nonce: "",
+        restUrl: "",
         gridLoading: false,
         gridError: "",
         protocolGridData: null,
@@ -237,9 +238,11 @@ document.addEventListener("alpine:init", () => {
             // Leggi gli attributi data-* direttamente da this.$el (elemento con x-data)
             this.ajaxUrl = this.$el?.dataset?.ajaxUrl || "";
             this.nonce = this.$el?.dataset?.nonce || "";
+            this.restUrl = window.meridiana?.resturl || "/wp-json/piattaforma/v1/";
 
             console.log("[analyticsDashboard.init] ajaxUrl:", this.ajaxUrl);
             console.log("[analyticsDashboard.init] nonce:", this.nonce);
+            console.log("[analyticsDashboard.init] restUrl:", this.restUrl);
 
             this.fetchGlobalStats();
             this.fetchUsersBreakdown();
@@ -270,7 +273,9 @@ document.addEventListener("alpine:init", () => {
 
             console.log("[fetchProtocolGrid] headers:", headers);
 
-            fetch('/wp-json/piattaforma/v1/analytics/protocol-grid', {
+            const endpoint = this.restUrl + 'analytics/protocol-grid';
+
+            fetch(endpoint, {
                 method: 'GET',
                 headers: headers
             })
