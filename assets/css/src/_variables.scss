@@ -1,11 +1,17 @@
 /**
  * Variables - Design System
  * Piattaforma Formazione Cooperativa La Meridiana
- * 
+ *
  * Tutti i colori, spacing, tipografia e altre variabili centralizzate.
  * IMPORTANTE: Usa sempre le CSS custom properties (var(--nome)) nel codice,
  * non i valori SCSS diretti, per permettere override runtime se necessario.
  */
+
+// ========================================
+// PERCORSI RISORSE
+// ========================================
+
+$child-uri: '/wp-content/themes/meridiana-child';  // URL child theme per immagini, font, etc.
 
 // ========================================
 // COLORI BRAND

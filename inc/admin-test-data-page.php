@@ -113,6 +113,7 @@ function meridiana_render_test_data_page() {
                 echo "\n  • Posts/CPT: " . $result['posts_deleted'];
                 echo "\n  • Comments: " . $result['comments_deleted'];
                 echo "\n  • Document Views: " . $result['views_deleted'];
+                echo "\n  • Media Files: " . $result['attachments_deleted'];
             } else {
                 echo "\n\n✗ Erase FAILED with errors";
             }
@@ -158,6 +159,7 @@ function meridiana_render_test_data_page() {
 
                         <p style="background: #e8f5e9; padding: 10px; border-radius: 3px; font-size: 13px;">
                             🔄 Auto-cleanup: Running this again deletes old test data and replaces it.
+                            <br><strong>Includes:</strong> Test media files (PDFs, images with "test-" prefix) are deleted and regenerated
                         </p>
 
                         <button type="submit" name="meridiana_action" value="generate" class="button button-primary button-large"
@@ -181,6 +183,7 @@ function meridiana_render_test_data_page() {
 
                         <p style="background: #ffcccc; padding: 10px; border-radius: 3px; font-size: 13px; color: #c62828;">
                             ✋ Use this to start completely fresh. Admin accounts and Pages are always preserved.
+                            <br><strong>Includes:</strong> ALL files in media bay are deleted
                         </p>
 
                         <button type="submit" name="meridiana_action" value="erase_all" class="button button-secondary" style="background-color: #d32f2f; color: white; border-color: #b71c1c;"
@@ -433,6 +436,7 @@ class MeridianaTestDataGenerator {
 
     /**
      * Erase ALL data except admin accounts
+     * INCLUDES: Deleting all media files (PDFs, images, etc.)
      */
     public function erase_all_data() {
         global $wpdb;
@@ -481,6 +485,11 @@ class MeridianaTestDataGenerator {
         $views_deleted = $wpdb->query("DELETE FROM {$wpdb->prefix}document_views");
         echo "  ✓ Eliminate $views_deleted visualizzazioni\n\n";
 
+        // Delete ALL media files (attachments, PDFs, images)
+        echo "== Eliminazione Media Bay ==\n";
+        $attachments_deleted = $this->delete_all_media_files();
+        echo "  ✓ Eliminati $attachments_deleted file dalla media bay\n\n";
+
         $elapsed = round(microtime(true) - $start_time, 2);
 
         echo "========================================\n";
@@ -494,12 +503,14 @@ class MeridianaTestDataGenerator {
             'posts_deleted' => $posts_deleted,
             'comments_deleted' => $comments_deleted,
             'views_deleted' => $views_deleted,
+            'attachments_deleted' => $attachments_deleted,
         ];
     }
 
     /**
      * Clean up old test data before generating new data
      * IMPORTANT: Only deletes test data (test_user_* users and posts with "Test" in title)
+     * INCLUDES: Deletes media files generated for test data
      * NEVER touches pages or real content!
      */
     private function cleanup_old_data() {
@@ -509,6 +520,7 @@ class MeridianaTestDataGenerator {
         $cleaned_users = 0;
         $deleted_posts = 0;
         $deleted_views = 0;
+        $deleted_attachments = 0;
 
         // Delete ONLY test users (test_user_*)
         $users = get_users(['search' => 'test_user_', 'number' => -1]);
@@ -520,6 +532,15 @@ class MeridianaTestDataGenerator {
             echo "  ✓ Eliminati $cleaned_users utenti test (test_user_*)\n";
         } else {
             echo "  ℹ  Nessun utente test da eliminare\n";
+        }
+
+        // Delete ONLY test media files (attachments with "test-" in filename)
+        echo "== Pulizia Media Test Precedenti ==\n";
+        $deleted_attachments = $this->delete_test_media_files();
+        if ($deleted_attachments > 0) {
+            echo "  ✓ Eliminati $deleted_attachments file test dalla media bay\n";
+        } else {
+            echo "  ℹ  Nessun file test da eliminare\n";
         }
 
         // Delete ONLY test posts (those with "Test" in title, from test CPT only)
@@ -1643,6 +1664,82 @@ class MeridianaTestDataGenerator {
         echo "✓ Document Views: $inserted view inserite\n";
         echo "  (Distribuzione moderata: 15% power users, 60% average, 20% passive, 5% inactive)\n\n";
         return $inserted;
+    }
+
+    // =========================================================
+    // MEDIA MANAGEMENT HELPER FUNCTIONS
+    // =========================================================
+
+    /**
+     * Delete ALL media files from uploads directory
+     * Used by erase_all_data() to completely wipe the media bay
+     *
+     * @return int Number of attachments deleted
+     */
+    private function delete_all_media_files() {
+        global $wpdb;
+
+        // Get ALL attachments
+        $attachments = get_posts([
+            'post_type'      => 'attachment',
+            'numberposts'    => -1,
+            'post_status'    => 'any',
+            'fields'         => 'ids',
+        ]);
+
+        $deleted_count = 0;
+
+        foreach ($attachments as $attachment_id) {
+            // Delete physical file first
+            $file_path = get_attached_file($attachment_id);
+            if ($file_path && file_exists($file_path)) {
+                @unlink($file_path);  // Suppress errors if file doesn't exist
+            }
+
+            // Delete attachment post
+            wp_delete_attachment($attachment_id, true);
+            $deleted_count++;
+        }
+
+        return $deleted_count;
+    }
+
+    /**
+     * Delete ONLY test media files (those with "test-" in filename)
+     * Used by cleanup_old_data() to clean up test data while preserving real files
+     *
+     * @return int Number of test attachments deleted
+     */
+    private function delete_test_media_files() {
+        global $wpdb;
+
+        // Get attachments with "test-" in the filename
+        $attachments = get_posts([
+            'post_type'      => 'attachment',
+            'numberposts'    => -1,
+            'post_status'    => 'any',
+            'fields'         => 'ids',
+        ]);
+
+        $deleted_count = 0;
+
+        foreach ($attachments as $attachment_id) {
+            $file_path = get_attached_file($attachment_id);
+
+            // Only delete if filename contains "test-"
+            if ($file_path && strpos(basename($file_path), 'test-') !== false) {
+                // Delete physical file first
+                if (file_exists($file_path)) {
+                    @unlink($file_path);  // Suppress errors if file doesn't exist
+                }
+
+                // Delete attachment post
+                wp_delete_attachment($attachment_id, true);
+                $deleted_count++;
+            }
+        }
+
+        return $deleted_count;
     }
 
     // =========================================================

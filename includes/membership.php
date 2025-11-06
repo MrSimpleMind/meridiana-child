@@ -96,48 +96,22 @@ function meridiana_logout_redirect() {
 add_action('wp_logout', 'meridiana_logout_redirect');
 
 /**
- * Personalizza login page
- * Logo, colori, stile
+ * Enqueue login page styles (CSS compilato da SCSS)
+ * Stili minimalisti, design system aligned, mobile-first
  */
-function meridiana_login_logo() {
-    ?>
-    <style type="text/css">
-        #login h1 a, .login h1 a {
-            background-image: url(<?php echo MERIDIANA_CHILD_URI; ?>/assets/images/logo.svg);
-            height: 80px;
-            width: 320px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            padding-bottom: 30px;
-        }
-        
-        .login form {
-            border-radius: 8px;
-            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-        }
-        
-        .wp-core-ui .button-primary {
-            background-color: #B91C1C;
-            border-color: #991B1B;
-            text-shadow: none;
-            box-shadow: none;
-        }
-        
-        .wp-core-ui .button-primary:hover,
-        .wp-core-ui .button-primary:focus {
-            background-color: #991B1B;
-            border-color: #7F1D1D;
-        }
-        
-        input[type="text"]:focus,
-        input[type="password"]:focus {
-            border-color: #B91C1C;
-            box-shadow: 0 0 0 1px #B91C1C;
-        }
-    </style>
-    <?php
+function meridiana_login_enqueue_styles() {
+    // Enqueue CSS della login page compilato da SCSS
+    $login_css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
+    $login_css_version = file_exists($login_css_file) ? md5_file($login_css_file) : MERIDIANA_CHILD_VERSION;
+
+    wp_enqueue_style(
+        'meridiana-login-styles',
+        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
+        array(),
+        $login_css_version
+    );
 }
-add_action('login_enqueue_scripts', 'meridiana_login_logo');
+add_action('login_enqueue_scripts', 'meridiana_login_enqueue_styles');
 
 /**
  * Cambia URL logo login page
@@ -154,6 +128,16 @@ function meridiana_login_logo_url_title() {
     return 'Cooperativa La Meridiana - Piattaforma Formazione';
 }
 add_filter('login_headertext', 'meridiana_login_logo_url_title');
+
+/**
+ * Nascondi link "Torna a [sito]" dalla login page
+ * (non è necessario poiché il sito è completamente chiuso dietro login)
+ */
+function meridiana_remove_backtoblog_link() {
+    // Ritorna una stringa vuota per nascondere il link
+    return '';
+}
+add_filter('login_siteurl', 'meridiana_remove_backtoblog_link');
 
 /**
  * Messaggio custom nella login page
