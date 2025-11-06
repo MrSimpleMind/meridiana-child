@@ -319,6 +319,13 @@ function meridiana_ajax_delete_user() {
 add_action('wp_ajax_gestore_reset_password', 'meridiana_ajax_reset_password');
 
 function meridiana_ajax_reset_password() {
+    // Security: Rate limiting (max 10 richieste all'ora)
+    $rate_limit_check = meridiana_check_ajax_rate_limit('reset_password', 10, HOUR_IN_SECONDS);
+    if (is_wp_error($rate_limit_check)) {
+        wp_send_json_error(['message' => $rate_limit_check->get_error_message()], 429);
+        return;
+    }
+
     // Security: Nonce check
     if (!isset($_POST['nonce']) || !wp_verify_nonce($_POST['nonce'], 'wp_rest')) {
         wp_send_json_error(['message' => 'Nonce non valido'], 403);

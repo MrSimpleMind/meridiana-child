@@ -12,18 +12,9 @@ function meridiana_enqueue_gestore_dashboard() {
         // Enqueue Select2 Italian translation
         wp_enqueue_script('select2-it', 'https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.13/js/i18n/it.js', array('select2-js'), '4.0.13', true);
 
-        // Carica gestore-dashboard.js SENZA dipendenze
-        // (Alpine.js carica DOPO da functions.php con dipendenza a questo script)
-        wp_enqueue_script(
-            'meridiana-gestore-dashboard',
-            MERIDIANA_CHILD_URI . '/assets/js/src/gestore-dashboard.js',
-            array(), // NO dipendenze - evita infinite loop!
-            MERIDIANA_CHILD_VERSION,
-            true
-        );
-
-        // Localize script con dati richiesti
-        wp_localize_script('meridiana-gestore-dashboard', 'meridiana', array(
+        // Il codice gestore-dashboard è ora incluso in main.min.js
+        // Localize script con dati richiesti (aggancia a main.min.js)
+        wp_localize_script('meridiana-child-scripts', 'meridiana', array(
             'ajaxurl' => admin_url('admin-ajax.php'),
             'nonce' => wp_create_nonce('wp_rest'),
             'userId' => get_current_user_id(),
