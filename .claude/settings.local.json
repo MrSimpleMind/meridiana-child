@@ -37,7 +37,8 @@
       "WebFetch(domain:superpwa.com)",
       "mcp__local-wp__mysql_schema",
       "mcp__local-wp__mysql_query",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(npm install:*)"
     ]
   },
   "outputStyle": "default"

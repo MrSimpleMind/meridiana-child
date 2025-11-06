@@ -1,5 +1,10 @@
 // Import DOMPurify for XSS protection
 import DOMPurify from 'dompurify';
+// Import Chart.js for bundling in PWA (available offline)
+import Chart from 'chart.js/auto';
+
+// Make Chart globally available to Alpine.js components
+window.Chart = Chart;
 
 const ANALYTICS_CHART_COLORS = [
     "rgba(6, 182, 212, 0.8)",

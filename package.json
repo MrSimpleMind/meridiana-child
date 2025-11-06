@@ -19,7 +19,8 @@
   "author": "La Meridiana",
   "license": "GPL-2.0-or-later",
   "dependencies": {
-    "chart.js": "^4.4.1"
+    "chart.js": "^4.4.1",
+    "dompurify": "^3.3.0"
   },
   "devDependencies": {
     "alpinejs": "^3.13.0",
@@ -27,8 +28,5 @@
     "sass": "^1.69.5",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4"
-  },
-  "dependencies": {
-    "dompurify": "^3.3.0"
   }
 }
