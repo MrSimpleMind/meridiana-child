@@ -5,9 +5,9 @@
 
 import Alpine from 'alpinejs';
 import documentTracker from './tracking';
+import './gestore-dashboard'; // Import gestore-dashboard module
 
-// Espone Alpine globalmente così i moduli legacy (es. gestore-dashboard.js) possono
-// agganciarsi all'evento `alpine:init` prima che Alpine venga avviato.
+// Espone Alpine globalmente così i moduli legacy possono accedervi
 window.Alpine = Alpine;
 
 // Registra i componenti Alpine.js PRIMA di Alpine.start()
