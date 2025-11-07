@@ -12,26 +12,6 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
 
 <div class="content-wrapper">
     <div class="container home-container">
-        
-        <!-- Header Utente Mobile -->
-        <div class="home-header">
-            <div class="home-header__user">
-                <div onclick="openUserProfileModal()" style="cursor: pointer;" role="button" tabindex="0" aria-label="Apri profilo utente">
-                    <?php echo meridiana_display_user_avatar(get_current_user_id(), 'medium'); ?>
-                </div>
-                <h1 class="home-header__greeting">Ciao <?php echo esc_html($user_first_name); ?></h1>
-            </div>
-            <button class="btn-icon home-header__notifications" aria-label="Notifiche">
-                <i data-lucide="bell"></i>
-                <?php 
-                // Conteggio notifiche (da implementare)
-                $notifiche_count = 0; // TODO: implementare logica conteggio
-                if ($notifiche_count > 0): 
-                ?>
-                <span class="badge-count"><?php echo $notifiche_count; ?></span>
-                <?php endif; ?>
-            </button>
-        </div>
 
         <!-- Sezione "Per te" - Convenzioni -->
         <section class="home-section home-convenzioni">

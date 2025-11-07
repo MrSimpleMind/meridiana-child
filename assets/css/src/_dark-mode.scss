@@ -1,0 +1,225 @@
+// =============================================================================
+// DARK MODE - TEMA SCURO
+// =============================================================================
+// Variabili CSS overrides quando la classe .dark-mode è attiva su <html>
+
+.dark-mode {
+    // ========================================
+    // COLORI BACKGROUND
+    // ========================================
+
+    --color-bg-primary: #1a1a1a;           // Sfondo principale (nero morbido)
+    --color-bg-secondary: #242424;         // Sfondo secondario
+    --color-bg-tertiary: #0f0f0f;          // Background body (più scuro)
+    --color-bg-quaternary: #1f1f1f;        // Background alternativo
+    --color-bg-hover: #2a2a2a;             // Background hover rows
+
+    // ========================================
+    // COLORI TESTO
+    // ========================================
+
+    --color-text-primary: #e5e7eb;         // Testo principale (bianco morbido)
+    --color-text-secondary: #9ca3af;       // Testo secondario (grigio chiaro)
+    --color-text-tertiary: #d1d5db;        // Testo paragrafi
+    --color-text-muted: #6b7280;           // Testo disabilitato
+    --color-text-light: #9ca3af;           // Testo chiaro (metadata)
+
+    // ========================================
+    // COLORI BORDI
+    // ========================================
+
+    --color-border: #374151;               // Bordi standard (grigio medio)
+    --color-border-light: #2d3748;         // Bordi chiari/separatori (più scuro)
+    --color-border-input: #4b5563;         // Bordi input fields
+    --color-border-disabled: #374151;      // Bordi elementi disabilitati
+
+    // ========================================
+    // COLORI BRAND (leggermente più chiari per contrasto)
+    // ========================================
+
+    --color-primary: #dc2626;              // Rosso più luminoso per dark mode
+    --color-primary-dark: #b91c1c;         // Rosso hover/active
+    --color-primary-light: #ef4444;        // Rosso chiaro accenti
+    --color-primary-bg-light: #1f1213;     // Background rosso scuro per dark
+    --color-primary-text-dark: #fca5a5;    // Testo rosso chiaro
+
+    // ========================================
+    // COLORI FUNZIONALI (adattati per dark mode)
+    // ========================================
+
+    --color-success: #10b981;              // Verde (mantieni)
+    --color-success-dark: #059669;
+    --color-warning: #f59e0b;              // Giallo (mantieni)
+    --color-error: #ef4444;                // Rosso errore (più luminoso)
+    --color-info: #06b6d4;                 // Cyan (mantieni)
+
+    // ========================================
+    // SIDEBAR & NAVIGATION (più chiaro in dark mode)
+    // ========================================
+
+    --color-sidebar-dark: #1f2937;         // Grigio più scuro per dark mode
+
+    // ========================================
+    // SHADOWS (più marcate in dark mode)
+    // ========================================
+
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.4);
+    --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.5);
+    --shadow-lg: 0 4px 16px rgba(0, 0, 0, 0.6);
+    --shadow-xl: 0 8px 32px rgba(0, 0, 0, 0.6);
+    --shadow-2xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5),
+                 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+
+    --shadow-focus: 0 0 0 3px rgba(220, 38, 38, 0.3);       // Focus outline rosso più luminoso
+    --shadow-button-hover: 0 2px 8px rgba(220, 38, 38, 0.5);
+
+    // ========================================
+    // OVERLAYS
+    // ========================================
+
+    --color-overlay-dark: rgba(0, 0, 0, 0.8);      // Più scuro
+    --color-overlay-light: rgba(255, 255, 255, 0.05); // Quasi trasparente
+}
+
+// =============================================================================
+// COMPONENTI SPECIFICI - DARK MODE OVERRIDES
+// =============================================================================
+
+.dark-mode {
+    // Body background
+    body {
+        background-color: var(--color-bg-tertiary);
+        color: var(--color-text-primary);
+    }
+
+    // Card styling in dark mode
+    .card,
+    .news-item,
+    .salute-item,
+    .convenzione-card,
+    .news-card,
+    .salute-card {
+        background-color: var(--color-bg-primary);
+        border-color: var(--color-border);
+
+        &:hover {
+            background-color: var(--color-bg-hover);
+        }
+    }
+
+    // Buttons in dark mode
+    .btn {
+        &:not(.btn-primary):not(.btn-secondary):not(.btn-danger) {
+            background-color: var(--color-bg-secondary);
+            color: var(--color-text-primary);
+            border-color: var(--color-border);
+
+            &:hover {
+                background-color: var(--color-bg-hover);
+            }
+        }
+    }
+
+    // Forms in dark mode
+    input,
+    textarea,
+    select {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text-primary);
+        border-color: var(--color-border-input);
+
+        &::placeholder {
+            color: var(--color-text-muted);
+        }
+
+        &:focus {
+            border-color: var(--color-primary);
+            background-color: var(--color-bg-primary);
+        }
+    }
+
+    // Tables in dark mode
+    .table {
+        background-color: var(--color-bg-primary);
+
+        thead {
+            background-color: var(--color-bg-secondary);
+        }
+
+        tbody tr {
+            border-color: var(--color-border);
+
+            &:hover {
+                background-color: var(--color-bg-hover);
+            }
+        }
+    }
+
+    // Modal in dark mode
+    .modal-content {
+        background-color: var(--color-bg-primary);
+        border-color: var(--color-border);
+    }
+
+    // Badges in dark mode
+    .badge {
+        &.badge-success {
+            background-color: rgba(16, 185, 129, 0.2);
+            color: #6ee7b7;
+        }
+
+        &.badge-warning {
+            background-color: rgba(245, 158, 11, 0.2);
+            color: #fcd34d;
+        }
+
+        &.badge-error {
+            background-color: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        &.badge-info {
+            background-color: rgba(6, 182, 212, 0.2);
+            color: #67e8f9;
+        }
+    }
+
+    // Top Header in dark mode
+    .top-header {
+        background-color: var(--color-sidebar-dark);
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    // Sidebar in dark mode (già scura, potrebbe rimanere uguale o diventare più chiara)
+    .sidebar-nav {
+        background-color: var(--color-sidebar-dark);
+    }
+
+    // Bottom nav in dark mode
+    .bottom-nav {
+        background-color: var(--color-bg-primary);
+        border-top-color: var(--color-border);
+    }
+}
+
+// =============================================================================
+// TRANSIZIONI SMOOTH per il cambio tema
+// =============================================================================
+
+html,
+body,
+.card,
+.btn,
+input,
+textarea,
+select,
+.table,
+.modal-content,
+.top-header,
+.sidebar-nav,
+.bottom-nav {
+    transition: background-color 0.3s ease,
+                color 0.3s ease,
+                border-color 0.3s ease;
+}

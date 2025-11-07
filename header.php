@@ -13,3 +13,10 @@
 </head>
 <body <?php body_class(); ?>>
 <?php wp_body_open(); ?>
+
+<?php
+// Top Header Sticky - Visibile su tutte le pagine
+if (is_user_logged_in()) {
+    get_template_part('templates/parts/navigation/top-header');
+}
+?>
