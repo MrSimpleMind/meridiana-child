@@ -157,7 +157,4 @@ get_header();
 </div>
 
 <?php
-// Inline styles per PROMPT 8 - Temporary until SCSS compiles
-get_template_part('templates/parts/inline-styles-salute');
-
 get_footer();

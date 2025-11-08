@@ -209,9 +209,19 @@ function meridiana_defer_alpinejs($tag, $handle) {
 }
 
 /**
- * INLINE STYLES - Archive, Cards, Navigation Overlay
+ * INLINE STYLES - MIGRATED TO SCSS ✅
+ *
+ * Migration completed: 2025-01-08
+ * - .bottom-nav-overlay → layout/_navigation.scss
+ * - .convenzione-card → pages/_home.scss
+ * - .salute-card → pages/_home.scss
+ * - .no-content → pages/_home.scss
+ * - Single salute styles → pages/_single-salute-benessere.scss
+ *
+ * This function is now DISABLED. All styles moved to SCSS design system.
  */
 
+/*
 function meridiana_add_inline_styles() {
     ?>
     <style>
@@ -507,7 +517,8 @@ function meridiana_add_inline_styles() {
     </style>
     <?php
 }
-add_action('wp_head', 'meridiana_add_inline_styles', 99);
+*/
+// add_action('wp_head', 'meridiana_add_inline_styles', 99); // DISABLED - Migrated to SCSS
 
 /**
  * INCLUDE FILES
