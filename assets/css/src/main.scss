@@ -15,6 +15,7 @@
 
 @import 'variables';
 @import 'mixins';
+@import 'dark-mode';  // Dark Mode - Tema scuro con CSS custom properties
 
 // ========================================
 // 2. RESET & BASE
@@ -53,6 +54,7 @@
 // @import 'layout/footer';
 @import 'layout/containers';
 @import 'layout/navigation';
+@import 'layout/top-header';  // Top Header Sticky - Global header con dark mode
 // @import 'layout/sidebar';
 
 // ========================================

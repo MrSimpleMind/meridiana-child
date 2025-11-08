@@ -92,11 +92,12 @@
 
 .content-wrapper {
     min-height: 100vh;
+    padding-top: 56px; // Spazio per top header sticky
     padding-bottom: 80px; // Spazio per bottom nav mobile
 
     @media (min-width: 768px) {
+        padding-top: 62px; // Altezza header su desktop
         padding-bottom: 0;
-        padding-top: 0;
         padding-left: 240px; // Spazio per sidebar desktop espansa
         transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     }
