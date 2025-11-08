@@ -102,8 +102,7 @@
 .bottom-nav__popup {
     position: absolute;
     bottom: 100%;
-    left: 50%;
-    transform: translateX(-50%);
+    right: var(--space-2); // Allineato a destra con piccolo offset
     margin-bottom: var(--space-2);
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
@@ -113,13 +112,12 @@
     overflow: hidden;
     z-index: 100;
 
-    // Freccia verso il basso
+    // Freccia verso il basso (posizionata a destra)
     &::after {
         content: '';
         position: absolute;
         bottom: -8px;
-        left: 50%;
-        transform: translateX(-50%);
+        right: 24px; // Allineata verso destra
         width: 0;
         height: 0;
         border-left: 8px solid transparent;
@@ -131,8 +129,7 @@
         content: '';
         position: absolute;
         bottom: -9px;
-        left: 50%;
-        transform: translateX(-50%);
+        right: 23px; // Allineata verso destra
         width: 0;
         height: 0;
         border-left: 9px solid transparent;
@@ -293,6 +290,19 @@ body:has(.sidebar-nav--collapsed) .content-wrapper {
         .sidebar-nav__toggle {
             right: -12px;
         }
+    }
+}
+
+// ADMIN BAR WORDPRESS - Offset sidebar solo per admin
+body.admin-bar .sidebar-nav {
+    @media (min-width: 768px) {
+        top: 32px; // Altezza admin bar desktop (>= 782px)
+        height: calc(100vh - 32px);
+    }
+
+    @media (max-width: 782px) {
+        top: 46px; // Altezza admin bar mobile (< 782px)
+        height: calc(100vh - 46px);
     }
 }
 

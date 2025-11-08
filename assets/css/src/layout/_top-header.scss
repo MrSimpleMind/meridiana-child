@@ -11,9 +11,13 @@ body.logged-in:not(.page-template-page-corsi):not(.page-template-page-dashboard-
     padding-top: var(--top-header-height); // Spazio per il top-header
 }
 
-// Gli admin con la admin bar mantengono il padding ridotto
+// Gli admin con la admin bar hanno padding aumentato per compensare admin bar + top header
 body.admin-bar:not(.page-template-page-corsi):not(.page-template-page-dashboard-gestore):not(.page-template-page-analitiche) {
-    padding-top: 20px;
+    padding-top: calc(var(--top-header-height) + 32px); // 64px + 32px = 96px
+
+    @media (max-width: 782px) {
+        padding-top: calc(var(--top-header-height) + 46px); // 64px + 46px = 110px
+    }
 }
 
 .top-header {
@@ -30,6 +34,15 @@ body.admin-bar:not(.page-template-page-corsi):not(.page-template-page-dashboard-
     @media (min-width: 768px) {
         left: 240px; // Larghezza sidebar espansa
         transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1), background-color 0.3s ease;
+    }
+}
+
+// ADMIN BAR WORDPRESS - Offset solo per admin
+body.admin-bar .top-header {
+    top: 32px; // Altezza admin bar desktop (>= 782px)
+
+    @media (max-width: 782px) {
+        top: 46px; // Altezza admin bar mobile (< 782px)
     }
 }
 
