@@ -1,12 +1,13 @@
 :root {
-    --dashboard-tabs-offset: 0px;
+    --top-header-height: 64px; // Altezza del top-header fisso
+    --dashboard-tabs-offset: var(--top-header-height);
 }
 
 body.admin-bar {
-    --dashboard-tabs-offset: 32px;
+    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
 
     @media (max-width: 782px) {
-        --dashboard-tabs-offset: 46px;
+        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
     }
 }
 
@@ -19,11 +20,11 @@ body.admin-bar {
 }
 
 .page-analitiche .dashboard-tabs-container {
-    background-color: #1F2937 !important;
-    border-bottom: 1px solid #111827 !important;
+    background-color: var(--color-sidebar-dark) !important; // Stesso colore del top-header
+    border-bottom: 1px solid #1F2937 !important;
     position: sticky;
     top: var(--dashboard-tabs-offset);
-    z-index: 300;
+    z-index: 50; // Sotto il top-header (z-index: 100)
     margin-top: 0;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
 }
@@ -599,14 +600,6 @@ body.admin-bar {
 
 .page-analitiche {
     padding-top: 0;
-}
-
-.page-analitiche .dashboard-tabs-container {
-    position: sticky;
-    top: 0;
-    z-index: 30;
-    background-color: var(--color-bg-body);
-    border-bottom: 1px solid var(--color-border-light);
 }
 
 // Profile Filter Chips

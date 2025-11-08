@@ -2,6 +2,11 @@
 // TOP HEADER - STICKY GLOBAL HEADER
 // =============================================================================
 
+// Padding body per compensare l'header fisso
+body.logged-in {
+    padding-top: 64px; // Altezza del top-header
+}
+
 .top-header {
     position: fixed;
     top: 0;

@@ -6,23 +6,24 @@
 
 // Tab Navigation
 :root {
-    --dashboard-tabs-offset: 0px;
+    --top-header-height: 64px; // Altezza del top-header fisso
+    --dashboard-tabs-offset: var(--top-header-height);
 }
 
 body.admin-bar {
-    --dashboard-tabs-offset: 32px;
+    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
 
     @media (max-width: 782px) {
-        --dashboard-tabs-offset: 46px;
+        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
     }
 }
 
 .dashboard-tabs-container {
-    background-color: #2D3748;
+    background-color: var(--color-sidebar-dark); // Stesso colore del top-header
     border-bottom: 1px solid #1F2937;
     position: sticky;
     top: var(--dashboard-tabs-offset);
-    z-index: 200;
+    z-index: 50; // Sotto il top-header (z-index: 100)
     margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
 }
