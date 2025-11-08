@@ -13,82 +13,93 @@
 // PAGE CORSI - DASHBOARD (page-corsi.php)
 // ========================================
 
+// Tab Navigation - Variabili per sticky positioning
+:root {
+    --top-header-height: 64px; // Altezza del top-header fisso
+    --dashboard-tabs-offset: var(--top-header-height);
+}
+
+body.admin-bar {
+    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
+
+    @media (max-width: 782px) {
+        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
+    }
+}
+
 .page-corsi {
     width: 100%;
 }
 
 // ========================================
-// TABS NAVIGATION
+// TABS NAVIGATION - Consistente con Dashboard Gestore e Analitiche
 // ========================================
 
 .corsi-tabs-container {
-    background-color: var(--color-bg-secondary);
-    border-bottom: 1px solid var(--color-border);
-    sticky: top;
-    z-index: 10;
-    margin-bottom: var(--space-8);
+    background-color: var(--color-sidebar-dark); // Stesso colore del top-header
+    border-bottom: 1px solid #1F2937;
+    position: sticky;
+    top: var(--dashboard-tabs-offset);
+    z-index: 50; // Sotto il top-header (z-index: 100)
+    margin-bottom: 0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
 
     @media (max-width: 768px) {
-        sticky: none;
-        margin-bottom: var(--space-6);
+        margin-bottom: 0;
     }
 }
 
 .corsi-tabs {
     display: flex;
-    gap: var(--space-4);
+    gap: var(--space-2);
     overflow-x: auto;
-    padding: var(--space-4) 0;
-    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    margin: 0;
 
-    @media (max-width: 768px) {
-        gap: var(--space-2);
-        padding: var(--space-3) 0;
+    &::-webkit-scrollbar {
+        height: 4px;
     }
 }
 
 .corsi-tabs__item {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-3) var(--space-4);
-    background: none;
+    padding: var(--space-4) var(--space-4);
+    background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
-    color: var(--color-text-secondary);
-    font-size: var(--font-size-base);
-    font-weight: var(--font-weight-medium);
+    color: #A0AEC0; // Stesso colore testo delle altre tab
+    font-size: 14px;
+    font-weight: 500;
     cursor: pointer;
     transition: all 0.2s ease;
     white-space: nowrap;
     position: relative;
 
-    i {
-        width: 20px;
-        height: 20px;
+    svg, i {
+        width: 18px;
+        height: 18px;
         flex-shrink: 0;
     }
 
     &:hover {
-        color: var(--color-text-primary);
-        background-color: rgba(0, 0, 0, 0.02);
+        color: #E2E8F0;
+        background-color: rgba(255, 255, 255, 0.05);
     }
 
     &.active {
-        color: var(--color-primary);
+        color: #FFFFFF;
         border-bottom-color: var(--color-primary);
     }
 
     @media (max-width: 768px) {
-        padding: var(--space-2) var(--space-3);
-        font-size: var(--font-size-sm);
+        padding: var(--space-3) var(--space-3);
+        font-size: 12px;
 
-        span {
+        span:not(.corsi-tabs__badge) {
             display: none;
-
-            &.corsi-tabs__badge {
-                display: inline;
-            }
         }
     }
 }
@@ -97,14 +108,14 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    min-width: 24px;
-    height: 24px;
-    padding: 0 var(--space-1);
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
     background-color: var(--color-primary);
     color: white;
-    font-size: var(--font-size-xs);
-    font-weight: var(--font-weight-bold);
-    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 700;
+    border-radius: 10px;
     margin-left: var(--space-1);
 }
 
@@ -113,10 +124,15 @@
 // ========================================
 
 .corsi-content-container {
-    padding: var(--space-8) 0;
+    background-color: transparent;
+    border-radius: 0;
+    box-shadow: none;
+    padding: var(--space-8);
+    min-height: 400px;
+    margin-top: var(--space-8);
 
     @media (max-width: 768px) {
-        padding: var(--space-6) 0;
+        padding: var(--space-6);
     }
 }
 
