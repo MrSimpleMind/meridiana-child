@@ -65,8 +65,8 @@ $current_config = isset($archive_config[$post_type]) ? $archive_config[$post_typ
             <?php meridiana_render_breadcrumb(); ?>
             
             <!-- Back Button -->
-            <div class="back-button-wrapper">
-                <a href="<?php echo esc_url(meridiana_get_parent_url()); ?>" class="back-button">
+            <div class="page-header">
+                <a href="<?php echo esc_url(meridiana_get_parent_url()); ?>" class="back-link">
                     <i data-lucide="arrow-left"></i>
                     <span><?php echo esc_html(meridiana_get_back_label()); ?></span>
                 </a>
