@@ -4,7 +4,7 @@
  * Pagina per la gestione contenuti (Documentazione, Comunicazioni, Convenzioni, Salute, Utenti)
  */
 
-if (!current_user_can('manage_platform') && !current_user_can('manage_options')) {
+if (!current_user_can('gestore_piattaforma') && !current_user_can('manage_options')) {
     wp_redirect(home_url());
     exit;
 }

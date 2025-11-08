@@ -173,15 +173,15 @@ error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_r
         </a>
         <?php endif; ?>
         
-        <?php if (current_user_can('manage_platform') || current_user_can('manage_options')): ?>
+        <?php if (current_user_can('gestore_piattaforma') || current_user_can('manage_options')): ?>
         <div class="sidebar-nav__divider"></div>
-        
-        <a href="<?php echo home_url('/dashboard-gestore/'); ?>" 
+
+        <a href="<?php echo home_url('/dashboard-gestore/'); ?>"
            class="sidebar-nav__item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
             <i data-lucide="settings"></i>
             <span>Dashboard Gestore</span>
         </a>
-        <a href="<?php echo home_url('/analitiche/'); ?>" 
+        <a href="<?php echo home_url('/analitiche/'); ?>"
            class="sidebar-nav__item <?php echo is_page('analitiche') ? 'active' : ''; ?>">
             <i data-lucide="bar-chart-2"></i>
             <span>Analitiche</span>

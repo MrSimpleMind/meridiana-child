@@ -33,18 +33,25 @@
     </a>
     
     <!-- CONTATTI (ex Organigramma) - Page 'contatti' -->
-    <a href="<?php echo home_url('/contatti/'); ?>" 
+    <a href="<?php echo home_url('/contatti/'); ?>"
        class="bottom-nav__item <?php echo is_page('contatti') ? 'active' : ''; ?>">
         <i data-lucide="users"></i>
         <span>Contatti</span>
     </a>
-    
+
     <!-- GESTIONE (Gestore/Admin only) -->
-    <?php if (current_user_can('manage_platform') || current_user_can('manage_options')): ?>
-    <a href="<?php echo home_url('/dashboard-gestore/'); ?>" 
+    <?php if (current_user_can('gestore_piattaforma') || current_user_can('manage_options')): ?>
+    <a href="<?php echo home_url('/dashboard-gestore/'); ?>"
        class="bottom-nav__item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
         <i data-lucide="settings"></i>
         <span>Gestione</span>
+    </a>
+
+    <!-- ANALITICHE (Gestore/Admin only) -->
+    <a href="<?php echo home_url('/analitiche/'); ?>"
+       class="bottom-nav__item <?php echo is_page('analitiche') ? 'active' : ''; ?>">
+        <i data-lucide="bar-chart-2"></i>
+        <span>Analitiche</span>
     </a>
     <?php endif; ?>
 </nav>

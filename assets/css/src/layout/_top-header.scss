@@ -3,8 +3,15 @@
 // =============================================================================
 
 // Padding body per compensare l'header fisso
+// Gli utenti normali (senza admin bar) hanno bisogno di padding
 body.logged-in {
-    padding-top: 64px; // Altezza del top-header
+    padding-top: 50px; // Spazio per il top-header (utenti normali)
+}
+
+// Gli admin con la admin bar hanno bisogno di un piccolo padding aggiuntivo
+// per non essere troppo appiccicati
+body.admin-bar {
+    padding-top: 20px;
 }
 
 .top-header {
