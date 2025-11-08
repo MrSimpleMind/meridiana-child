@@ -163,16 +163,6 @@ error_log('[Sidebar] User: ' . $current_user->user_login . ' | Role: ' . $user_r
         </a>
         <?php endif; ?>
         
-        <?php if (current_user_can('view_analytics')): ?>
-        <div class="sidebar-nav__divider"></div>
-        
-        <a href="<?php echo get_permalink(get_page_by_path('analytics')); ?>" 
-           class="sidebar-nav__item <?php echo is_page('analytics') ? 'active' : ''; ?>">
-            <i data-lucide="bar-chart-2"></i>
-            <span>Analytics</span>
-        </a>
-        <?php endif; ?>
-        
         <?php if (current_user_can('gestore_piattaforma') || current_user_can('manage_options')): ?>
         <div class="sidebar-nav__divider"></div>
 

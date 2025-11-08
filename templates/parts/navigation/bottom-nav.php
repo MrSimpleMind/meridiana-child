@@ -39,19 +39,30 @@
         <span>Contatti</span>
     </a>
 
-    <!-- GESTIONE (Gestore/Admin only) -->
+    <!-- ADMIN MENU (Gestore/Admin only) con popup -->
     <?php if (current_user_can('gestore_piattaforma') || current_user_can('manage_options')): ?>
-    <a href="<?php echo home_url('/dashboard-gestore/'); ?>"
-       class="bottom-nav__item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
-        <i data-lucide="settings"></i>
-        <span>Gestione</span>
-    </a>
+    <div class="bottom-nav__item-wrapper" x-data="{ adminMenuOpen: false }">
+        <button type="button"
+                class="bottom-nav__item <?php echo (is_page('dashboard-gestore') || is_page('analitiche')) ? 'active' : ''; ?>"
+                @click="adminMenuOpen = !adminMenuOpen"
+                @click.away="adminMenuOpen = false">
+            <i data-lucide="shield"></i>
+            <span>Admin</span>
+        </button>
 
-    <!-- ANALITICHE (Gestore/Admin only) -->
-    <a href="<?php echo home_url('/analitiche/'); ?>"
-       class="bottom-nav__item <?php echo is_page('analitiche') ? 'active' : ''; ?>">
-        <i data-lucide="bar-chart-2"></i>
-        <span>Analitiche</span>
-    </a>
+        <!-- Popup menu -->
+        <div class="bottom-nav__popup" x-show="adminMenuOpen" x-cloak x-transition>
+            <a href="<?php echo home_url('/dashboard-gestore/'); ?>"
+               class="bottom-nav__popup-item <?php echo is_page('dashboard-gestore') ? 'active' : ''; ?>">
+                <i data-lucide="settings"></i>
+                <span>Dashboard Gestore</span>
+            </a>
+            <a href="<?php echo home_url('/analitiche/'); ?>"
+               class="bottom-nav__popup-item <?php echo is_page('analitiche') ? 'active' : ''; ?>">
+                <i data-lucide="bar-chart-2"></i>
+                <span>Analitiche</span>
+            </a>
+        </div>
+    </div>
     <?php endif; ?>
 </nav>
