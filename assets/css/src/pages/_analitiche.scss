@@ -13,6 +13,22 @@
 .page-analitiche .dashboard-tabs-container {
     margin-top: 0;
     box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); // Shadow più pronunciato
+    background-color: var(--color-sidebar-dark) !important; // Stesso colore del top-header
+    border-bottom: 1px solid #1F2937 !important;
+    position: sticky;
+    top: var(--dashboard-tabs-offset);
+    z-index: 50; // Sotto il top-header (z-index: 100)
+    margin: 0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2);
+}
+
+.page-analitiche .dashboard-tabs__item {
+    color: #A0AEC0;
+
+    &.active {
+        color: #FFFFFF;
+        border-bottom-color: var(--color-primary);
+    }
 }
 
 .page-analitiche .dashboard-content-container {

@@ -36,35 +36,38 @@
     min-width: 56px;
     position: relative;
     transition: color 0.2s ease;
-    
+    background: none;
+    border: none;
+    cursor: pointer;
+
     // Icona
     i, svg {
         width: 24px;
         height: 24px;
         stroke-width: 2;
     }
-    
+
     span {
         display: block;
         text-align: center;
     }
-    
+
     // Stato hover
     &:hover {
         color: var(--color-primary);
     }
-    
+
     // Stato attivo
     &.active,
     &[aria-current="page"] {
         color: var(--color-primary);
         font-weight: var(--font-weight-semibold);
-        
+
         i, svg {
             stroke-width: 2.5;
         }
     }
-    
+
     // Badge dot per notifiche
     .badge-dot {
         position: absolute;
@@ -77,12 +80,105 @@
         background-color: var(--color-error);
         border: 2px solid var(--color-bg-primary);
     }
-    
+
     // Accessibilità focus
     &:focus-visible {
         outline: 2px solid var(--color-primary);
         outline-offset: -2px;
         border-radius: var(--radius-sm);
+    }
+}
+
+// Wrapper per item con popup (Admin menu)
+.bottom-nav__item-wrapper {
+    flex: 1;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+// Popup menu che appare sopra
+.bottom-nav__popup {
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    margin-bottom: var(--space-2);
+    background-color: var(--color-bg-primary);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.15);
+    min-width: 200px;
+    overflow: hidden;
+    z-index: 100;
+
+    // Freccia verso il basso
+    &::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 8px solid transparent;
+        border-right: 8px solid transparent;
+        border-top: 8px solid var(--color-bg-primary);
+    }
+
+    &::before {
+        content: '';
+        position: absolute;
+        bottom: -9px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 0;
+        height: 0;
+        border-left: 9px solid transparent;
+        border-right: 9px solid transparent;
+        border-top: 9px solid var(--color-border);
+        z-index: -1;
+    }
+}
+
+.bottom-nav__popup-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    padding: var(--space-3) var(--space-4);
+    color: var(--color-text-primary);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    text-decoration: none;
+    border-bottom: 1px solid var(--color-border-light);
+    transition: background-color 0.2s ease, color 0.2s ease;
+
+    &:last-child {
+        border-bottom: none;
+    }
+
+    i, svg {
+        width: 20px;
+        height: 20px;
+        stroke-width: 2;
+        flex-shrink: 0;
+    }
+
+    span {
+        flex: 1;
+        text-align: left;
+    }
+
+    &:hover {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-primary);
+    }
+
+    &.active {
+        background-color: rgba(171, 17, 32, 0.1);
+        color: var(--color-primary);
+        font-weight: var(--font-weight-semibold);
     }
 }
 
@@ -92,11 +188,11 @@
 
 .content-wrapper {
     min-height: 100vh;
-    padding-top: 56px; // Spazio per top header sticky
+    padding-top: 0; // Nessun padding aggiuntivo - gestito dal body
     padding-bottom: 80px; // Spazio per bottom nav mobile
 
     @media (min-width: 768px) {
-        padding-top: 62px; // Altezza header su desktop
+        padding-top: 0; // Nessun padding aggiuntivo su desktop
         padding-bottom: 0;
         padding-left: 240px; // Spazio per sidebar desktop espansa
         transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
