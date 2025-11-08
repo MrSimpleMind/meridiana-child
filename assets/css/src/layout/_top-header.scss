@@ -3,14 +3,16 @@
 // =============================================================================
 
 // Padding body per compensare l'header fisso
-// Gli utenti normali (senza admin bar) hanno bisogno di padding
-body.logged-in {
-    padding-top: 50px; // Spazio per il top-header (utenti normali)
+// RIMOSSO: Le pagine con tab navigation (corsi, gestore, analitiche) non hanno bisogno di padding
+// perché le tab partono direttamente dal top-header
+// Solo le altre pagine hanno bisogno di un piccolo padding
+
+body.logged-in:not(.page-template-page-corsi):not(.page-template-page-dashboard-gestore):not(.page-template-page-analitiche) {
+    padding-top: var(--top-header-height); // Spazio per il top-header
 }
 
-// Gli admin con la admin bar hanno bisogno di un piccolo padding aggiuntivo
-// per non essere troppo appiccicati
-body.admin-bar {
+// Gli admin con la admin bar mantengono il padding ridotto
+body.admin-bar:not(.page-template-page-corsi):not(.page-template-page-dashboard-gestore):not(.page-template-page-analitiche) {
     padding-top: 20px;
 }
 
