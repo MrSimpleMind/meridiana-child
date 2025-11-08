@@ -18,17 +18,19 @@
 
 .page-corsi {
     width: 100%;
+    padding-top: 0 !important; // Rimuovi padding - le tab partono dal top-header
+    margin-top: 0 !important;
 }
 
 // ========================================
-// TABS NAVIGATION - Consistente con Dashboard Gestore e Analitiche
+// TABS NAVIGATION - Attaccate al top-header, sticky quando si scrolla
 // ========================================
 
 .corsi-tabs-container {
     background-color: var(--color-sidebar-dark); // Stesso colore del top-header
     border-bottom: 1px solid #1F2937;
     position: sticky;
-    top: var(--dashboard-tabs-offset);
+    top: var(--dashboard-tabs-offset); // Si attacca sotto il top-header quando sticky
     z-index: 50; // Sotto il top-header (z-index: 100)
     margin: 0;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
@@ -118,7 +120,7 @@
     box-shadow: none;
     padding: var(--space-8);
     min-height: 400px;
-    margin-top: var(--space-8);
+    margin-top: 0; // Rimuovi margin - content parte subito sotto le tab
 
     @media (max-width: 768px) {
         padding: var(--space-6);

@@ -2,23 +2,25 @@
 // Dashboard Gestore - Styling
 // ========================================
 
+.page-template-page-dashboard-gestore {
+    padding-top: 0 !important; // Rimuovi padding - le tab partono dal top-header
+    margin-top: 0 !important;
+
+    .gestore-dashboard {
+        padding-top: 0 !important;
+        margin-top: 0 !important;
+    }
+
+    .content-wrapper {
+        padding-top: 0 !important;
+    }
+}
+
 // Header - REMOVED (merged with tabs)
 
 // Tab Navigation
 // Layout variables (--dashboard-tabs-offset, --top-header-height) in base/_layout-variables.scss
 // Tab navigation styles (.dashboard-tabs-container, .dashboard-tabs, .dashboard-tabs__item) in components/_tab-navigation.scss
-:root {
-    --top-header-height: 64px; // Altezza del top-header fisso
-    --dashboard-tabs-offset: var(--top-header-height);
-}
-
-body.admin-bar {https://github.com/MrSimpleMind/meridiana-child/pull/7/conflict?name=assets%252Fcss%252Fdist%252Fmain.css&ancestor_oid=74ec42aa37e0aa432a5491270214b5ecf96bb0a7&base_oid=8e4b78dd183993152cea346024c7c613c3f497e0&head_oid=3ed481a4f75859d3efbcad0ed0a8cbb22704fe20
-    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
-
-    @media (max-width: 782px) {
-        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
-    }
-}
 
 .dashboard-tabs-container {
     background-color: var(--color-sidebar-dark); // Stesso colore del top-header
@@ -91,7 +93,7 @@ body.admin-bar {https://github.com/MrSimpleMind/meridiana-child/pull/7/conflict?
     box-shadow: none;
     padding: var(--space-8);
     min-height: 400px;
-    margin-top: var(--space-8);
+    margin-top: 0; // Rimuovi margin - content parte subito sotto le tab
 
     @media (max-width: 768px) {
         padding: var(--space-6);
