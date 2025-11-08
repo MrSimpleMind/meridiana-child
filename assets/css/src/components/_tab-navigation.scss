@@ -1,0 +1,147 @@
+/**
+ * Tab Navigation Component
+ * Componente riutilizzabile per tab navigation sticky
+ *
+ * Utilizzato in:
+ * - Dashboard Gestore (.dashboard-tabs-container, .dashboard-tabs)
+ * - Analitiche (.dashboard-tabs-container, .dashboard-tabs)
+ * - Corsi (.corsi-tabs-container, .corsi-tabs)
+ *
+ * IMPORTANTE: Usa solo variabili design system (no hardcoded values)
+ *
+ * @package Meridiana Child - Components
+ */
+
+// =============================================================================
+// TAB CONTAINER - Sticky header sotto top-header
+// =============================================================================
+
+.tabs-container,
+.dashboard-tabs-container,
+.corsi-tabs-container {
+    background-color: var(--color-sidebar-dark);
+    border-bottom: 1px solid var(--color-sidebar-border);
+    position: sticky;
+    top: var(--dashboard-tabs-offset);
+    z-index: var(--z-sticky);
+    margin-bottom: 0;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
+
+    @media (max-width: 768px) {
+        margin-bottom: 0;
+    }
+}
+
+// =============================================================================
+// TAB LIST - Horizontal scrollable tabs
+// =============================================================================
+
+.tabs,
+.dashboard-tabs,
+.corsi-tabs {
+    display: flex;
+    gap: var(--space-2);
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 0;
+    margin: 0;
+
+    // Custom scrollbar
+    &::-webkit-scrollbar {
+        height: 4px;
+    }
+
+    &::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    &::-webkit-scrollbar-thumb {
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 2px;
+
+        &:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+    }
+}
+
+// =============================================================================
+// TAB ITEM - Single tab button
+// =============================================================================
+
+.tabs__item,
+.dashboard-tabs__item,
+.corsi-tabs__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4);
+    background: transparent;
+    border: none;
+    border-bottom: 3px solid transparent;
+    color: var(--color-tab-inactive);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    position: relative;
+
+    // Icons
+    svg, i {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+    }
+
+    // Hover state
+    &:hover {
+        color: var(--color-tab-hover);
+        background-color: rgba(255, 255, 255, 0.05);
+    }
+
+    // Active state
+    &.active {
+        color: #FFFFFF;
+        border-bottom-color: var(--color-primary);
+        font-weight: var(--font-weight-semibold);
+    }
+
+    // Focus state (accessibilità)
+    &:focus-visible {
+        outline: 2px solid var(--color-primary);
+        outline-offset: -2px;
+    }
+
+    // Mobile responsive
+    @media (max-width: 768px) {
+        padding: var(--space-3) var(--space-3);
+        font-size: var(--font-size-xs);
+
+        // Nasconde testo, mostra solo icone (eccetto badge)
+        span:not(.tabs__badge):not(.dashboard-tabs__badge):not(.corsi-tabs__badge) {
+            display: none;
+        }
+    }
+}
+
+// =============================================================================
+// TAB BADGE - Notification count badge
+// =============================================================================
+
+.tabs__badge,
+.dashboard-tabs__badge,
+.corsi-tabs__badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 var(--space-2);
+    background-color: var(--color-primary);
+    color: white;
+    font-size: 11px;
+    font-weight: var(--font-weight-bold);
+    border-radius: var(--radius-full);
+    margin-left: var(--space-1);
+}

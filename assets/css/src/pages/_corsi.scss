@@ -13,19 +13,8 @@
 // PAGE CORSI - DASHBOARD (page-corsi.php)
 // ========================================
 
-// Tab Navigation - Variabili per sticky positioning
-:root {
-    --top-header-height: 64px; // Altezza del top-header fisso
-    --dashboard-tabs-offset: var(--top-header-height);
-}
-
-body.admin-bar {
-    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
-
-    @media (max-width: 782px) {
-        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
-    }
-}
+// Tab Navigation - Layout variables in base/_layout-variables.scss
+// Tab navigation styles (.corsi-tabs-container, .corsi-tabs, .corsi-tabs__item, .corsi-tabs__badge) in components/_tab-navigation.scss
 
 .page-corsi {
     width: 100%;

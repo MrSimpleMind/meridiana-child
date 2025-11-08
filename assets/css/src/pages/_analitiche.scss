@@ -1,15 +1,5 @@
-:root {
-    --top-header-height: 64px; // Altezza del top-header fisso
-    --dashboard-tabs-offset: var(--top-header-height);
-}
-
-body.admin-bar {
-    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
-
-    @media (max-width: 782px) {
-        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
-    }
-}
+// Layout variables (--dashboard-tabs-offset, --top-header-height) in base/_layout-variables.scss
+// Tab navigation styles in components/_tab-navigation.scss
 
 .page-analitiche {
     padding-top: 0;
@@ -19,7 +9,10 @@ body.admin-bar {
     padding: 0 0 24px;
 }
 
+// Override specifici per Analitiche
 .page-analitiche .dashboard-tabs-container {
+    margin-top: 0;
+    box-shadow: 0 4px 12px rgba(15, 23, 42, 0.2); // Shadow più pronunciato
     background-color: var(--color-sidebar-dark) !important; // Stesso colore del top-header
     border-bottom: 1px solid #1F2937 !important;
     position: sticky;

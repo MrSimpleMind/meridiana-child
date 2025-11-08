@@ -72,8 +72,13 @@ $color-border-disabled: #E5E7EB;   // Bordi elementi disabilitati
 // ========================================
 
 $color-sidebar-dark: #2D3748;      // Grigio scuro nav | rgb(45, 55, 72)
+$color-sidebar-border: #1F2937;    // Bordo sidebar/header scuro | rgb(31, 41, 55)
 $color-accent-purple: #8B5CF6;     // Viola accenti speciali
 $color-accent-lime: #84CC16;       // Lime highlight
+
+// Tab Navigation Colors
+$color-tab-inactive: #A0AEC0;      // Testo tab inattiva | rgb(160, 174, 192)
+$color-tab-hover: #E2E8F0;         // Testo tab hover | rgb(226, 232, 240)
 
 $color-overlay-dark: rgba(0, 0, 0, 0.5);
 $color-overlay-light: rgba(255, 255, 255, 0.9);
@@ -217,9 +222,13 @@ $breakpoint-2xl: 1400px; // Large desktop
     --color-border-disabled: #{$color-border-disabled};
     
     --color-sidebar-dark: #{$color-sidebar-dark};
+    --color-sidebar-border: #{$color-sidebar-border};
     --color-accent-purple: #{$color-accent-purple};
     --color-accent-lime: #{$color-accent-lime};
-    
+
+    --color-tab-inactive: #{$color-tab-inactive};
+    --color-tab-hover: #{$color-tab-hover};
+
     --color-overlay-dark: #{$color-overlay-dark};
     --color-overlay-light: #{$color-overlay-light};
     

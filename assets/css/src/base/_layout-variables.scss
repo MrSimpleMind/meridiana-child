@@ -1,0 +1,39 @@
+/**
+ * Layout Variables
+ * Variabili globali per layout, altezze, offset e spaziature strutturali
+ *
+ * IMPORTANTE: Queste variabili sono CSS custom properties che possono essere
+ * overridate a runtime e si adattano dinamicamente (es. admin bar).
+ */
+
+:root {
+    // =============================================================================
+    // ALTEZZE COMPONENTI FISSI
+    // =============================================================================
+
+    --top-header-height: 64px;
+    --bottom-nav-height: 56px;
+    --sidebar-width-expanded: 240px;
+    --sidebar-width-collapsed: 70px;
+
+    // =============================================================================
+    // OFFSETS DINAMICI (per sticky positioning)
+    // =============================================================================
+
+    // Offset per tab sticky (sotto top-header)
+    --dashboard-tabs-offset: var(--top-header-height);
+
+    // =============================================================================
+    // ADMIN BAR WORDPRESS (variabile in base a viewport)
+    // =============================================================================
+}
+
+// Admin bar logged-in users
+body.admin-bar {
+    --dashboard-tabs-offset: calc(var(--top-header-height) + 32px);
+
+    // Mobile admin bar height
+    @media (max-width: 782px) {
+        --dashboard-tabs-offset: calc(var(--top-header-height) + 46px);
+    }
+}
