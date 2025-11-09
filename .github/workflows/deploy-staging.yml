@@ -32,6 +32,6 @@ jobs:
           username: premio-user-staging
           password: ${{ secrets.SFTP_PASSWORD }}
           local_path: './*'
-          remote_path: '/wp-content/themes/meridiana-child/'
+          remote_path: 'wp-content/themes/meridiana-child'
           sftp_only: true
           args: '-o ConnectTimeout=5'
