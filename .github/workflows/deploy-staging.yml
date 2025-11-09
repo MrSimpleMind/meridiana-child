@@ -24,16 +24,16 @@ jobs:
       - name: Build assets
         run: npm run build
       
-      - name: Install lftp
-        run: sudo apt-get update && sudo apt-get install -y lftp
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H newformazionemeridiana.tempurl.host >> ~/.ssh/known_hosts
       
       - name: Deploy via SFTP
-        env:
-          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
         run: |
-          lftp -u premio-user-staging,"$SFTP_PASSWORD" -e "
-          set sftp:auto-confirm yes;
-          set ssl:verify-certificate no;
-          mirror --reverse --delete --verbose --exclude .git/ --exclude .github/ --exclude node_modules/ --exclude docs/ --exclude assets/css/src/ --exclude assets/js/src/ --exclude package.json --exclude package-lock.json --exclude webpack.config.js --exclude compile-scss.js --exclude .DS_Store --exclude CHECKPOINT_*.txt ./ Files/wp-content/themes/meridiana-child/;
+          sftp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no premio-user-staging@newformazionemeridiana.tempurl.host <<EOF
+          put -r ./* Files/wp-content/themes/meridiana-child/
           bye
-          " sftp://newformazionemeridiana.tempurl.host
+          EOF
