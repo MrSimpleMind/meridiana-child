@@ -43,11 +43,6 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H newformazionemeridiana.tempurl.host >> ~/.ssh/known_hosts
       
-      - name: Deploy via SFTP
+      - name: Deploy via SCP
         run: |
-          cd deploy_temp
-          sftp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no premio-user-staging@newformazionemeridiana.tempurl.host <<EOF
-          cd Files/wp-content/themes/meridiana-child
-          put -r *
-          bye
-          EOF
+          scp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -r deploy_temp/* premio-user-staging@newformazionemeridiana.tempurl.host:Files/wp-content/themes/meridiana-child/
