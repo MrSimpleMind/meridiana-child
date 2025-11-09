@@ -31,9 +31,23 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H newformazionemeridiana.tempurl.host >> ~/.ssh/known_hosts
       
-      - name: Deploy via SFTP
+      - name: Deploy via rsync
         run: |
-          sftp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no premio-user-staging@newformazionemeridiana.tempurl.host <<EOF
-          put -r ./* Files/wp-content/themes/meridiana-child/
-          bye
-          EOF
+          rsync -avz --delete \
+            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
+            --exclude '.git' \
+            --exclude '.github' \
+            --exclude '.claude' \
+            --exclude 'node_modules' \
+            --exclude 'docs' \
+            --exclude 'assets/css/src' \
+            --exclude 'assets/js/src' \
+            --exclude 'package.json' \
+            --exclude 'package-lock.json' \
+            --exclude 'webpack.config.js' \
+            --exclude 'compile-scss.js' \
+            --exclude '.DS_Store' \
+            --exclude '.gitignore' \
+            --exclude '.gitattributes' \
+            --exclude 'CHECKPOINT_*.txt' \
+            ./ premio-user-staging@newformazionemeridiana.tempurl.host:Files/wp-content/themes/meridiana-child/
