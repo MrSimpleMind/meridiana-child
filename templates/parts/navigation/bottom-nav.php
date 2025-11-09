@@ -25,9 +25,9 @@
         <span>Documenti</span>
     </a>
     
-    <!-- CORSI - Archive CPT 'sfwd-courses' -->
-    <a href="<?php echo get_post_type_archive_link('sfwd-courses'); ?>" 
-       class="bottom-nav__item <?php echo (is_post_type_archive('sfwd-courses') || is_singular('sfwd-courses')) ? 'active' : ''; ?>">
+    <!-- CORSI - Pagina /corsi/ -->
+    <a href="<?php echo home_url('/corsi/'); ?>"
+       class="bottom-nav__item <?php echo is_page('corsi') ? 'active' : ''; ?>">
         <i data-lucide="graduation-cap"></i>
         <span>Corsi</span>
     </a>
