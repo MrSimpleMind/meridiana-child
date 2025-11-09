@@ -24,14 +24,14 @@ jobs:
       - name: Build assets
         run: npm run build
       
-      - name: Deploy via SFTP
-        uses: wlixcc/SFTP-Deploy-Action@v1.2.4
+      - name: Deploy via SCP
+        uses: appleboy/scp-action@v0.1.7
         with:
-          server: newformazionemeridiana.tempurl.host
-          port: 22
+          host: newformazionemeridiana.tempurl.host
           username: premio-user-staging
           password: ${{ secrets.SFTP_PASSWORD }}
-          local_path: './*'
-          remote_path: 'wp-content/themes/meridiana-child/'
-          sftp_only: true
-          args: '-o ConnectTimeout=5'
+          port: 22
+          source: "./*"
+          target: "Files/wp-content/themes/meridiana-child"
+          strip_components: 0
+          rm: false
