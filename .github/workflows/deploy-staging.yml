@@ -24,18 +24,6 @@ jobs:
       - name: Build assets
         run: npm run build
       
-      - name: Prepare files for deploy
-        run: |
-          mkdir -p deploy_temp
-          rsync -av --exclude='.git' --exclude='.github' --exclude='.claude' \
-            --exclude='node_modules' --exclude='docs' \
-            --exclude='assets/css/src' --exclude='assets/js/src' \
-            --exclude='package.json' --exclude='package-lock.json' \
-            --exclude='webpack.config.js' --exclude='compile-scss.js' \
-            --exclude='.DS_Store' --exclude='.gitignore' --exclude='.gitattributes' \
-            --exclude='CHECKPOINT_*.txt' \
-            ./ deploy_temp/
-      
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -44,6 +32,20 @@ jobs:
           ssh-keyscan -H newformazionemeridiana.tempurl.host >> ~/.ssh/known_hosts
       
       - name: Deploy via SFTP
-        run: |
-          cd deploy_temp
-          echo "put -r * Files/wp-content/themes/meridiana-child/" | sftp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no -b - premio-user-staging@newformazionemeridiana.tempurl.host
+        uses: Dylan700/sftp-upload-action@latest
+        with:
+          server: newformazionemeridiana.tempurl.host
+          username: premio-user-staging
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          port: 22
+          uploads: |
+            ./acf-json => Files/wp-content/themes/meridiana-child/acf-json
+            ./api => Files/wp-content/themes/meridiana-child/api
+            ./assets/css/dist => Files/wp-content/themes/meridiana-child/assets/css/dist
+            ./assets/js/dist => Files/wp-content/themes/meridiana-child/assets/js/dist
+            ./assets/images => Files/wp-content/themes/meridiana-child/assets/images
+            ./inc => Files/wp-content/themes/meridiana-child/inc
+            ./includes => Files/wp-content/themes/meridiana-child/includes
+            ./templates => Files/wp-content/themes/meridiana-child/templates
+            ./*.php => Files/wp-content/themes/meridiana-child/
+            ./style.css => Files/wp-content/themes/meridiana-child/
