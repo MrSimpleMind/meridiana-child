@@ -26,10 +26,6 @@
     z-index: var(--z-sticky);
     margin-bottom: 0;
     box-shadow: 0 2px 8px rgba(15, 23, 42, 0.18);
-
-    @media (max-width: 768px) {
-        margin-bottom: 0;
-    }
 }
 
 // =============================================================================
@@ -75,12 +71,12 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    padding: var(--space-4) var(--space-4);
+    padding: var(--space-3) var(--space-3);  // Mobile-first: padding ridotto
     background: transparent;
     border: none;
     border-bottom: 3px solid transparent;
     color: var(--color-tab-inactive);
-    font-size: var(--font-size-sm);
+    font-size: var(--font-size-xs);  // Mobile-first: font più piccolo
     font-weight: var(--font-weight-medium);
     cursor: pointer;
     transition: all 0.2s ease;
@@ -92,6 +88,21 @@
         width: 18px;
         height: 18px;
         flex-shrink: 0;
+    }
+
+    // Mobile-first: nasconde testo, mostra solo icone (eccetto badge)
+    span:not(.tabs__badge):not(.dashboard-tabs__badge):not(.corsi-tabs__badge) {
+        display: none;
+    }
+
+    // Desktop: padding e font maggiori, mostra testo
+    @include md {
+        padding: var(--space-4) var(--space-4);
+        font-size: var(--font-size-sm);
+
+        span:not(.tabs__badge):not(.dashboard-tabs__badge):not(.corsi-tabs__badge) {
+            display: inline;
+        }
     }
 
     // Hover state
@@ -111,17 +122,6 @@
     &:focus-visible {
         outline: 2px solid var(--color-primary);
         outline-offset: -2px;
-    }
-
-    // Mobile responsive
-    @media (max-width: 768px) {
-        padding: var(--space-3) var(--space-3);
-        font-size: var(--font-size-xs);
-
-        // Nasconde testo, mostra solo icone (eccetto badge)
-        span:not(.tabs__badge):not(.dashboard-tabs__badge):not(.corsi-tabs__badge) {
-            display: none;
-        }
     }
 }
 

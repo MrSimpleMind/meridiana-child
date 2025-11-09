@@ -10,9 +10,9 @@
 // ============================================
 
 .single-lesson-page {
-    padding-bottom: 100px; // Spazio extra per bottom nav mobile
+    padding-bottom: var(--space-18); // 72px per bottom nav mobile (ottimizzato da 100px)
 
-    @media (min-width: 768px) {
+    @include md {
         padding-bottom: var(--space-8);
     }
 }

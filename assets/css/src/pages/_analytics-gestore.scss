@@ -11,11 +11,11 @@
 .analytics-section {
     background: var(--color-bg-primary);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-4);  // Mobile-first
     box-shadow: var(--shadow-sm);
-    
-    @media (max-width: 768px) {
-        padding: var(--space-4);
+
+    @include md {
+        padding: var(--space-6);  // Desktop
     }
 }
 
@@ -40,11 +40,11 @@
 
 .analytics-kpi-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: 1fr;  // Mobile-first: singola colonna
     gap: var(--space-4);
-    
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
+
+    @include md {
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));  // Desktop: auto-fit
     }
 }
 
@@ -115,12 +115,12 @@
 
 .analytics-content-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(2, 1fr);  // Mobile-first: 2 colonne
     gap: var(--space-4);
     margin-bottom: var(--space-6);
-    
-    @media (max-width: 768px) {
-        grid-template-columns: repeat(2, 1fr);
+
+    @include md {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));  // Desktop: auto-fit
     }
 }
 
@@ -201,11 +201,11 @@
 .analytics-chart-wrapper {
     position: relative;
     width: 100%;
-    max-width: 400px;
+    max-width: 100%;  // Mobile-first: full width
     margin: 0 auto var(--space-6);
-    
-    @media (max-width: 768px) {
-        max-width: 100%;
+
+    @include md {
+        max-width: 400px;  // Desktop: larghezza limitata
     }
 }
 

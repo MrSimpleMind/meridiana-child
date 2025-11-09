@@ -76,12 +76,20 @@
         border-bottom-color: var(--color-primary);
     }
 
-    @media (max-width: 768px) {
-        padding: var(--space-3) var(--space-3);
-        font-size: 12px;
+    // Mobile: riduci padding e nascondi testo (solo icone)
+    padding: var(--space-3) var(--space-3);
+    font-size: 12px;
+
+    span {
+        display: none;
+    }
+
+    @include md {
+        padding: var(--space-4) var(--space-4);
+        font-size: 14px;
 
         span {
-            display: none;
+            display: inline;
         }
     }
 }
@@ -91,12 +99,12 @@
     background-color: transparent;
     border-radius: 0;
     box-shadow: none;
-    padding: var(--space-8);
+    padding: var(--space-6);  // Mobile-first: inizia con padding ridotto
     min-height: 400px;
     margin-top: 0; // Rimuovi margin - content parte subito sotto le tab
 
-    @media (max-width: 768px) {
-        padding: var(--space-6);
+    @include md {
+        padding: var(--space-8);  // Desktop: padding maggiore
     }
 }
 
@@ -104,7 +112,8 @@
 .tab-header {
     display: flex;
     justify-content: space-between;
-    align-items: center;
+    align-items: flex-start;  // Mobile-first: stack verticalmente
+    flex-direction: column;
     margin-bottom: var(--space-8);
     gap: var(--space-4);
 
@@ -115,9 +124,9 @@
         color: #1F2937;
     }
 
-    @media (max-width: 768px) {
-        flex-direction: column;
-        align-items: flex-start;
+    @include md {
+        flex-direction: row;  // Desktop: layout orizzontale
+        align-items: center;
     }
 }
 
@@ -456,10 +465,15 @@
         font-weight: 500;
     }
 
-    @media (max-width: 640px) {
-        left: var(--space-4);
-        right: var(--space-4);
-        max-width: none;
+    // Mobile: full width con margin laterale
+    left: var(--space-4);
+    right: var(--space-4);
+    max-width: none;
+
+    @include sm {
+        left: var(--space-6);
+        right: auto;
+        max-width: 400px;
     }
 }
 
@@ -631,10 +645,8 @@
     .repeater-row__body {
         display: grid;
         gap: var(--space-4);
-    }
 
-    @media (min-width: 768px) {
-        .repeater-row__body {
+        @include md {
             grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
         }
     }
@@ -666,18 +678,18 @@
 // ========================================
 
 .desktop-only {
-    display: block;
+    display: none;  // Mobile-first: nascosto di default
 
-    @media (max-width: 1024px) {
-        display: none;
+    @include xl {
+        display: block;  // Mostra solo su desktop large (>= 1200px)
     }
 }
 
 .laptop-only {
-    display: none;
+    display: block;  // Mobile-first: mostra di default
 
-    @media (max-width: 1024px) {
-        display: block;
+    @include xl {
+        display: none;  // Nascondi su desktop large (>= 1200px)
     }
 }
 
@@ -1114,16 +1126,16 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-1);
-    padding: 8px 12px;
+    padding: var(--space-2) var(--space-3);
     background-color: #f9fafb;
     border-left: 2px solid #d1d5db;
 
-    @media (min-width: 768px) {
+    @include md {
         flex-direction: row;
         align-items: center;
         justify-content: space-between;
         gap: var(--space-2);
-        padding: 10px 16px;
+        padding: var(--space-2-5) var(--space-4);
     }
 }
 
@@ -1178,20 +1190,8 @@
 }
 
 // Responsive: Mobile stack
-@media (max-width: 767px) {
-    .file-item {
-        flex-direction: column;
-
-        .file-item__actions {
-            width: 100%;
-            justify-content: space-between;
-        }
-
-        .file-item__expiry {
-            margin-left: auto;
-        }
-    }
-}
+// NOTA: Stili mobile già definiti in .file-item sopra (mobile-first)
+// Questo blocco è ridondante e può essere rimosso
 
 // ========================================
 // Select2 Styling - Custom Integration
@@ -1312,19 +1312,32 @@
 // Responsive Select2 Styling
 // ========================================
 
-@media (max-width: 640px) {
-    .select2-container {
-        font-size: 13px;
-    }
+// Mobile-first: inizia con dimensioni ridotte
+.select2-container {
+    font-size: 13px;
 
-    .select2-container .select2-selection--multiple {
-        padding: var(--space-2) var(--space-2);
-        min-height: 38px;
+    @include sm {
+        font-size: 14px;  // Tablet e superiori: font standard
     }
+}
 
-    .select2-results__option {
-        padding: 6px 10px;
-        font-size: 13px;
+.select2-container .select2-selection--multiple {
+    padding: var(--space-2) var(--space-2);
+    min-height: 38px;
+
+    @include sm {
+        padding: var(--space-2) var(--space-3);
+        min-height: 42px;
+    }
+}
+
+.select2-results__option {
+    padding: var(--space-1-5) var(--space-2-5);
+    font-size: 13px;
+
+    @include sm {
+        padding: var(--space-2) var(--space-3);
+        font-size: 14px;
     }
 }
 

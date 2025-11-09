@@ -4,9 +4,9 @@
 
 .home-container {
     // Padding unificato definito in layout/_containers.scss
-    padding-bottom: 100px; // Spazio extra per bottom nav mobile
-    
-    @media (min-width: 768px) {
+    padding-bottom: var(--space-18); // 72px per bottom nav mobile (ottimizzato da 100px)
+
+    @include md {
         padding-bottom: var(--space-8);
     }
 }
@@ -159,13 +159,13 @@
     color: var(--color-text-muted);
     font-size: var(--font-size-xs);
     animation: pulseHint 2s ease-in-out infinite;
-    
+
     i, svg {
         width: 16px;
         height: 16px;
     }
-    
-    @media (min-width: 768px) {
+
+    @include md {
         display: none; // Nascondi su desktop
     }
 }
@@ -184,8 +184,8 @@
 // Controlli navigazione carousel (solo desktop)
 .carousel-control {
     display: none;
-    
-    @media (min-width: 768px) {
+
+    @include md {
         display: flex;
         position: absolute;
         top: 50%;
@@ -311,16 +311,16 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-8);
-    
-    @media (min-width: 768px) {
+
+    @include md {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-8);
     }
-    
+
     // Aggiunge separatore tra le due sezioni
     .home-section:first-child {
-        @media (min-width: 768px) {
+        @include md {
             padding-right: var(--space-8);
             border-right: 1px solid var(--color-border-light);
         }
@@ -423,25 +423,25 @@
 // DESKTOP ADJUSTMENTS
 // =============================================================================
 
-@media (min-width: 768px) {
+@include md {
     // Home container già definito sopra, qui solo override desktop
-    
+
     .home-header {
         padding: var(--space-2) 0 var(--space-4);
         margin-bottom: var(--space-8);
         border-bottom: 1px solid var(--color-border-light);
-        
+
         &__greeting {
             font-size: var(--font-size-base);
         }
-        
+
         &__notifications {
             width: 48px;
             height: 48px;
             border-radius: var(--radius-full);
             background-color: var(--color-bg-secondary);
             transition: all 0.2s ease;
-            
+
             &:hover {
                 background-color: var(--color-primary);
                 color: white;
@@ -449,25 +449,25 @@
             }
         }
     }
-    
+
     .user-avatar {
         width: 56px;
         height: 56px;
-        
+
         i, svg {
             width: 28px;
             height: 28px;
         }
     }
-    
+
     .home-section {
         margin-bottom: 0; // Rimuovi margin perché il grid ha gap
-        
+
         &__title {
             font-size: var(--font-size-2xl);
         }
     }
-    
+
     // Convenzioni carousel su desktop: 3 card visibili con scroll
     .convenzioni-carousel__wrapper {
         display: flex;
@@ -489,9 +489,9 @@
     }
 }
 
-@media (min-width: 1200px) {
+@include xl {
     // Home container usa padding da layout/_containers.scss
-    
+
     .home-header {
         // Mantieni padding ridotto anche su schermi grandi
         padding: var(--space-2) 0 var(--space-4);
@@ -526,13 +526,13 @@
     grid-template-columns: 1fr;
     gap: var(--space-6);
     margin-top: var(--space-6);
-    
-    @media (min-width: 768px) {
+
+    @include md {
         grid-template-columns: repeat(2, 1fr);
         gap: var(--space-6);
     }
-    
-    @media (min-width: 1200px) {
+
+    @include xl {
         grid-template-columns: repeat(3, 1fr);
         gap: var(--space-6);
     }

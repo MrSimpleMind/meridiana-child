@@ -14,9 +14,9 @@
 .archive-page {
     min-height: 100vh;
     background-color: var(--color-bg-tertiary);
-    padding-bottom: 100px; // Spazio per bottom nav mobile
+    padding-bottom: var(--space-18); // 72px per bottom nav mobile (ottimizzato da 100px)
 
-    @media (min-width: 768px) {
+    @include md {
         padding-bottom: var(--space-8);
     }
 }
