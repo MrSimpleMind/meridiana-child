@@ -9,12 +9,12 @@
 // Padding standard consistente per TUTTE le pagine
 @mixin standard-container-padding {
     padding: var(--space-4) var(--space-4);
-    
-    @media (min-width: 768px) {
+
+    @include md {
         padding: var(--space-8) var(--space-6);
     }
-    
-    @media (min-width: 1200px) {
+
+    @include xl {
         padding: var(--space-10) var(--space-8);
     }
 }

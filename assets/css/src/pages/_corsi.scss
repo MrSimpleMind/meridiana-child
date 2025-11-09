@@ -216,7 +216,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    padding: var(--space-12);
+    padding: var(--space-8);  // Mobile-first: padding ridotto
     text-align: center;
     background-color: var(--color-bg-secondary);
     border-radius: var(--radius-lg);
@@ -240,8 +240,8 @@
         margin: 0;
     }
 
-    @media (max-width: 768px) {
-        padding: var(--space-8);
+    @include md {
+        padding: var(--space-12);  // Desktop: padding maggiore
     }
 }
 
@@ -537,10 +537,10 @@
 .single-course-container {
     max-width: 1200px;
     margin: 0 auto;
-    padding: var(--space-8);
+    padding: var(--space-6);  // Mobile-first
 
-    @media (max-width: 768px) {
-        padding: var(--space-6);
+    @include md {
+        padding: var(--space-8);  // Desktop
     }
 }
 
@@ -549,18 +549,15 @@
 // ========================================
 
 .single-course__header {
-    margin-bottom: var(--space-8);
+    margin-bottom: var(--space-6);  // Mobile-first
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
 
-    @media (min-width: 768px) {
-        flex-direction: row;
+    @include md {
+        flex-direction: row;  // Desktop: layout orizzontale
         align-items: flex-start;
-    }
-
-    @media (max-width: 768px) {
-        margin-bottom: var(--space-6);
+        margin-bottom: var(--space-8);
     }
 }
 
@@ -569,14 +566,14 @@
 }
 
 .single-course__title {
-    font-size: var(--font-size-4xl);
+    font-size: var(--font-size-3xl);  // Mobile-first
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-2) 0;
     line-height: var(--line-height-tight);
 
-    @media (max-width: 768px) {
-        font-size: var(--font-size-3xl);
+    @include md {
+        font-size: var(--font-size-4xl);  // Desktop
     }
 }
 
@@ -588,7 +585,7 @@
 }
 
 .single-course__featured-image {
-    flex: 1;
+    width: 100%;  // Mobile-first: full width
     border-radius: var(--radius-lg);
     overflow: hidden;
     box-shadow: var(--shadow-md);
@@ -599,8 +596,9 @@
         display: block;
     }
 
-    @media (max-width: 768px) {
-        width: 100%;
+    @include md {
+        flex: 1;  // Desktop: flex layout
+        width: auto;
     }
 }
 
@@ -610,22 +608,22 @@
 
 .single-course__layout {
     display: grid;
-    grid-template-columns: 1fr 350px;
-    gap: var(--space-8);
+    grid-template-columns: 1fr;  // Mobile-first: singola colonna
+    gap: var(--space-6);
 
-    @media (max-width: 768px) {
-        grid-template-columns: 1fr;
-        gap: var(--space-6);
+    @include md {
+        grid-template-columns: 1fr 350px;  // Desktop: sidebar
+        gap: var(--space-8);
     }
 }
 
 .single-course__content {
     display: flex;
     flex-direction: column;
-    gap: var(--space-8);
+    gap: var(--space-6);  // Mobile-first
 
-    @media (max-width: 768px) {
-        gap: var(--space-6);
+    @include md {
+        gap: var(--space-8);  // Desktop
     }
 }
 
@@ -633,9 +631,10 @@
     display: flex;
     flex-direction: column;
     gap: var(--space-6);
+    order: -1;  // Mobile-first: sidebar prima del contenuto
 
-    @media (max-width: 768px) {
-        order: -1; // Mostra sidebar prima del contenuto su mobile
+    @include md {
+        order: 0;  // Desktop: sidebar in ordine normale
     }
 }
 
@@ -653,24 +652,24 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);  // Mobile-first
     font-weight: var(--font-weight-bold);
     color: var(--color-text-primary);
     margin: 0;
 
     i {
-        width: 28px;
-        height: 28px;
+        width: 24px;  // Mobile-first
+        height: 24px;
         flex-shrink: 0;
         color: var(--color-primary);
     }
 
-    @media (max-width: 768px) {
-        font-size: var(--font-size-xl);
+    @include md {
+        font-size: var(--font-size-2xl);  // Desktop
 
         i {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
         }
     }
 }
@@ -706,8 +705,8 @@
 .lesson-item {
     display: flex;
     align-items: center;
-    gap: var(--space-4);
-    padding: var(--space-4);
+    gap: var(--space-3);  // Mobile-first
+    padding: var(--space-3);
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
@@ -729,9 +728,9 @@
         }
     }
 
-    @media (max-width: 768px) {
-        gap: var(--space-3);
-        padding: var(--space-3);
+    @include md {
+        gap: var(--space-4);  // Desktop
+        padding: var(--space-4);
     }
 }
 
@@ -764,7 +763,7 @@
 
 .lesson-item__title {
     margin: 0;
-    font-size: var(--font-size-base);
+    font-size: var(--font-size-sm);  // Mobile-first
     font-weight: var(--font-weight-medium);
 
     a {
@@ -777,8 +776,8 @@
         }
     }
 
-    @media (max-width: 768px) {
-        font-size: var(--font-size-sm);
+    @include md {
+        font-size: var(--font-size-base);  // Desktop
     }
 }
 
@@ -800,11 +799,14 @@
 .lesson-item__action {
     display: flex;
     flex-shrink: 0;
+    width: 100%;  // Mobile-first: full width
+    margin-top: var(--space-2);
+    order: 3;
 
-    @media (max-width: 768px) {
-        width: 100%;
-        margin-top: var(--space-2);
-        order: 3;
+    @include md {
+        width: auto;  // Desktop: auto width
+        margin-top: 0;
+        order: 0;
     }
 }
 
@@ -832,10 +834,10 @@
     background-color: var(--color-bg-primary);
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
-    padding: var(--space-6);
+    padding: var(--space-4);  // Mobile-first
 
-    @media (max-width: 768px) {
-        padding: var(--space-4);
+    @include md {
+        padding: var(--space-6);  // Desktop
     }
 }
 
@@ -843,7 +845,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-2);
-    font-size: var(--font-size-lg);
+    font-size: var(--font-size-base);  // Mobile-first
     font-weight: var(--font-weight-semibold);
     color: var(--color-text-primary);
     margin: 0 0 var(--space-4) 0;
@@ -854,8 +856,8 @@
         color: var(--color-primary);
     }
 
-    @media (max-width: 768px) {
-        font-size: var(--font-size-base);
+    @include md {
+        font-size: var(--font-size-lg);  // Desktop
     }
 }
 
