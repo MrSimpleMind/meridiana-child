@@ -60,38 +60,45 @@
 // RESPONSIVE BREAKPOINTS
 // ========================================
 
+// Extra small devices e superiore (phone portrait)
+@mixin xs {
+    @media (min-width: $breakpoint-xs) {
+        @content;
+    }
+}
+
 // Mobile landscape e superiore
 @mixin sm {
-    @media (min-width: $breakpoint-sm) { 
-        @content; 
+    @media (min-width: $breakpoint-sm) {
+        @content;
     }
 }
 
 // Tablet portrait e superiore
 @mixin md {
-    @media (min-width: $breakpoint-md) { 
-        @content; 
+    @media (min-width: $breakpoint-md) {
+        @content;
     }
 }
 
 // Tablet landscape e superiore
 @mixin lg {
-    @media (min-width: $breakpoint-lg) { 
-        @content; 
+    @media (min-width: $breakpoint-lg) {
+        @content;
     }
 }
 
 // Desktop e superiore
 @mixin xl {
-    @media (min-width: $breakpoint-xl) { 
-        @content; 
+    @media (min-width: $breakpoint-xl) {
+        @content;
     }
 }
 
 // Large desktop
 @mixin xxl {
-    @media (min-width: $breakpoint-2xl) { 
-        @content; 
+    @media (min-width: $breakpoint-2xl) {
+        @content;
     }
 }
 
@@ -161,19 +168,153 @@
         width: $width;
         height: $width;
     }
-    
+
     &::-webkit-scrollbar-track {
         background: $track-color;
         border-radius: calc($width / 2);
     }
-    
+
     &::-webkit-scrollbar-thumb {
         background: $thumb-color;
         border-radius: calc($width / 2);
-        
+
         &:hover {
             background: $thumb-color;
             background: color-mix(in srgb, #{$thumb-color}, black 10%);
+        }
+    }
+}
+
+// ========================================
+// SPACING RESPONSIVE MIXINS
+// ========================================
+
+/**
+ * Padding container responsive ottimizzato per mobile-first
+ * Usa questo mixin per applicare padding standard ai container di pagina
+ *
+ * @example
+ *   .page-content {
+ *       @include container-padding-responsive;
+ *   }
+ */
+@mixin container-padding-responsive {
+    padding: var(--space-4);           // 16px mobile (base)
+
+    @include md {
+        padding: var(--space-6);        // 24px tablet
+    }
+
+    @include xl {
+        padding: var(--space-8);        // 32px desktop
+    }
+}
+
+/**
+ * Padding container laterale responsive (solo left/right)
+ * Per contenuti che hanno padding verticale separato
+ *
+ * @example
+ *   .full-width-section {
+ *       @include container-padding-horizontal;
+ *   }
+ */
+@mixin container-padding-horizontal {
+    padding-left: var(--space-4);      // 16px mobile
+    padding-right: var(--space-4);
+
+    @include md {
+        padding-left: var(--space-6);   // 24px tablet
+        padding-right: var(--space-6);
+    }
+
+    @include xl {
+        padding-left: var(--space-8);   // 32px desktop
+        padding-right: var(--space-8);
+    }
+}
+
+/**
+ * Bottom padding ottimizzato per compensare mobile navigation
+ * Su mobile: 72px (ridotto da 100px per risparmiare spazio)
+ * Su desktop: 32px (standard)
+ *
+ * @example
+ *   .page-wrapper {
+ *       @include bottom-padding-mobile-nav;
+ *   }
+ */
+@mixin bottom-padding-mobile-nav {
+    padding-bottom: var(--space-18);    // 72px mobile (ottimizzato!)
+
+    @include md {
+        padding-bottom: var(--space-8);  // 32px desktop/tablet
+    }
+}
+
+/**
+ * Margin bottom responsive per sezioni
+ * Spacing verticale tra sezioni che scala con viewport
+ *
+ * @example
+ *   .content-section {
+ *       @include section-margin-bottom;
+ *   }
+ */
+@mixin section-margin-bottom {
+    margin-bottom: var(--space-8);      // 32px mobile
+
+    @include md {
+        margin-bottom: var(--space-12);  // 48px tablet
+    }
+
+    @include xl {
+        margin-bottom: var(--space-16);  // 64px desktop
+    }
+}
+
+/**
+ * Gap responsive per flexbox/grid layouts
+ * Spacing tra elementi che scala con viewport
+ *
+ * @param {string} $size - small | medium | large
+ *
+ * @example
+ *   .grid-container {
+ *       display: grid;
+ *       @include responsive-gap(medium);
+ *   }
+ */
+@mixin responsive-gap($size: 'medium') {
+    @if $size == 'small' {
+        gap: var(--space-2);            // 8px mobile
+
+        @include md {
+            gap: var(--space-3);         // 12px tablet
+        }
+
+        @include xl {
+            gap: var(--space-4);         // 16px desktop
+        }
+    } @else if $size == 'medium' {
+        gap: var(--space-4);            // 16px mobile
+
+        @include md {
+            gap: var(--space-6);         // 24px tablet
+        }
+
+        @include xl {
+            gap: var(--space-8);         // 32px desktop
+        }
+    } @else if $size == 'large' {
+        gap: var(--space-6);            // 24px mobile
+
+        @include md {
+            gap: var(--space-8);         // 32px tablet
+        }
+
+        @include xl {
+            gap: var(--space-12);        // 48px desktop
         }
     }
 }

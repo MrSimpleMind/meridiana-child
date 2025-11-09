@@ -120,15 +120,21 @@ $line-height-relaxed: 1.75;
 $spacing-unit: 0.25rem; // 4px
 
 $space-1: $spacing-unit;      // 4px
+$space-1-5: $spacing-unit * 1.5;  // 6px  - Valori intermedi per gap compatti
 $space-2: $spacing-unit * 2;  // 8px
+$space-2-5: $spacing-unit * 2.5;  // 10px - Valori intermedi per gap medio-piccoli
 $space-3: $spacing-unit * 3;  // 12px
 $space-4: $spacing-unit * 4;  // 16px
 $space-5: $spacing-unit * 5;  // 20px
 $space-6: $spacing-unit * 6;  // 24px
+$space-7: $spacing-unit * 7;  // 28px - Spacing intermedio
 $space-8: $spacing-unit * 8;  // 32px
+$space-9: $spacing-unit * 9;  // 36px - Spacing generoso
 $space-10: $spacing-unit * 10; // 40px
 $space-12: $spacing-unit * 12; // 48px
+$space-14: $spacing-unit * 14; // 56px - Sezioni
 $space-16: $spacing-unit * 16; // 64px
+$space-18: $spacing-unit * 18; // 72px - Bottom padding mobile ottimizzato
 $space-20: $spacing-unit * 20; // 80px
 
 // ========================================
@@ -176,6 +182,7 @@ $z-notification: 1300;
 // BREAKPOINTS (Mobile-First)
 // ========================================
 
+$breakpoint-xs: 480px;   // Extra small devices (phones portrait)
 $breakpoint-sm: 576px;   // Smartphone landscape
 $breakpoint-md: 768px;   // Tablet portrait
 $breakpoint-lg: 992px;   // Tablet landscape
@@ -256,15 +263,21 @@ $breakpoint-2xl: 1400px; // Large desktop
     
     // Spacing
     --space-1: #{$space-1};
+    --space-1-5: #{$space-1-5};
     --space-2: #{$space-2};
+    --space-2-5: #{$space-2-5};
     --space-3: #{$space-3};
     --space-4: #{$space-4};
     --space-5: #{$space-5};
     --space-6: #{$space-6};
+    --space-7: #{$space-7};
     --space-8: #{$space-8};
+    --space-9: #{$space-9};
     --space-10: #{$space-10};
     --space-12: #{$space-12};
+    --space-14: #{$space-14};
     --space-16: #{$space-16};
+    --space-18: #{$space-18};
     --space-20: #{$space-20};
     
     // Border Radius

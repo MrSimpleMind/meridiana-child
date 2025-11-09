@@ -12,9 +12,9 @@
 .single-salute-page {
     min-height: 100vh;
     background-color: var(--color-bg-tertiary);
-    padding-bottom: 100px; // Spazio per bottom nav
-    
-    @media (min-width: 768px) {
+    padding-bottom: var(--space-18); // 72px per bottom nav mobile (ottimizzato da 100px)
+
+    @include md {
         padding-bottom: var(--space-8);
     }
 }

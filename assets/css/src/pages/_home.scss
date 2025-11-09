@@ -4,9 +4,9 @@
 
 .home-container {
     // Padding unificato definito in layout/_containers.scss
-    padding-bottom: 100px; // Spazio extra per bottom nav mobile
-    
-    @media (min-width: 768px) {
+    padding-bottom: var(--space-18); // 72px per bottom nav mobile (ottimizzato da 100px)
+
+    @include md {
         padding-bottom: var(--space-8);
     }
 }
