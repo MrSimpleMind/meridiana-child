@@ -8,12 +8,12 @@
     bottom: 0;
     left: 0;
     right: 0;
-    background-color: var(--color-bg-primary);
-    border-top: 1px solid var(--color-border);
+    background-color: var(--color-sidebar-dark);
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
     padding: 0; // Rimosso padding verticale (era var(--space-2))
     z-index: var(--z-fixed);
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
-    
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
+
     // Nascondi su desktop
     @media (min-width: 768px) {
         display: none;
@@ -28,17 +28,18 @@
     justify-content: center;
     gap: var(--space-1);
     padding: var(--space-2);
-    color: var(--color-text-secondary);
+    color: rgba(255, 255, 255, 0.7);
     font-size: var(--font-size-xs);
     font-weight: var(--font-weight-medium);
     text-decoration: none;
     min-height: 56px; // Touch-friendly
     min-width: 56px;
     position: relative;
-    transition: color 0.2s ease;
+    transition: all 0.2s ease;
     background: none;
     border: none;
     cursor: pointer;
+    border-radius: var(--radius-md);
 
     // Icona
     i, svg {
@@ -54,14 +55,16 @@
 
     // Stato hover
     &:hover {
-        color: var(--color-primary);
+        color: rgba(255, 255, 255, 0.9);
+        background-color: rgba(255, 255, 255, 0.05);
     }
 
     // Stato attivo
     &.active,
     &[aria-current="page"] {
-        color: var(--color-primary);
+        color: white;
         font-weight: var(--font-weight-semibold);
+        background-color: rgba(255, 255, 255, 0.15);
 
         i, svg {
             stroke-width: 2.5;
@@ -78,12 +81,12 @@
         height: 8px;
         border-radius: 50%;
         background-color: var(--color-error);
-        border: 2px solid var(--color-bg-primary);
+        border: 2px solid var(--color-sidebar-dark);
     }
 
     // Accessibilità focus
     &:focus-visible {
-        outline: 2px solid var(--color-primary);
+        outline: 2px solid rgba(255, 255, 255, 0.5);
         outline-offset: -2px;
         border-radius: var(--radius-sm);
     }
@@ -169,12 +172,10 @@
 
     &:hover {
         background-color: var(--color-bg-secondary);
-        color: var(--color-primary);
     }
 
     &.active {
-        background-color: rgba(171, 17, 32, 0.1);
-        color: var(--color-primary);
+        background-color: var(--color-bg-secondary);
         font-weight: var(--font-weight-semibold);
     }
 }
