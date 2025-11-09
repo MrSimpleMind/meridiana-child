@@ -24,6 +24,18 @@ jobs:
       - name: Build assets
         run: npm run build
       
+      - name: Prepare files for deploy
+        run: |
+          mkdir -p deploy_temp
+          rsync -av --exclude='.git' --exclude='.github' --exclude='.claude' \
+            --exclude='node_modules' --exclude='docs' \
+            --exclude='assets/css/src' --exclude='assets/js/src' \
+            --exclude='package.json' --exclude='package-lock.json' \
+            --exclude='webpack.config.js' --exclude='compile-scss.js' \
+            --exclude='.DS_Store' --exclude='.gitignore' --exclude='.gitattributes' \
+            --exclude='CHECKPOINT_*.txt' \
+            ./ deploy_temp/
+      
       - name: Setup SSH
         run: |
           mkdir -p ~/.ssh
@@ -31,23 +43,11 @@ jobs:
           chmod 600 ~/.ssh/deploy_key
           ssh-keyscan -H newformazionemeridiana.tempurl.host >> ~/.ssh/known_hosts
       
-      - name: Deploy via rsync
+      - name: Deploy via SFTP
         run: |
-          rsync -avz --delete \
-            -e "ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no" \
-            --exclude '.git' \
-            --exclude '.github' \
-            --exclude '.claude' \
-            --exclude 'node_modules' \
-            --exclude 'docs' \
-            --exclude 'assets/css/src' \
-            --exclude 'assets/js/src' \
-            --exclude 'package.json' \
-            --exclude 'package-lock.json' \
-            --exclude 'webpack.config.js' \
-            --exclude 'compile-scss.js' \
-            --exclude '.DS_Store' \
-            --exclude '.gitignore' \
-            --exclude '.gitattributes' \
-            --exclude 'CHECKPOINT_*.txt' \
-            ./ premio-user-staging@newformazionemeridiana.tempurl.host:Files/wp-content/themes/meridiana-child/
+          cd deploy_temp
+          sftp -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no premio-user-staging@newformazionemeridiana.tempurl.host <<EOF
+          cd Files/wp-content/themes/meridiana-child
+          put -r *
+          bye
+          EOF
