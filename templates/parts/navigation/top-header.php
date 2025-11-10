@@ -33,24 +33,22 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
 
         <!-- Actions -->
         <div class="top-header__actions">
+            <!-- Notifications Bell - OneSignal -->
+            <button class="btn-icon top-header__notifications-bell"
+                    id="onesignal-bell-button"
+                    onclick="if(window.OneSignalBellClick) { window.OneSignalBellClick(); } else { console.warn('[OneSignal] OneSignalBellClick not available yet'); }"
+                    aria-label="Notifiche"
+                    title="Notifiche">
+                <i data-lucide="bell"></i>
+                <span class="notification-badge" id="notification-count" style="display: none;">0</span>
+            </button>
+
             <!-- Dark Mode Toggle -->
             <button class="btn-icon top-header__theme-toggle"
                     @click="darkMode = !darkMode"
                     :aria-label="darkMode ? 'Attiva tema chiaro' : 'Attiva tema scuro'"
                     :title="darkMode ? 'Tema chiaro' : 'Tema scuro'">
                 <i :data-lucide="darkMode ? 'sun' : 'moon'"></i>
-            </button>
-
-            <!-- Notifications -->
-            <button class="btn-icon top-header__notifications" aria-label="Notifiche">
-                <i data-lucide="bell"></i>
-                <?php
-                // Conteggio notifiche (da implementare)
-                $notifiche_count = 0; // TODO: implementare logica conteggio
-                if ($notifiche_count > 0):
-                ?>
-                <span class="badge-count"><?php echo $notifiche_count; ?></span>
-                <?php endif; ?>
             </button>
         </div>
     </div>

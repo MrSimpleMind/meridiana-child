@@ -253,8 +253,10 @@ require_once MERIDIANA_CHILD_DIR . '/includes/ajax-analytics.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/gestore-acf-forms.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-media-fix.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/acf-label-fix.php';
+
 require_once MERIDIANA_CHILD_DIR . '/includes/notification-system.php';
 require_once MERIDIANA_CHILD_DIR . '/includes/notification-frontend.php';
+
 require_once MERIDIANA_CHILD_DIR . '/api/analytics-api.php';
 require_once MERIDIANA_CHILD_DIR . '/api/learndash-api.php';
 
@@ -352,9 +354,12 @@ function get_current_nav_class($page_slug) {
 
 function meridiana_remove_version_strings($src) {
     global $wp_version;
-    parse_str(parse_url($src, PHP_URL_QUERY), $query);
-    if (!empty($query['ver']) && $query['ver'] === $wp_version) {
-        $src = remove_query_arg('ver', $src);
+    $query_string = parse_url($src, PHP_URL_QUERY);
+    if ($query_string) {
+        parse_str($query_string, $query);
+        if (!empty($query['ver']) && $query['ver'] === $wp_version) {
+            $src = remove_query_arg('ver', $src);
+        }
     }
     return $src;
 }

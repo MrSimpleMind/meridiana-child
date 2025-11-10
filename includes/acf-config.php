@@ -110,9 +110,25 @@ add_filter('acf/settings/show_admin', 'meridiana_hide_acf_menu');
 */
 
 /**
+ * Registra le pagine di opzioni ACF
+ * IMPORTANTE: Deve essere eseguito prima che ACF si inizializzi
+ */
+if (function_exists('acf_add_options_page')) {
+    acf_add_options_page(array(
+        'page_title' => 'Configurazione OneSignal',
+        'menu_title' => 'Configurazione OneSignal',
+        'menu_slug' => 'configurazione-onesignal',
+        'capability' => 'manage_options',
+        'redirect' => false,
+        'position' => 90,
+        'icon_url' => 'dashicons-notifications',
+    ));
+}
+
+/**
  * Personalizza path per salvataggio Field Groups
  * IMPORTANTE: Abilita version control per configurazioni ACF
- * 
+ *
  * NOTA: Questi filtri DEVONO essere eseguiti PRIMA che ACF si inizializzi
  */
 

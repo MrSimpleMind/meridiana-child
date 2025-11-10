@@ -1937,7 +1937,8 @@ function meridiana_ajax_save_comunicazione() {
 
     }
 
-
+    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+    // quando il post viene pubblicato (hook publish_comunicazioni)
 
     wp_send_json_success([
 
@@ -2073,6 +2074,8 @@ function meridiana_ajax_save_convenzione() {
     }
     wp_set_post_terms($post_id, $categories_clean, 'category', false);
 
+    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+
     wp_send_json_success([
         'message' => __('Convenzione salvata con successo', 'meridiana-child'),
         'post_id' => $post_id,
@@ -2194,6 +2197,8 @@ function meridiana_ajax_save_salute() {
     }
     wp_set_post_terms($post_id, $categories_clean, 'category', false);
 
+    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+
     wp_send_json_success([
         'message' => __('Contenuto salvato con successo', 'meridiana-child'),
         'post_id' => $post_id,
@@ -2285,7 +2290,7 @@ function meridiana_ajax_save_documento() {
 
     }
 
-
+    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
 
     wp_send_json_success([
 
