@@ -5,6 +5,7 @@
 
 import Alpine from 'alpinejs';
 import documentTracker from './tracking';
+import './notification-bell'; // Import notification bell component - si auto-registra con Alpine
 import './gestore-dashboard'; // Import gestore-dashboard module
 
 // Espone Alpine globalmente così i moduli legacy possono accedervi

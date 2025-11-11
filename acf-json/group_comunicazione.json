@@ -1,29 +1,9 @@
 {
-    "key": "group_modulo",
-    "title": "Modulo - Campi Custom",
+    "key": "group_comunicazione",
+    "title": "Comunicazione - Campi Custom",
     "fields": [
         {
-            "key": "field_pdf_modulo",
-            "label": "PDF Modulo",
-            "name": "pdf_modulo",
-            "aria-label": "",
-            "type": "file",
-            "instructions": "Carica il file PDF del modulo (scaricabile dal personale)",
-            "required": 1,
-            "conditional_logic": false,
-            "wrapper": {
-                "width": "",
-                "class": "",
-                "id": ""
-            },
-            "mime_types": "pdf",
-            "return_format": "id",
-            "library": "all",
-            "min_size": 0,
-            "max_size": 0
-        },
-        {
-            "key": "field_notification_abilita_modulo",
+            "key": "field_notification_abilita_comunicazione",
             "label": "Abilita Notifiche",
             "name": "notification_abilita",
             "aria-label": "",
@@ -43,7 +23,7 @@
             "ui_off_text": "No"
         },
         {
-            "key": "field_notification_udos_modulo",
+            "key": "field_notification_udos_comunicazione",
             "label": "UDO degli Utenti",
             "name": "notification_udos",
             "aria-label": "",
@@ -53,7 +33,7 @@
             "conditional_logic": [
                 [
                     {
-                        "field": "field_notification_abilita_modulo",
+                        "field": "field_notification_abilita_comunicazione",
                         "operator": "==",
                         "value": "1"
                     }
@@ -75,7 +55,7 @@
             "bidirectional_target": []
         },
         {
-            "key": "field_notification_profili_modulo",
+            "key": "field_notification_profili_comunicazione",
             "label": "Profili Professionali degli Utenti",
             "name": "notification_profili",
             "aria-label": "",
@@ -85,7 +65,7 @@
             "conditional_logic": [
                 [
                     {
-                        "field": "field_notification_abilita_modulo",
+                        "field": "field_notification_abilita_comunicazione",
                         "operator": "==",
                         "value": "1"
                     }
@@ -112,7 +92,7 @@
             {
                 "param": "post_type",
                 "operator": "==",
-                "value": "modulo"
+                "value": "post"
             }
         ]
     ],
@@ -126,5 +106,5 @@
     "description": "",
     "show_in_rest": 0,
     "display_title": "",
-    "modified": 1760472065
+    "modified": 1760472069
 }

@@ -194,75 +194,107 @@ function meridiana_save_notification_settings($post_id) {
 
 /**
  * Recupera gli user_ids in base alla segmentazione
+ *
+ * @param string $segmentation_type Tipo di segmentazione (all, profili, udos, profili_and_udos, post_terms)
+ * @param array $selected_profili IDs dei profili selezionati
+ * @param array $selected_udos IDs delle UDO selezionate
+ * @param int $post_id ID del post (per segmentazione post_terms)
  */
-function meridiana_get_notification_recipients($segmentation_type, $selected_profili = [], $selected_udos = []) {
+function meridiana_get_notification_recipients($segmentation_type, $selected_profili = [], $selected_udos = [], $post_id = 0) {
     $users = [];
 
     switch ($segmentation_type) {
         case 'all':
-            // Tutti gli utenti (tranne admin)
+            // Tutti gli utenti loggati (non admin)
             $all_users = get_users([
-                'role' => 'subscriber',
+                'exclude' => [1], // Esclude admin
+                'role__not_in' => ['administrator']
             ]);
             $users = wp_list_pluck($all_users, 'ID');
             break;
 
         case 'profili':
-            // Solo utenti con profili specifici
+            // Solo utenti che hanno uno dei profili selezionati
             if (!empty($selected_profili)) {
-                $users = get_users([
-                    'meta_query' => [
-                        [
-                            'key' => 'profilo_professionale',
-                            'value' => $selected_profili,
-                            'compare' => 'IN',
-                        ]
-                    ]
-                ]);
-                $users = wp_list_pluck($users, 'ID');
+                $users = meridiana_get_users_by_terms($selected_profili, 'profilo-professionale', 'IN');
             }
             break;
 
         case 'udos':
-            // Solo utenti con UDO specifiche
+            // Solo utenti che hanno una delle UDO selezionate
             if (!empty($selected_udos)) {
-                $users = get_users([
-                    'meta_query' => [
-                        [
-                            'key' => 'udo_riferimento',
-                            'value' => $selected_udos,
-                            'compare' => 'IN',
-                        ]
-                    ]
-                ]);
-                $users = wp_list_pluck($users, 'ID');
+                $users = meridiana_get_users_by_terms($selected_udos, 'unita-offerta', 'IN');
             }
             break;
 
         case 'profili_and_udos':
-            // Utenti che hanno ENTRAMBI il profilo E l'UDO
-            if (!empty($selected_profili) && !empty($selected_udos)) {
-                $users = get_users([
-                    'meta_query' => [
-                        'relation' => 'AND',
-                        [
-                            'key' => 'profilo_professionale',
-                            'value' => $selected_profili,
-                            'compare' => 'IN',
-                        ],
-                        [
-                            'key' => 'udo_riferimento',
-                            'value' => $selected_udos,
-                            'compare' => 'IN',
-                        ]
-                    ]
-                ]);
-                $users = wp_list_pluck($users, 'ID');
+            // Utenti che hanno ALMENO UN profilo E ALMENO UN'UDO dai selezionati (OR logic)
+            $users_profili = !empty($selected_profili) ? meridiana_get_users_by_terms($selected_profili, 'profilo-professionale', 'IN') : [];
+            $users_udos = !empty($selected_udos) ? meridiana_get_users_by_terms($selected_udos, 'unita-offerta', 'IN') : [];
+            $users = array_unique(array_merge($users_profili, $users_udos));
+            break;
+
+        case 'post_terms':
+            // Usa le tassonomie assegnate al POST (per Protocollo/Modulo)
+            if ($post_id) {
+                $post = get_post($post_id);
+                if ($post) {
+                    // Recupera profili e UDO dal post
+                    $post_profili = wp_get_post_terms($post_id, 'profilo-professionale', ['fields' => 'ids']);
+                    $post_udos = wp_get_post_terms($post_id, 'unita-offerta', ['fields' => 'ids']);
+
+                    if (!empty($post_profili) || !empty($post_udos)) {
+                        // Combina profili e UDO del post per trovare utenti
+                        $users_profili = !empty($post_profili) ? meridiana_get_users_by_terms($post_profili, 'profilo-professionale', 'IN') : [];
+                        $users_udos = !empty($post_udos) ? meridiana_get_users_by_terms($post_udos, 'unita-offerta', 'IN') : [];
+                        $users = array_unique(array_merge($users_profili, $users_udos));
+                    }
+                }
             }
             break;
     }
 
     return array_unique(array_filter($users));
+}
+
+/**
+ * Helper: Recupera gli user_ids che hanno una delle tassonomie selezionate
+ */
+function meridiana_get_users_by_terms($term_ids = [], $taxonomy = '', $compare = 'IN') {
+    if (empty($term_ids) || empty($taxonomy)) {
+        return [];
+    }
+
+    $term_ids = array_filter(array_map('intval', $term_ids));
+    if (empty($term_ids)) {
+        return [];
+    }
+
+    // Query gli utenti che hanno uno dei termini
+    $user_args = [
+        'fields' => 'ID',
+        'exclude' => [1], // Esclude admin
+        'role__not_in' => ['administrator']
+    ];
+
+    // Usa il meta della relazione user-taxonomy se disponibile
+    // Oppure query diretta dalle relazioni
+    $users_query = new WP_User_Query($user_args);
+    $all_users = $users_query->get_results();
+
+    $users = [];
+    foreach ($all_users as $user_id) {
+        // Verifica se l'utente ha uno dei termini nella tassonomia
+        $user_terms = wp_get_object_terms($user_id, $taxonomy, ['fields' => 'ids']);
+        if (!is_wp_error($user_terms)) {
+            $user_term_ids = array_map('intval', $user_terms);
+            if (array_intersect($user_term_ids, $term_ids)) {
+                $users[] = $user_id;
+            }
+        }
+    }
+
+    return array_unique($users);
 }
 
 /**
@@ -324,34 +356,56 @@ function meridiana_create_notification_record($post_id, $user_ids, $send_email =
 
 /**
  * Hook per inviare notifiche al publish di un contenuto
- * Viene triggerato dopo che il post è stato salvato da meridiana_ajax_save_documento
+ * NOTA: Questo hook è DISABILITATO perché la form del gestore usa meridiana_handle_document_notification()
+ * Questo sarebbe usato solo se le notifiche venissero salvate tramite ACF field (non dalla form del gestore)
+ * Usa SEMPRE i field ACF per la segmentazione (notification_profili e notification_udos)
+ * Non usa le tassonomie del post, ma i Profili/UDO degli UTENTI selezionati dall'admin
  */
+// DISABILITATO - usa meridiana_handle_document_notification() dalla form del gestore
+/*
 add_action('meridiana_after_document_save', function($post_id, $cpt) {
-    // Leggi le impostazioni notifiche
-    $send_notification = get_post_meta($post_id, '_notification_enabled', true);
+    $post = get_post($post_id);
+    if (!$post) {
+        return;
+    }
+
+    // Leggi il field ACF "notification_abilita"
+    $send_notification = get_field('notification_abilita', $post_id);
 
     if (!$send_notification) {
         return;
     }
 
-    $segmentation_type = get_post_meta($post_id, '_notification_segmentation_type', true) ?: 'all';
-    $selected_profili = get_post_meta($post_id, '_notification_profili', true) ?: [];
-    $selected_udos = get_post_meta($post_id, '_notification_udos', true) ?: [];
-    $send_email = get_post_meta($post_id, '_notification_send_email', true);
+    // Per TUTTI i post types: usa i field ACF notification_profili e notification_udos
+    $selected_profili = get_field('notification_profili', $post_id) ?: [];
+    $selected_udos = get_field('notification_udos', $post_id) ?: [];
 
-    // Recupera i destinatari
-    $user_ids = meridiana_get_notification_recipients($segmentation_type, $selected_profili, $selected_udos);
-
-    if (empty($user_ids)) {
+    if (empty($selected_profili) && empty($selected_udos)) {
+        error_log('[Meridiana Notifications] No recipients selected for ' . $post->post_type . ' ID: ' . $post_id);
         return;
     }
+
+    // Ottieni gli utenti che hanno uno dei Profili/UDO selezionati (OR logic)
+    $segmentation_type = 'profili_and_udos'; // OR: utenti con almeno uno tra i profili/UDO
+    $user_ids = meridiana_get_notification_recipients($segmentation_type, $selected_profili, $selected_udos, $post_id);
+
+    if (empty($user_ids)) {
+        error_log('[Meridiana Notifications] No users found with selected profiles/UDOs for ' . $post->post_type . ' ID: ' . $post_id);
+        return;
+    }
+
+    // Leggi opzione email
+    $send_email = get_field('notification_send_email', $post_id) ?: false;
 
     // Crea il record di notifica
     $notification_id = meridiana_create_notification_record($post_id, $user_ids, $send_email);
 
     if (!$notification_id) {
+        error_log('[Meridiana Notifications] Failed to create notification record for post ID: ' . $post_id);
         return;
     }
+
+    error_log('[Meridiana Notifications] Notification created. ID: ' . $notification_id . ', Post ID: ' . $post_id . ', Recipients: ' . count($user_ids));
 
     // Invia OneSignal (se configurato)
     do_action('meridiana_send_push_notification', $notification_id, $post_id, $user_ids);
@@ -361,6 +415,7 @@ add_action('meridiana_after_document_save', function($post_id, $cpt) {
         do_action('meridiana_send_email_notification', $notification_id, $post_id, $user_ids);
     }
 }, 10, 2);
+*/
 
 /**
  * Invia notifiche push via OneSignal

@@ -3,6 +3,7 @@
  * Alpine.js component per la campanella notifiche nel header
  */
 
+// Registra il componente quando Alpine è pronto
 document.addEventListener('alpine:init', () => {
     Alpine.data('notificationBell', () => ({
         isOpen: false,

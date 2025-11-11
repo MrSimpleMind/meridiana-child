@@ -259,6 +259,7 @@ require_once MERIDIANA_CHILD_DIR . '/includes/notification-frontend.php';
 
 require_once MERIDIANA_CHILD_DIR . '/api/analytics-api.php';
 require_once MERIDIANA_CHILD_DIR . '/api/learndash-api.php';
+require_once MERIDIANA_CHILD_DIR . '/api/notification-api.php';
 
 /**
  * TEMPLATE ROUTING

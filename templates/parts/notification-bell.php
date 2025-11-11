@@ -113,7 +113,19 @@ $nonce = wp_create_nonce('wp_rest');
             flex: 1;
             overflow-y: auto;
         ">
-            <template x-if="notifications.length === 0">
+            <!-- Loading state -->
+            <template x-if="isLoading">
+                <div style="
+                    padding: 24px;
+                    text-align: center;
+                    color: #999;
+                ">
+                    <p>⏳ Caricamento notifiche...</p>
+                </div>
+            </template>
+
+            <!-- Empty state -->
+            <template x-if="!isLoading && notifications.length === 0">
                 <div style="
                     padding: 24px;
                     text-align: center;

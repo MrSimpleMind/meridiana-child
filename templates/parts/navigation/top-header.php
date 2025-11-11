@@ -33,15 +33,8 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
 
         <!-- Actions -->
         <div class="top-header__actions">
-            <!-- Notifications Bell - OneSignal -->
-            <button class="btn-icon top-header__notifications-bell"
-                    id="onesignal-bell-button"
-                    onclick="if(window.OneSignalBellClick) { window.OneSignalBellClick(); } else { console.warn('[OneSignal] OneSignalBellClick not available yet'); }"
-                    aria-label="Notifiche"
-                    title="Notifiche">
-                <i data-lucide="bell"></i>
-                <span class="notification-badge" id="notification-count" style="display: none;">0</span>
-            </button>
+            <!-- Notifications Bell (Alpine.js Component) -->
+            <?php get_template_part('templates/parts/notification-bell'); ?>
 
             <!-- Dark Mode Toggle -->
             <button class="btn-icon top-header__theme-toggle"

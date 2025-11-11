@@ -454,7 +454,7 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
                                 value="1"
 
-                                onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)"
+                                onchange="document.querySelector('.notification-segmentation-fields').style.display = this.checked ? 'block' : 'none'"
 
                             />
 
@@ -1155,7 +1155,7 @@ function meridiana_render_comunicazione_form($action = 'new', $post_id = null) {
                 <div class="checkbox-field">
                     <input type="hidden" name="send_notification" value="0" />
                     <label class="checkbox-inline">
-                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields').style.display = this.checked ? 'block' : 'none'" />
                         <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
                     </label>
                 </div>
@@ -1505,7 +1505,7 @@ function meridiana_render_convenzione_form($action = 'new', $post_id = null) {
                 <div class="checkbox-field">
                     <input type="hidden" name="send_notification" value="0" />
                     <label class="checkbox-inline">
-                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields').style.display = this.checked ? 'block' : 'none'" />
                         <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
                     </label>
                 </div>
@@ -1771,7 +1771,7 @@ function meridiana_render_salute_form($action = 'new', $post_id = null) {
                 <div class="checkbox-field">
                     <input type="hidden" name="send_notification" value="0" />
                     <label class="checkbox-inline">
-                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields').style.display = this.checked ? 'block' : 'none'" />
                         <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
                     </label>
                 </div>
@@ -2945,10 +2945,12 @@ function meridiana_handle_document_notification($post_id, $post_type = 'protocol
     error_log('=== NOTIFICA DEBUG: Inizio processamento ===');
     error_log('Post ID: ' . $post_id . ', Post Type: ' . $post_type);
     error_log('POST data keys: ' . implode(', ', array_keys($_POST)));
+    error_log('Full POST data: ' . json_encode($_POST, JSON_PRETTY_PRINT));
 
     // Verifica se la notifica è abilitata nel form
     $send_notification = isset($_POST['send_notification']) ? intval($_POST['send_notification']) : 0;
     error_log('send_notification value: ' . $send_notification);
+    error_log('send_notification isset: ' . (isset($_POST['send_notification']) ? 'TRUE' : 'FALSE'));
 
     if (!$send_notification) {
         error_log('Notifiche disabilitate, return');
@@ -3029,9 +3031,15 @@ function meridiana_handle_document_notification($post_id, $post_type = 'protocol
     ];
 
     // Gestisci la segmentazione
-    if ($send_to_all) {
+    // FALLBACK: Se nessun profilo/UDO è selezionato E send_to_all = 0, manda comunque a TUTTI gli utenti
+    if ($send_to_all || (empty($selected_profiles) && empty($selected_udos))) {
         // Manda a tutti gli iscritti
         $onesignal_payload['included_segments'] = ['All'];
+        if (empty($selected_profiles) && empty($selected_udos) && !$send_to_all) {
+            error_log('OneSignal: FALLBACK - Nessun profilo/UDO selezionato, mandando a TUTTI gli utenti');
+        } else {
+            error_log('OneSignal: Mandando notifica a TUTTI gli utenti' . ($send_to_all ? ' (esplicitamente richiesto)' : ''));
+        }
     } else {
         // Recupera gli utenti con i filtri applicati
         $user_ids = meridiana_get_users_by_segmentation($selected_profiles, $selected_udos);
@@ -3040,10 +3048,11 @@ function meridiana_handle_document_notification($post_id, $post_type = 'protocol
             // Usa external_user_ids per mandare a specifici utenti
             $external_user_ids = array_map('strval', $user_ids);
             $onesignal_payload['include_external_user_ids'] = $external_user_ids;
+            error_log('OneSignal: Mandando notifica a ' . count($user_ids) . ' utenti selezionati');
         } else {
-            // Se nessun utente trovato, non mandare a OneSignal (ma è già nel DB)
-            error_log('OneSignal: Nessun utente trovato con i filtri selezionati');
-            return;
+            // Se nessun utente trovato con i filtri, fallback a manda a tutti
+            $onesignal_payload['included_segments'] = ['All'];
+            error_log('OneSignal: Nessun utente trovato con i filtri selezionati - FALLBACK: mandando a TUTTI');
         }
     }
 
