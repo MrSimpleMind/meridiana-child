@@ -123,6 +123,17 @@ if (function_exists('acf_add_options_page')) {
         'position' => 90,
         'icon_url' => 'dashicons-notifications',
     ));
+
+    acf_add_options_page(array(
+        'page_title' => 'Trigger Notifiche',
+        'menu_title' => 'Trigger Notifiche',
+        'menu_slug' => 'configurazione-notifiche',
+        'capability' => 'manage_options',
+        'redirect' => false,
+        'position' => 91,
+        'icon_url' => 'dashicons-bell',
+        'parent_slug' => 'configurazione-onesignal',
+    ));
 }
 
 /**

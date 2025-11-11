@@ -423,6 +423,75 @@ function meridiana_render_acf_fields_for_post($post_type, $post_id = 0, $action 
 
         <?php endif; ?>
 
+        <!-- NOTIFICHE MANUALI - PROTOCOLLI E MODULI -->
+        <?php if ($is_protocollo || $is_modulo): ?>
+
+            <div class="acf-field acf-field-true-false">
+
+                <div class="acf-label">
+
+                    <label for="send_notification"><?php esc_html_e('Invia Notifiche', 'meridiana-child'); ?></label>
+
+                    <p class="description"><?php esc_html_e('Abilita questa opzione per inviare notifiche agli utenti quando il documento viene pubblicato', 'meridiana-child'); ?></p>
+
+                </div>
+
+                <div class="acf-input">
+
+                    <div class="checkbox-field">
+
+                        <input type="hidden" name="send_notification" value="0" />
+
+                        <label class="checkbox-inline">
+
+                            <input
+
+                                type="checkbox"
+
+                                id="send_notification"
+
+                                name="send_notification"
+
+                                value="1"
+
+                                onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)"
+
+                            />
+
+                            <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
+
+                        </label>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- CAMPI DI SEGMENTAZIONE (mostrati se notifiche abilitate) -->
+            <div class="notification-segmentation-fields" style="display: none;">
+                <?php
+
+                // Prepara i dati di tassonomia già presenti nel form
+                $post_taxonomy_data = [];
+
+                if (($is_protocollo || $is_modulo) && $post_id) {
+                    $profiles = wp_get_post_terms($post_id, 'profilo-professionale', ['fields' => 'ids']);
+                    $udos = wp_get_post_terms($post_id, 'unita-offerta', ['fields' => 'ids']);
+
+                    $post_taxonomy_data = [
+                        'profiles' => $profiles ?: [],
+                        'udos' => $udos ?: [],
+                    ];
+                }
+
+                meridiana_render_notification_segmentation_fields($post_taxonomy_data);
+
+                ?>
+            </div>
+
+        <?php endif; ?>
+
     </div>
 
     <?php
@@ -1076,6 +1145,28 @@ function meridiana_render_comunicazione_form($action = 'new', $post_id = null) {
 
         </div>
 
+        <!-- NOTIFICHE MANUALI - COMUNICAZIONI -->
+        <div class="acf-field acf-field-true-false">
+            <div class="acf-label">
+                <label for="send_notification"><?php esc_html_e('Invia Notifiche', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Abilita questa opzione per inviare notifiche agli utenti quando la comunicazione viene pubblicata', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="checkbox-field">
+                    <input type="hidden" name="send_notification" value="0" />
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMPI DI SEGMENTAZIONE -->
+        <div class="notification-segmentation-fields" style="display: none;">
+            <?php meridiana_render_notification_segmentation_fields([]); ?>
+        </div>
+
         <input type="hidden" name="post_type" value="comunicazioni" />
 
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
@@ -1404,6 +1495,28 @@ function meridiana_render_convenzione_form($action = 'new', $post_id = null) {
 
         <?php echo meridiana_render_category_multiselect($selected_categories, __('Categorie', 'meridiana-child'), __('Seleziona una o più categorie per la convenzione.', 'meridiana-child')); ?>
 
+        <!-- NOTIFICHE MANUALI - CONVENZIONI -->
+        <div class="acf-field acf-field-true-false">
+            <div class="acf-label">
+                <label for="send_notification"><?php esc_html_e('Invia Notifiche', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Abilita questa opzione per inviare notifiche agli utenti quando la convenzione viene pubblicata', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="checkbox-field">
+                    <input type="hidden" name="send_notification" value="0" />
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMPI DI SEGMENTAZIONE -->
+        <div class="notification-segmentation-fields" style="display: none;">
+            <?php meridiana_render_notification_segmentation_fields([]); ?>
+        </div>
+
         <input type="hidden" name="post_type" value="convenzioni" />
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
 
@@ -1648,6 +1761,28 @@ function meridiana_render_salute_form($action = 'new', $post_id = null) {
 
         <?php echo meridiana_render_category_multiselect($selected_categories, __('Categorie', 'meridiana-child'), __('Scegli le categorie associate al contenuto.', 'meridiana-child')); ?>
 
+        <!-- NOTIFICHE MANUALI - SALUTE & BENESSERE -->
+        <div class="acf-field acf-field-true-false">
+            <div class="acf-label">
+                <label for="send_notification"><?php esc_html_e('Invia Notifiche', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Abilita questa opzione per inviare notifiche agli utenti quando il contenuto viene pubblicato', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="checkbox-field">
+                    <input type="hidden" name="send_notification" value="0" />
+                    <label class="checkbox-inline">
+                        <input type="checkbox" id="send_notification" name="send_notification" value="1" onchange="document.querySelector('.notification-segmentation-fields')?.classList.toggle('hidden', !this.checked)" />
+                        <span><?php esc_html_e('Sì, abilita notifiche', 'meridiana-child'); ?></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- CAMPI DI SEGMENTAZIONE -->
+        <div class="notification-segmentation-fields" style="display: none;">
+            <?php meridiana_render_notification_segmentation_fields([]); ?>
+        </div>
+
         <input type="hidden" name="post_type" value="salute" />
         <input type="hidden" name="post_id" value="<?php echo esc_attr($post_id ?: 0); ?>" />
 
@@ -1828,7 +1963,6 @@ function meridiana_render_documento_taxonomy_fields_html($post_type, $post_id = 
 
 
 function meridiana_ajax_save_comunicazione() {
-
     if (!current_user_can('manage_platform') && !current_user_can('edit_posts') && !current_user_can('manage_options')) {
 
         wp_send_json_error(['message' => __('Permessi insufficienti', 'meridiana-child')], 403);
@@ -1937,8 +2071,8 @@ function meridiana_ajax_save_comunicazione() {
 
     }
 
-    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
-    // quando il post viene pubblicato (hook publish_comunicazioni)
+    // Gestisci notifiche manuali se attive
+    meridiana_handle_document_notification($post_id, 'post');
 
     wp_send_json_success([
 
@@ -2074,7 +2208,8 @@ function meridiana_ajax_save_convenzione() {
     }
     wp_set_post_terms($post_id, $categories_clean, 'category', false);
 
-    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+    // Gestisci notifiche manuali se attive
+    meridiana_handle_document_notification($post_id, 'convenzione');
 
     wp_send_json_success([
         'message' => __('Convenzione salvata con successo', 'meridiana-child'),
@@ -2197,7 +2332,8 @@ function meridiana_ajax_save_salute() {
     }
     wp_set_post_terms($post_id, $categories_clean, 'category', false);
 
-    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+    // Gestisci notifiche manuali se attive
+    meridiana_handle_document_notification($post_id, 'salute-e-benessere-l');
 
     wp_send_json_success([
         'message' => __('Contenuto salvato con successo', 'meridiana-child'),
@@ -2207,7 +2343,6 @@ function meridiana_ajax_save_salute() {
 
 
 function meridiana_ajax_save_documento() {
-
     $cpt = isset($_POST['cpt']) ? sanitize_text_field($_POST['cpt']) : 'protocollo';
 
     if (!in_array($cpt, ['protocollo', 'modulo'])) {
@@ -2290,7 +2425,8 @@ function meridiana_ajax_save_documento() {
 
     }
 
-    // Notifiche gestite automaticamente dal sistema OneSignal tramite trigger ACF
+    // Gestisci notifiche manuali se attive
+    meridiana_handle_document_notification($post_id, $cpt);
 
     wp_send_json_success([
 
@@ -2657,6 +2793,455 @@ function meridiana_ajax_save_user() {
         'message' => 'Utente salvato con successo',
         'user_id' => $user_id,
     ]);
+}
+
+// ============================================
+// GESTIONE NOTIFICHE MANUALI
+// ============================================
+
+/**
+ * Salva una notifica nel database locale
+ *
+ * @param int $post_id ID del post/documento
+ * @param string $post_type Tipo di post
+ * @param int $sender_id ID dell'utente che ha creato la notifica
+ * @param array $notification_data Dati della notifica (title, message, profiles, udos, send_to_all)
+ * @return int|bool ID della notifica o false se fallisce
+ */
+function meridiana_save_notification_to_db($post_id, $post_type, $sender_id, $notification_data) {
+    global $wpdb;
+
+    $post = get_post($post_id);
+    if (!$post) {
+        return false;
+    }
+
+    $title = !empty($notification_data['title']) ? $notification_data['title'] : $post->post_title;
+    $message = !empty($notification_data['message']) ? $notification_data['message'] :
+               (!empty($post->post_excerpt) ? $post->post_excerpt : substr(wp_strip_all_tags($post->post_content), 0, 150));
+
+    $table_name = $wpdb->prefix . 'meridiana_notifications';
+
+    $inserted = $wpdb->insert(
+        $table_name,
+        [
+            'post_id' => $post_id,
+            'post_type' => $post_type,
+            'sender_id' => $sender_id,
+            'title' => $title,
+            'message' => $message,
+            'notification_type' => 'push',
+            'segmentation_type' => !empty($notification_data['send_to_all']) ? 'all' : 'custom',
+            'send_email' => 0,
+            'created_at' => current_time('mysql'),
+            'published_at' => current_time('mysql'),
+        ],
+        ['%d', '%s', '%d', '%s', '%s', '%s', '%s', '%d', '%s', '%s']
+    );
+
+    if (!$inserted) {
+        error_log('DB Error: Impossibile salvare notifica nel database. ' . $wpdb->last_error);
+        return false;
+    }
+
+    $notification_id = $wpdb->insert_id;
+
+    // Determina i destinatari
+    $user_ids = [];
+
+    if (!empty($notification_data['send_to_all'])) {
+        // Manda a TUTTI gli utenti
+        $all_users = get_users(['fields' => 'ID', 'number' => -1]);
+        $user_ids = array_map('intval', $all_users);
+    } else {
+        // Filtra per Profilo e UDO
+        $selected_profiles = !empty($notification_data['profiles']) ? (array)$notification_data['profiles'] : [];
+        $selected_udos = !empty($notification_data['udos']) ? (array)$notification_data['udos'] : [];
+
+        $selected_profiles = array_map('intval', array_filter($selected_profiles));
+        $selected_udos = array_map('intval', array_filter($selected_udos));
+
+        $user_ids = meridiana_get_users_by_segmentation($selected_profiles, $selected_udos);
+    }
+
+    // Salva i destinatari nella tabella recipients
+    $recipients_table = $wpdb->prefix . 'meridiana_notification_recipients';
+
+    foreach ($user_ids as $user_id) {
+        $wpdb->insert(
+            $recipients_table,
+            [
+                'notification_id' => $notification_id,
+                'user_id' => $user_id,
+                'read_at' => null,
+                'email_sent' => 0,
+                'created_at' => current_time('mysql'),
+            ],
+            ['%d', '%d', null, '%d', '%s']
+        );
+    }
+
+    return $notification_id;
+}
+
+/**
+ * Recupera gli ID degli utenti filtrati per Profilo e UDO
+ *
+ * @param array $profile_ids Array di term IDs dei profili
+ * @param array $udo_ids Array di term IDs delle UDO
+ * @return array Array di user IDs
+ */
+function meridiana_get_users_by_segmentation($profile_ids = [], $udo_ids = []) {
+    $user_ids = [];
+
+    error_log('=== SEGMENTAZIONE DEBUG ===');
+    error_log('Profile IDs: ' . implode(', ', $profile_ids));
+    error_log('UDO IDs: ' . implode(', ', $udo_ids));
+
+    // Recupera tutti gli utenti
+    $users = get_users(['fields' => 'ID', 'number' => -1]);
+    error_log('Total users in system: ' . count($users));
+
+    foreach ($users as $user_id) {
+        $user_profile = get_field('profilo_professionale', 'user_' . $user_id);
+        $user_udo = get_field('udo_riferimento', 'user_' . $user_id);
+
+        $user_profile_id = null;
+        $user_udo_id = null;
+
+        if ($user_profile) {
+            $user_profile_id = is_array($user_profile) ? $user_profile['term_id'] : $user_profile;
+        }
+
+        if ($user_udo) {
+            $user_udo_id = is_array($user_udo) ? $user_udo['term_id'] : $user_udo;
+        }
+
+        // Applica filtri
+        $match_profile = empty($profile_ids) || ($user_profile_id && in_array($user_profile_id, $profile_ids));
+        $match_udo = empty($udo_ids) || ($user_udo_id && in_array($user_udo_id, $udo_ids));
+
+        // Se almeno uno dei filtri è attivo, appare solo se ENTRAMBI i filtri passano
+        if (!empty($profile_ids) || !empty($udo_ids)) {
+            if ((!empty($profile_ids) && !$match_profile) || (!empty($udo_ids) && !$match_udo)) {
+                continue;
+            }
+        }
+
+        $user_ids[] = $user_id;
+    }
+
+    return $user_ids;
+}
+
+/**
+ * Gestisce l'invio di notifiche manuali per documenti (Protocolli/Moduli/ecc)
+ *
+ * @param int $post_id ID del documento pubblicato
+ * @param string $post_type Tipo di post
+ */
+function meridiana_handle_document_notification($post_id, $post_type = 'protocollo') {
+    // LOG: Inizio processamento notifiche
+    error_log('=== NOTIFICA DEBUG: Inizio processamento ===');
+    error_log('Post ID: ' . $post_id . ', Post Type: ' . $post_type);
+    error_log('POST data keys: ' . implode(', ', array_keys($_POST)));
+
+    // Verifica se la notifica è abilitata nel form
+    $send_notification = isset($_POST['send_notification']) ? intval($_POST['send_notification']) : 0;
+    error_log('send_notification value: ' . $send_notification);
+
+    if (!$send_notification) {
+        error_log('Notifiche disabilitate, return');
+        return; // Notifica disabilitata
+    }
+
+    $post = get_post($post_id);
+    if (!$post) {
+        return;
+    }
+
+    // Recupera i dati della notifica
+    $selected_profiles = isset($_POST['notification_profiles']) ? $_POST['notification_profiles'] : [];
+    $selected_udos = isset($_POST['notification_udos']) ? $_POST['notification_udos'] : [];
+    $send_to_all = isset($_POST['notification_send_to_all']) ? intval($_POST['notification_send_to_all']) : 0;
+
+    if (!is_array($selected_profiles)) {
+        $selected_profiles = $selected_profiles ? [$selected_profiles] : [];
+    }
+    if (!is_array($selected_udos)) {
+        $selected_udos = $selected_udos ? [$selected_udos] : [];
+    }
+
+    // Sanitizza
+    $selected_profiles = array_map('intval', array_filter($selected_profiles));
+    $selected_udos = array_map('intval', array_filter($selected_udos));
+
+    // Prepara i dati della notifica
+    $notification_title = sprintf('Nuovo %s: %s', ucfirst($post_type), $post->post_title);
+    $notification_message = !empty($post->post_excerpt) ? $post->post_excerpt : substr(wp_strip_all_tags($post->post_content), 0, 150);
+
+    $notification_data = [
+        'title' => $notification_title,
+        'message' => $notification_message,
+        'profiles' => $selected_profiles,
+        'udos' => $selected_udos,
+        'send_to_all' => $send_to_all,
+    ];
+
+    // Salva nel database locale
+    error_log('Dati notifica da salvare:');
+    error_log('  Title: ' . $notification_data['title']);
+    error_log('  Selected Profiles: ' . implode(', ', $selected_profiles));
+    error_log('  Selected UDOs: ' . implode(', ', $selected_udos));
+    error_log('  Send to All: ' . $notification_data['send_to_all']);
+
+    $notification_id = meridiana_save_notification_to_db($post_id, $post_type, get_current_user_id(), $notification_data);
+
+    if (!$notification_id) {
+        error_log('Notifica: Errore salvataggio nel database locale');
+        return;
+    }
+
+    error_log('Notifica salvata con ID: ' . $notification_id);
+
+    // Ottieni le credenziali OneSignal
+    $app_id = get_field('meridiana_onesignal_app_id', 'option');
+    $rest_api_key = get_field('meridiana_onesignal_rest_api_key', 'option');
+
+    if (empty($app_id) || empty($rest_api_key)) {
+        // Anche se OneSignal non è configurato, la notifica è comunque salvata nel DB
+        error_log('OneSignal: Credenziali mancanti - Solo notifica locale salvata');
+        return;
+    }
+
+    // Prepara il payload per OneSignal
+    $onesignal_payload = [
+        'app_id' => $app_id,
+        'headings' => ['en' => $notification_title, 'it' => $notification_title],
+        'contents' => ['en' => $notification_message, 'it' => $notification_message],
+        'url' => get_permalink($post_id),
+        'big_picture' => has_post_thumbnail($post_id) ? get_the_post_thumbnail_url($post_id) : '',
+        'data' => [
+            'post_id' => $post_id,
+            'post_type' => $post_type,
+            'notification_id' => $notification_id,
+        ],
+    ];
+
+    // Gestisci la segmentazione
+    if ($send_to_all) {
+        // Manda a tutti gli iscritti
+        $onesignal_payload['included_segments'] = ['All'];
+    } else {
+        // Recupera gli utenti con i filtri applicati
+        $user_ids = meridiana_get_users_by_segmentation($selected_profiles, $selected_udos);
+
+        if (!empty($user_ids)) {
+            // Usa external_user_ids per mandare a specifici utenti
+            $external_user_ids = array_map('strval', $user_ids);
+            $onesignal_payload['include_external_user_ids'] = $external_user_ids;
+        } else {
+            // Se nessun utente trovato, non mandare a OneSignal (ma è già nel DB)
+            error_log('OneSignal: Nessun utente trovato con i filtri selezionati');
+            return;
+        }
+    }
+
+    // Invia la notifica a OneSignal
+    meridiana_send_onesignal_notification($onesignal_payload, $rest_api_key);
+}
+
+/**
+ * Renderizza i campi di segmentazione per le notifiche (Profilo + UDO + Manda a Tutti)
+ *
+ * @param array $post_taxonomy_data Dati di tassonomia già presenti nel form (per default)
+ *        Es: ['profiles' => [1, 2], 'udos' => [3, 4]]
+ */
+function meridiana_render_notification_segmentation_fields($post_taxonomy_data = []) {
+    $default_profiles = isset($post_taxonomy_data['profiles']) ? (array)$post_taxonomy_data['profiles'] : [];
+    $default_udos = isset($post_taxonomy_data['udos']) ? (array)$post_taxonomy_data['udos'] : [];
+
+    // Recupera tutti i profili professionali
+    $all_profiles = get_terms([
+        'taxonomy' => 'profilo-professionale',
+        'hide_empty' => false,
+        'number' => 0,
+    ]);
+
+    // Recupera tutte le UDO
+    $all_udos = get_terms([
+        'taxonomy' => 'unita-offerta',
+        'hide_empty' => false,
+        'number' => 0,
+    ]);
+
+    ?>
+    <div class="notification-segmentation-fields" style="border-top: 1px solid #ddd; padding-top: 20px; margin-top: 20px;">
+
+        <!-- PROFILI PROFESSIONALI -->
+        <div class="acf-field acf-field-select">
+            <div class="acf-label">
+                <label><?php esc_html_e('Profili Professionali Destinatari', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Seleziona uno o più profili. Lascia vuoto per inviare a TUTTI.', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <?php if (!empty($all_profiles) && !is_wp_error($all_profiles)): ?>
+                    <select
+                        id="notification_profiles"
+                        name="notification_profiles[]"
+                        class="select2-enable"
+                        multiple
+                        data-placeholder="<?php esc_attr_e('Lascia vuoto per TUTTI i profili', 'meridiana-child'); ?>"
+                    >
+                        <?php foreach ($all_profiles as $profile): ?>
+                            <option
+                                value="<?php echo esc_attr($profile->term_id); ?>"
+                                <?php selected(in_array($profile->term_id, $default_profiles, true)); ?>
+                            >
+                                <?php echo esc_html($profile->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else: ?>
+                    <p class="description"><?php esc_html_e('Nessun profilo professionale disponibile.', 'meridiana-child'); ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- UDO (UNITÀ D'OFFERTA) -->
+        <div class="acf-field acf-field-select">
+            <div class="acf-label">
+                <label><?php esc_html_e('Unità d\'Offerta Destinatarie', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Seleziona una o più UDO. Lascia vuoto per inviare a TUTTI.', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <?php if (!empty($all_udos) && !is_wp_error($all_udos)): ?>
+                    <select
+                        id="notification_udos"
+                        name="notification_udos[]"
+                        class="select2-enable"
+                        multiple
+                        data-placeholder="<?php esc_attr_e('Lascia vuoto per TUTTE le UDO', 'meridiana-child'); ?>"
+                    >
+                        <?php foreach ($all_udos as $udo): ?>
+                            <option
+                                value="<?php echo esc_attr($udo->term_id); ?>"
+                                <?php selected(in_array($udo->term_id, $default_udos, true)); ?>
+                            >
+                                <?php echo esc_html($udo->name); ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                <?php else: ?>
+                    <p class="description"><?php esc_html_e('Nessuna UDO disponibile.', 'meridiana-child'); ?></p>
+                <?php endif; ?>
+            </div>
+        </div>
+
+        <!-- MANDA A TUTTI -->
+        <div class="acf-field acf-field-true-false">
+            <div class="acf-label">
+                <label><?php esc_html_e('Manda a TUTTI gli Utenti', 'meridiana-child'); ?></label>
+                <p class="description"><?php esc_html_e('Abilita questa opzione per ignorare i filtri di profilo/UDO e mandare a TUTTI gli utenti', 'meridiana-child'); ?></p>
+            </div>
+            <div class="acf-input">
+                <div class="checkbox-field">
+                    <input type="hidden" name="notification_send_to_all" value="0" />
+                    <label class="checkbox-inline">
+                        <input
+                            type="checkbox"
+                            id="notification_send_to_all"
+                            name="notification_send_to_all"
+                            value="1"
+                        />
+                        <span><?php esc_html_e('Sì, manda a TUTTI', 'meridiana-child'); ?></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <?php
+}
+
+/**
+ * Recupera gli ID degli utenti con determinati profili professionali
+ *
+ * @param array $profile_ids Array di term IDs dei profili
+ * @return array Array di user IDs
+ */
+function meridiana_get_users_by_profiles($profile_ids) {
+    if (empty($profile_ids) || !is_array($profile_ids)) {
+        return [];
+    }
+
+    $user_ids = [];
+
+    // Recupera gli utenti che hanno uno dei profili selezionati
+    $users = get_users([
+        'fields' => 'ID',
+        'number' => -1,
+    ]);
+
+    foreach ($users as $user_id) {
+        $user_profile = get_field('profilo_professionale', 'user_' . $user_id);
+
+        if ($user_profile) {
+            $profile_id = is_array($user_profile) ? $user_profile['term_id'] : $user_profile;
+
+            if (in_array($profile_id, $profile_ids)) {
+                $user_ids[] = $user_id;
+            }
+        }
+    }
+
+    return $user_ids;
+}
+
+/**
+ * Invia una notifica a OneSignal via REST API
+ *
+ * @param array $payload Dati della notifica
+ * @param string $rest_api_key OneSignal REST API Key
+ * @return bool Successo dell'invio
+ */
+function meridiana_send_onesignal_notification($payload, $rest_api_key) {
+    // Endpoint OneSignal
+    $url = 'https://onesignal.com/api/v1/notifications';
+
+    // Headers
+    $headers = [
+        'Content-Type' => 'application/json; charset=utf-8',
+        'Authorization' => 'Basic ' . $rest_api_key,
+    ];
+
+    // Argomenti della richiesta
+    $args = [
+        'method' => 'POST',
+        'headers' => $headers,
+        'body' => json_encode($payload),
+        'timeout' => 30,
+        'sslverify' => true,
+    ];
+
+    // Invia la richiesta
+    $response = wp_remote_post($url, $args);
+
+    if (is_wp_error($response)) {
+        error_log('OneSignal Error: ' . $response->get_error_message());
+        return false;
+    }
+
+    $http_code = wp_remote_retrieve_response_code($response);
+    $body = wp_remote_retrieve_body($response);
+
+    if ($http_code === 200) {
+        error_log('OneSignal Success: Notifica inviata con successo. Response: ' . $body);
+        return true;
+    } else {
+        error_log('OneSignal Error (HTTP ' . $http_code . '): ' . $body);
+        return false;
+    }
 }
 
 
