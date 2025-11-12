@@ -91,21 +91,41 @@ $nonce = wp_create_nonce('wp_rest');
             align-items: center;
         ">
             <h3 style="margin: 0; font-size: 16px; font-weight: 600;">Notifiche</h3>
-            <button
-                @click="markAllAsRead()"
-                x-show="unreadCount > 0"
-                style="
-                    background: none;
-                    border: none;
-                    color: #0066cc;
-                    cursor: pointer;
-                    font-size: 13px;
-                    text-decoration: underline;
-                    padding: 0;
-                "
-            >
-                Segna tutti come letti
-            </button>
+
+            <!-- Bottoni azioni -->
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <button
+                    @click="markAllAsRead()"
+                    x-show="unreadCount > 0"
+                    style="
+                        background: none;
+                        border: none;
+                        color: #0066cc;
+                        cursor: pointer;
+                        font-size: 13px;
+                        text-decoration: underline;
+                        padding: 0;
+                    "
+                >
+                    Segna tutti come letti
+                </button>
+                <button
+                    @click="deleteAllNotifications()"
+                    x-show="notifications.length > 0"
+                    style="
+                        background: none;
+                        border: none;
+                        color: #dc3545;
+                        cursor: pointer;
+                        font-size: 13px;
+                        text-decoration: underline;
+                        padding: 0;
+                    "
+                    title="Elimina tutte le notifiche"
+                >
+                    🗑️ Elimina tutto
+                </button>
+            </div>
         </div>
 
         <!-- Lista Notifiche -->
@@ -188,21 +208,40 @@ $nonce = wp_create_nonce('wp_rest');
                                             font-size: 11px;
                                             color: #999;
                                         " x-text="getTimeAgo(notification.created_at)"></span>
-                                        <button
-                                            @click.stop="markAsRead(notification.notification_id)"
-                                            x-show="!notification.is_read"
-                                            style="
-                                                background: none;
-                                                border: none;
-                                                color: #0066cc;
-                                                cursor: pointer;
-                                                font-size: 11px;
-                                                text-decoration: underline;
-                                                padding: 0;
-                                            "
-                                        >
-                                            Segna come letto
-                                        </button>
+
+                                        <!-- Azioni notifica -->
+                                        <div style="display: flex; gap: 8px; align-items: center;">
+                                            <button
+                                                @click.stop="markAsRead(notification.notification_id)"
+                                                x-show="!notification.is_read"
+                                                style="
+                                                    background: none;
+                                                    border: none;
+                                                    color: #0066cc;
+                                                    cursor: pointer;
+                                                    font-size: 11px;
+                                                    text-decoration: underline;
+                                                    padding: 0;
+                                                "
+                                            >
+                                                Segna come letto
+                                            </button>
+                                            <button
+                                                @click.stop="deleteNotification(notification.notification_id)"
+                                                style="
+                                                    background: none;
+                                                    border: none;
+                                                    color: #dc3545;
+                                                    cursor: pointer;
+                                                    font-size: 11px;
+                                                    padding: 0;
+                                                    line-height: 1;
+                                                "
+                                                title="Elimina notifica"
+                                            >
+                                                🗑️
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
                             </div>

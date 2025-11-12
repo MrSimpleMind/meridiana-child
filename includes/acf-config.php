@@ -114,25 +114,16 @@ add_filter('acf/settings/show_admin', 'meridiana_hide_acf_menu');
  * IMPORTANTE: Deve essere eseguito prima che ACF si inizializzi
  */
 if (function_exists('acf_add_options_page')) {
+    // Configurazione Notifiche Interne
+    // (Le notifiche push esterne sono gestite dal plugin PushNotifications.io)
     acf_add_options_page(array(
-        'page_title' => 'Configurazione OneSignal',
-        'menu_title' => 'Configurazione OneSignal',
-        'menu_slug' => 'configurazione-onesignal',
-        'capability' => 'manage_options',
-        'redirect' => false,
-        'position' => 90,
-        'icon_url' => 'dashicons-notifications',
-    ));
-
-    acf_add_options_page(array(
-        'page_title' => 'Trigger Notifiche',
-        'menu_title' => 'Trigger Notifiche',
+        'page_title' => 'Configurazione Notifiche',
+        'menu_title' => 'Notifiche Interne',
         'menu_slug' => 'configurazione-notifiche',
         'capability' => 'manage_options',
         'redirect' => false,
-        'position' => 91,
+        'position' => 90,
         'icon_url' => 'dashicons-bell',
-        'parent_slug' => 'configurazione-onesignal',
     ));
 }
 
