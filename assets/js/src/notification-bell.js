@@ -211,6 +211,99 @@ document.addEventListener('alpine:init', () => {
             }
         },
 
+        /**
+         * Elimina singola notifica
+         * Performance: Rimuove subito dall'array locale per UX veloce
+         */
+        async deleteNotification(notificationId) {
+            if (!confirm('Eliminare questa notifica?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch('/wp-json/meridiana/v1/notifications/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': this.nonce,
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        notification_ids: [notificationId],
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Rimuovi subito dall'array (UX veloce)
+                    this.notifications = this.notifications.filter(n => n.notification_id !== notificationId);
+                    this.updateUnreadCount();
+                    console.log('[NotificationBell] Notifica eliminata:', notificationId);
+                } else {
+                    throw new Error(data.message || 'Errore sconosciuto');
+                }
+            } catch (error) {
+                console.error('[NotificationBell] Errore delete:', error);
+                alert('Errore durante l\'eliminazione');
+            }
+        },
+
+        /**
+         * Elimina tutte le notifiche
+         * Performance: Batch delete con una sola richiesta
+         */
+        async deleteAllNotifications() {
+            if (this.notifications.length === 0) {
+                return;
+            }
+
+            if (!confirm(`Eliminare tutte le ${this.notifications.length} notifiche?`)) {
+                return;
+            }
+
+            const allIds = this.notifications.map(n => n.notification_id);
+            this.isLoading = true;
+
+            try {
+                const response = await fetch('/wp-json/meridiana/v1/notifications/delete', {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-WP-Nonce': this.nonce,
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        notification_ids: allIds,
+                    }),
+                });
+
+                if (!response.ok) {
+                    throw new Error('HTTP ' + response.status);
+                }
+
+                const data = await response.json();
+
+                if (data.success) {
+                    // Svuota array locale
+                    this.notifications = [];
+                    this.unreadCount = 0;
+                    console.log('[NotificationBell] Tutte le notifiche eliminate');
+                } else {
+                    throw new Error(data.message || 'Errore sconosciuto');
+                }
+            } catch (error) {
+                console.error('[NotificationBell] Errore delete all:', error);
+                alert('Errore durante l\'eliminazione');
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
         getTimeAgo(dateString) {
             if (!dateString) return 'n/a';
 

@@ -3051,58 +3051,8 @@ function meridiana_handle_document_notification($post_id, $post_type = 'protocol
 
     error_log('Notifica salvata con ID: ' . $notification_id);
 
-    // Ottieni le credenziali OneSignal
-    $app_id = get_field('meridiana_onesignal_app_id', 'option');
-    $rest_api_key = get_field('meridiana_onesignal_rest_api_key', 'option');
-
-    if (empty($app_id) || empty($rest_api_key)) {
-        // Anche se OneSignal non è configurato, la notifica è comunque salvata nel DB
-        error_log('OneSignal: Credenziali mancanti - Solo notifica locale salvata');
-        return;
-    }
-
-    // Prepara il payload per OneSignal
-    $onesignal_payload = [
-        'app_id' => $app_id,
-        'headings' => ['en' => $notification_title, 'it' => $notification_title],
-        'contents' => ['en' => $notification_message, 'it' => $notification_message],
-        'url' => get_permalink($post_id),
-        'big_picture' => has_post_thumbnail($post_id) ? get_the_post_thumbnail_url($post_id) : '',
-        'data' => [
-            'post_id' => $post_id,
-            'post_type' => $post_type,
-            'notification_id' => $notification_id,
-        ],
-    ];
-
-    // Gestisci la segmentazione
-    // FALLBACK: Se nessun profilo/UDO è selezionato E send_to_all = 0, manda comunque a TUTTI gli utenti
-    if ($send_to_all || (empty($selected_profiles) && empty($selected_udos))) {
-        // Manda a tutti gli iscritti
-        $onesignal_payload['included_segments'] = ['All'];
-        if (empty($selected_profiles) && empty($selected_udos) && !$send_to_all) {
-            error_log('OneSignal: FALLBACK - Nessun profilo/UDO selezionato, mandando a TUTTI gli utenti');
-        } else {
-            error_log('OneSignal: Mandando notifica a TUTTI gli utenti' . ($send_to_all ? ' (esplicitamente richiesto)' : ''));
-        }
-    } else {
-        // Recupera gli utenti con i filtri applicati
-        $user_ids = meridiana_get_users_by_segmentation($selected_profiles, $selected_udos);
-
-        if (!empty($user_ids)) {
-            // Usa external_user_ids per mandare a specifici utenti
-            $external_user_ids = array_map('strval', $user_ids);
-            $onesignal_payload['include_external_user_ids'] = $external_user_ids;
-            error_log('OneSignal: Mandando notifica a ' . count($user_ids) . ' utenti selezionati');
-        } else {
-            // Se nessun utente trovato con i filtri, fallback a manda a tutti
-            $onesignal_payload['included_segments'] = ['All'];
-            error_log('OneSignal: Nessun utente trovato con i filtri selezionati - FALLBACK: mandando a TUTTI');
-        }
-    }
-
-    // Invia la notifica a OneSignal
-    meridiana_send_onesignal_notification($onesignal_payload, $rest_api_key);
+    // Le notifiche esterne (push) sono gestite dal plugin PushNotifications.io
+    // Qui salviamo solo nel DB per la campanella interna
 }
 
 /**
@@ -3252,51 +3202,8 @@ function meridiana_get_users_by_profiles($profile_ids) {
     return $user_ids;
 }
 
-/**
- * Invia una notifica a OneSignal via REST API
- *
- * @param array $payload Dati della notifica
- * @param string $rest_api_key OneSignal REST API Key
- * @return bool Successo dell'invio
- */
-function meridiana_send_onesignal_notification($payload, $rest_api_key) {
-    // Endpoint OneSignal
-    $url = 'https://onesignal.com/api/v1/notifications';
-
-    // Headers
-    $headers = [
-        'Content-Type' => 'application/json; charset=utf-8',
-        'Authorization' => 'Basic ' . $rest_api_key,
-    ];
-
-    // Argomenti della richiesta
-    $args = [
-        'method' => 'POST',
-        'headers' => $headers,
-        'body' => json_encode($payload),
-        'timeout' => 30,
-        'sslverify' => true,
-    ];
-
-    // Invia la richiesta
-    $response = wp_remote_post($url, $args);
-
-    if (is_wp_error($response)) {
-        error_log('OneSignal Error: ' . $response->get_error_message());
-        return false;
-    }
-
-    $http_code = wp_remote_retrieve_response_code($response);
-    $body = wp_remote_retrieve_body($response);
-
-    if ($http_code === 200) {
-        error_log('OneSignal Success: Notifica inviata con successo. Response: ' . $body);
-        return true;
-    } else {
-        error_log('OneSignal Error (HTTP ' . $http_code . '): ' . $body);
-        return false;
-    }
-}
+// Funzione meridiana_send_onesignal_notification rimossa
+// Le notifiche push esterne sono gestite dal plugin PushNotifications.io
 
 
 

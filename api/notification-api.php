@@ -112,6 +112,23 @@ add_action('rest_api_init', function() {
         'callback' => 'meridiana_get_unread_notifications_count',
         'permission_callback' => 'meridiana_check_notification_permission',
     ]);
+
+    register_rest_route('meridiana/v1', '/notifications/delete', [
+        'methods' => 'DELETE',
+        'callback' => 'meridiana_delete_notifications',
+        'permission_callback' => 'meridiana_check_notification_permission',
+        'args' => [
+            'notification_ids' => [
+                'type' => 'array',
+                'items' => ['type' => 'integer'],
+                'description' => 'Array di notification IDs da eliminare',
+                'required' => true,
+                'validate_callback' => function($param) {
+                    return is_array($param) && !empty($param);
+                }
+            ]
+        ]
+    ]);
 });
 
 /**
@@ -331,5 +348,63 @@ function meridiana_get_unread_notifications_count(WP_REST_Request $request) {
     return rest_ensure_response([
         'success' => true,
         'unread_count' => intval($count ?: 0),
+    ]);
+}
+
+/**
+ * DELETE /wp-json/meridiana/v1/notifications/delete
+ * Elimina notifiche per l'utente corrente
+ *
+ * NOTA: Elimina solo il record recipient dell'utente, non la notifica principale
+ * (altri utenti continuano a vederla)
+ *
+ * Performance: Query singola con IN clause per eliminare multipli
+ *
+ * @param WP_REST_Request $request Request object
+ * @return WP_REST_Response|WP_Error Response o errore
+ */
+function meridiana_delete_notifications(WP_REST_Request $request) {
+    global $wpdb;
+
+    $user_id = get_current_user_id();
+    $notification_ids = $request->get_param('notification_ids');
+
+    if (!$user_id) {
+        return new WP_Error('not_logged_in', 'Non autorizzato', ['status' => 401]);
+    }
+
+    // Sanitizza e valida IDs
+    $notification_ids = array_map('absint', $notification_ids);
+    $notification_ids = array_filter($notification_ids); // Rimuovi 0
+
+    if (empty($notification_ids)) {
+        return new WP_Error('invalid_ids', 'IDs non validi', ['status' => 400]);
+    }
+
+    $table_recipients = $wpdb->prefix . 'meridiana_notification_recipients';
+
+    // PERFORMANCE: Query SINGOLA per eliminare tutti i recipients
+    $placeholders = implode(',', array_fill(0, count($notification_ids), '%d'));
+    $query = $wpdb->prepare(
+        "DELETE FROM {$table_recipients}
+         WHERE user_id = %d
+         AND notification_id IN ($placeholders)",
+        array_merge([$user_id], $notification_ids)
+    );
+
+    $deleted = $wpdb->query($query);
+
+    if ($deleted === false) {
+        error_log('[NotificationAPI] Delete error: ' . $wpdb->last_error);
+        return new WP_Error('delete_failed', 'Errore server', ['status' => 500]);
+    }
+
+    // Invalida cache utente
+    wp_cache_delete('meridiana_notif_' . $user_id . '_*', 'meridiana_notifications');
+
+    return rest_ensure_response([
+        'success' => true,
+        'message' => sprintf('Eliminate %d notifiche', $deleted),
+        'deleted_count' => intval($deleted),
     ]);
 }
