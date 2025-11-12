@@ -166,15 +166,16 @@ function meridiana_insert_internal_notification($args) {
 
     $notification_id = $wpdb->insert_id;
 
-    // 2. PERFORMANCE: Recupera solo IDs subscribers (più veloce che oggetti completi)
+    // 2. PERFORMANCE: Recupera TUTTI gli utenti (admin, gestore, subscriber)
+    // Le notifiche interne appaiono a tutti
     $user_ids = get_users([
-        'role' => 'subscriber',
+        'role__in' => ['administrator', 'gestore_piattaforma', 'subscriber'],
         'fields' => 'ID',
         'number' => -1,
     ]);
 
     if (empty($user_ids)) {
-        error_log('[Meridiana Notifications] Nessun subscriber trovato');
+        error_log('[Meridiana Notifications] Nessun utente trovato');
         return $notification_id;
     }
 
