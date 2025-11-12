@@ -93,6 +93,7 @@ function meridiana_create_notification_tables() {
         KEY idx_notification_id (notification_id),
         KEY idx_user_id (user_id),
         KEY idx_read_at (read_at),
+        UNIQUE KEY uk_notification_user (notification_id, user_id),
         FOREIGN KEY (notification_id) REFERENCES $notifications_table(id) ON DELETE CASCADE
     ) $charset_collate;";
 

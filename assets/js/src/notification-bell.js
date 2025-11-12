@@ -27,13 +27,15 @@ document.addEventListener('alpine:init', () => {
             // Le notifiche si aggiornano solo quando apri la campanella
         },
 
-        async loadNotifications() {
+        async loadNotifications(skipCache = false) {
             if (this.isLoading) return;
 
             this.isLoading = true;
 
             try {
-                const response = await fetch('/wp-json/meridiana/v1/notifications?limit=10', {
+                // Se skipCache = true, aggiunge un timestamp per bypassare il cache
+                const cacheParam = skipCache ? `&t=${Date.now()}` : '';
+                const response = await fetch(`/wp-json/meridiana/v1/notifications?limit=20${cacheParam}`, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -60,10 +62,8 @@ document.addEventListener('alpine:init', () => {
                         console.log(`[NotificationBell] Notifica ${index}:`, {
                             notification_id: notif.notification_id,
                             title: notif.title,
-                            title_type: typeof notif.title,
-                            created_at: notif.created_at,
-                            created_at_type: typeof notif.created_at,
                             is_read: notif.is_read,
+                            created_at: notif.created_at,
                         });
                     });
 
@@ -152,7 +152,13 @@ document.addEventListener('alpine:init', () => {
                 .filter(n => !n.is_read)
                 .map(n => n.notification_id);
 
-            if (unreadIds.length === 0) return;
+            if (unreadIds.length === 0) {
+                console.log('[NotificationBell] No unread notifications to mark');
+                return;
+            }
+
+            this.isLoading = true;
+            console.log('[NotificationBell] Marking as read:', unreadIds);
 
             try {
                 const response = await fetch('/wp-json/meridiana/v1/notifications/read', {
@@ -167,16 +173,41 @@ document.addEventListener('alpine:init', () => {
                     }),
                 });
 
-                if (response.ok) {
-                    // Aggiorna tutti come letti
-                    this.notifications.forEach(n => {
-                        n.is_read = true;
-                        n.read_at = new Date().toISOString();
+                console.log('[NotificationBell] Response status:', response.status, response.ok);
+
+                if (!response.ok) {
+                    console.error('[NotificationBell] Response not OK:', response.status, response.statusText);
+                    this.isLoading = false;
+                    return;
+                }
+
+                const data = await response.json();
+                console.log('[NotificationBell] Mark read response:', data);
+
+                if (data.success) {
+                    // Aggiorna solo le notifiche che erano non-lette
+                    unreadIds.forEach(id => {
+                        const notif = this.notifications.find(n => n.notification_id === id);
+                        if (notif) {
+                            notif.is_read = true;
+                            notif.read_at = new Date().toISOString();
+                        }
                     });
                     this.updateUnreadCount();
+                    console.log('[NotificationBell] Marked as read successfully. Unread count:', this.unreadCount);
+
+                    // Ricarica le notifiche FRESH dal server (bypassa il cache di 2 minuti)
+                    console.log('[NotificationBell] Reloading notifications to refresh UI...');
+                    setTimeout(() => {
+                        this.loadNotifications(true); // skipCache = true
+                    }, 500);
+                } else {
+                    console.error('[NotificationBell] API returned success: false', data);
                 }
             } catch (error) {
-                console.error('Errore marcatura notifiche:', error);
+                console.error('[NotificationBell] Errore marcatura notifiche:', error);
+            } finally {
+                this.isLoading = false;
             }
         },
 

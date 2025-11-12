@@ -578,13 +578,28 @@ document.addEventListener('alpine:init', () => {
                 formData.set('post_id', this.selectedPostId || 0);
                 formData.set('nonce', meridiana.nonce);
 
-                // DEBUG: Log what we're sending
+                // DEBUG: Log what we're sending - DETAILED NOTIFICATION FIELDS
+                const send_notification = formElement.querySelector('[name="send_notification"]');
+                const notification_profiles = formElement.querySelectorAll('[name="notification_profiles[]"]:checked');
+                const notification_udos = formElement.querySelectorAll('[name="notification_udos[]"]:checked');
+
                 console.log('[Gestore] Submitting form:', {
                     postType: this.selectedPostType,
                     formDataKeys: Array.from(formData.keys()),
+                    send_notification_value: send_notification ? send_notification.value : 'NOT FOUND',
+                    send_notification_checked: send_notification ? send_notification.checked : 'NOT FOUND',
+                    notification_profiles_count: notification_profiles.length,
+                    notification_profiles_values: Array.from(notification_profiles).map(el => ({ name: el.name, value: el.value, checked: el.checked })),
+                    notification_udos_count: notification_udos.length,
+                    notification_udos_values: Array.from(notification_udos).map(el => ({ name: el.name, value: el.value, checked: el.checked })),
                     nonce: meridiana.nonce,
                     ajaxurl: meridiana.ajaxurl
                 });
+
+                // WARNING: Se notification_profiles o notification_udos sono vuoti, log warning
+                if (send_notification && send_notification.checked && (notification_profiles.length === 0 || notification_udos.length === 0)) {
+                    console.warn('[Gestore] ATTENZIONE: "Invia Notifiche" è abilitato ma nessun profilo o UDO è selezionato!');
+                }
 
                 const response = await fetch(meridiana.ajaxurl, {
                     method: 'POST',
