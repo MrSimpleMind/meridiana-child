@@ -8,7 +8,7 @@
 // ====================================================================
 
 body.login {
-    background: linear-gradient(135deg, var(--color-primary) 0%, #8a0e1a 100%) !important;
+    background: #ffffff !important;
     min-height: 100vh;
     display: flex !important;
     align-items: center !important;
@@ -26,10 +26,10 @@ body.login {
 body.login #login {
     width: 100%;
     max-width: 420px;
-    background: white !important;
-    border-radius: var(--radius-xl) !important;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
-    padding: var(--space-10) !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: var(--space-8) !important;
     margin: 0 auto !important;
 }
 
@@ -283,11 +283,11 @@ body.login #backtoblog {
 html[data-wp-theme-mode="dark"],
 .dark-mode {
     body.login {
-        background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%) !important;
+        background: var(--color-bg-primary) !important;
     }
 
     body.login #login {
-        background: var(--color-bg-primary) !important;
+        background: transparent !important;
     }
 
     body.login h1 a::before {
