@@ -3,21 +3,16 @@
 // =============================================================================
 
 .bottom-nav {
-    display: flex;
+    display: none; // NASCOSTO COMPLETAMENTE - Usare sidebar collassabile invece
     position: fixed;
     bottom: 0;
     left: 0;
     right: 0;
     background-color: var(--color-sidebar-dark);
     border-top: 1px solid rgba(255, 255, 255, 0.1);
-    padding: 0; // Rimosso padding verticale (era var(--space-2))
+    padding: 0;
     z-index: var(--z-fixed);
     box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-
-    // Nascondi su desktop
-    @media (min-width: 768px) {
-        display: none;
-    }
 }
 
 .bottom-nav__item {
@@ -186,14 +181,14 @@
 
 .content-wrapper {
     min-height: 100vh;
-    padding-top: 0; // Nessun padding aggiuntivo - gestito dal body
-    padding-bottom: 80px; // Spazio per bottom nav mobile
+    padding-top: 0;
+    padding-bottom: 0;
+    padding-left: 70px; // Spazio per sidebar collassata su mobile
+    transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    @media (min-width: 768px) {
-        padding-top: 0; // Nessun padding aggiuntivo su desktop
-        padding-bottom: 0;
-        padding-left: 240px; // Spazio per sidebar desktop espansa
-        transition: padding-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    // Sidebar espansa su tablet/desktop
+    @media (min-width: 1024px) {
+        padding-left: 240px; // Spazio per sidebar espansa
     }
 }
 
@@ -210,38 +205,48 @@ body:has(.sidebar-nav--collapsed) .content-wrapper {
 // =============================================================================
 
 .sidebar-nav {
-    display: none; // Nascosto su mobile
+    display: flex; // SEMPRE VISIBILE - Collassabile su mobile
+    flex-direction: column;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    width: 70px; // Collassata di default su mobile
+    background-color: var(--color-sidebar-dark);
+    z-index: var(--z-fixed);
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    overflow-y: auto;
+    overflow-x: hidden;
+    transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-    @media (min-width: 768px) {
-        display: flex;
-        flex-direction: column;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
+    // Nasconde scrollbar ma mantiene funzionalità scroll
+    scrollbar-width: none; // Firefox
+    -ms-overflow-style: none; // IE/Edge
+
+    &::-webkit-scrollbar {
+        display: none; // Chrome/Safari/Opera
+    }
+
+    // Espansa su desktop (1024px+)
+    @media (min-width: 1024px) {
         width: 240px;
-        background-color: var(--color-sidebar-dark);
-        z-index: var(--z-fixed);
-        box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-        overflow-y: auto;
-        overflow-x: hidden;
-        transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
-        // Nasconde scrollbar ma mantiene funzionalità scroll
-        scrollbar-width: none; // Firefox
-        -ms-overflow-style: none; // IE/Edge
+        // Mostra testi e footer su desktop
+        .sidebar-nav__item span {
+            opacity: 1;
+            visibility: visible;
+            width: auto;
+        }
 
-        &::-webkit-scrollbar {
-            display: none; // Chrome/Safari/Opera
+        .sidebar-nav__footer {
+            display: flex;
         }
     }
 
-    // Stato collassato
+    // Stato collassato (sempre su mobile, opzionale su desktop)
     &.sidebar-nav--collapsed {
-        @media (min-width: 768px) {
-            width: 70px;
-            overflow-y: hidden; // Rimuove scrollbar
-        }
+        width: 70px;
+        overflow-y: hidden; // Rimuove scrollbar
 
         // Nascondi testi nel menu
         .sidebar-nav__item span {
@@ -271,9 +276,24 @@ body:has(.sidebar-nav--collapsed) .content-wrapper {
             }
         }
 
-        // Nascondi completamente footer (user + logout)
-        .sidebar-nav__footer {
-            display: none;
+        // Nascondi completamente footer (user + logout) su mobile
+        @media (max-width: 1023px) {
+            .sidebar-nav__footer {
+                display: none;
+            }
+        }
+
+        // Mostra footer come dots su desktop quando collassato
+        @media (min-width: 1024px) {
+            .sidebar-nav__footer {
+                padding: var(--space-2);
+                justify-content: center;
+            }
+
+            .sidebar-nav__user {
+                width: 40px;
+                height: 40px;
+            }
         }
 
         // Badge count nascosto (o visible come dot)

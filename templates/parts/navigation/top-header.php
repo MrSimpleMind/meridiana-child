@@ -5,8 +5,6 @@
  * Include: profilo utente, saluto, notifiche, dark mode toggle
  */
 
-$current_user = wp_get_current_user();
-$user_first_name = $current_user->first_name ? $current_user->first_name : $current_user->display_name;
 ?>
 
 <header class="top-header"
@@ -18,19 +16,6 @@ $user_first_name = $current_user->first_name ? $current_user->first_name : $curr
         if (darkMode) document.documentElement.classList.add('dark-mode');"
         role="banner">
     <div class="top-header__container">
-        <!-- User Info -->
-        <div class="top-header__user">
-            <div class="top-header__avatar"
-                 onclick="openUserProfileModal()"
-                 style="cursor: pointer;"
-                 role="button"
-                 tabindex="0"
-                 aria-label="Apri profilo utente">
-                <?php echo meridiana_display_user_avatar(get_current_user_id(), 'small'); ?>
-            </div>
-            <h1 class="top-header__greeting">Ciao <?php echo esc_html($user_first_name); ?></h1>
-        </div>
-
         <!-- Actions -->
         <div class="top-header__actions">
             <!-- Notifications Bell (Alpine.js Component) -->
