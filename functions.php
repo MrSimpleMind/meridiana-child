@@ -394,6 +394,29 @@ function meridiana_run_db_update_once() {
 }
 
 /**
+ * CREATE LOGIN PAGE
+ * Crea la pagina di login con il template moderno custom
+ */
+add_action('init', 'meridiana_create_login_page');
+function meridiana_create_login_page() {
+    $login_page = get_page_by_path('login');
+
+    if (!$login_page) {
+        $page_id = wp_insert_post(array(
+            'post_title'    => 'Login',
+            'post_name'     => 'login',
+            'post_type'     => 'page',
+            'post_status'   => 'publish',
+            'post_content'  => 'Pagina di login',
+        ));
+
+        if ($page_id) {
+            update_post_meta($page_id, '_wp_page_template', 'page-login.php');
+        }
+    }
+}
+
+/**
  * CUSTOMIZE WP-LOGIN.PHP STYLING
  * Personalizza la pagina /wp-login.php nativa di WordPress con CSS
  */
