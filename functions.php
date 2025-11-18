@@ -406,6 +406,15 @@ function meridiana_login_styles() {
         array(),
         MERIDIANA_CHILD_VERSION
     );
+
+    // Carica lo script per il toggle password
+    wp_enqueue_script(
+        'meridiana-password-toggle',
+        MERIDIANA_CHILD_URI . '/assets/js/src/password-toggle.js',
+        array(),
+        MERIDIANA_CHILD_VERSION,
+        true
+    );
 }
 
 /**
