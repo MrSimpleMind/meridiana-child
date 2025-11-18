@@ -15,180 +15,117 @@ body.login {
     min-height: 100vh !important;
     font-family: var(--font-family-base) !important;
     color: var(--color-text-primary) !important;
-    display: flex !important;
-    align-items: stretch !important;
-}
-
-// ====================================================================
-// LOGIN CONTAINER - SPLIT LAYOUT
-// ====================================================================
-
-body.login #login {
-    width: 100% !important;
-    max-width: 100% !important;
-    height: 100vh !important;
-    display: flex !important;
-    background: transparent !important;
-    border-radius: 0 !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    position: relative !important;
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    grid-template-rows: 100vh !important;
 
     @media (max-width: 992px) {
-        flex-direction: column !important;
-        height: auto !important;
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto !important;
     }
 }
 
 // ====================================================================
-// LEFT SECTION - BRANDING (Logo + Testo)
+// LEFT SECTION - LOGO & BRANDING
 // ====================================================================
 
-body.login #login::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 50%;
-    height: 100%;
-    background: #ffffff !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    z-index: 0;
-
-    @media (max-width: 992px) {
-        width: 100% !important;
-        height: 300px !important;
-    }
-}
-
-// Logo Meridiana a sinistra
 body.login h1 {
-    position: absolute !important;
-    left: 0 !important;
-    top: 50% !important;
-    transform: translateY(-50%) !important;
-    width: 50% !important;
-    height: auto !important;
+    grid-column: 1 !important;
+    grid-row: 1 !important;
+    background: #ffffff !important;
     margin: 0 !important;
     padding: 0 !important;
-    z-index: 1 !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
     gap: var(--space-6) !important;
+    z-index: 10 !important;
 
     @media (max-width: 992px) {
-        position: relative !important;
-        width: 100% !important;
-        top: auto !important;
-        transform: none !important;
-        padding: var(--space-6) !important;
+        grid-column: 1 !important;
+        grid-row: 1 !important;
+        padding: var(--space-8) !important;
+        min-height: 300px !important;
     }
 }
 
 body.login h1 a {
     background: none !important;
-    width: 180px !important;
+    width: 100% !important;
     height: auto !important;
     padding: 0 !important;
-    display: block !important;
-    color: var(--color-primary) !important;
-    font-size: var(--font-size-2xl) !important;
-    font-weight: 900 !important;
-    letter-spacing: 2px !important;
-    text-decoration: none !important;
-    text-align: center !important;
-
-    &::before {
-        content: 'MERIDIANA' !important;
-        display: block !important;
-        color: var(--color-primary) !important;
-    }
-
-    &::after {
-        content: 'PIATTAFORMA DI FORMAZIONE' !important;
-        display: block !important;
-        font-size: var(--font-size-sm) !important;
-        color: var(--color-primary) !important;
-        font-weight: 700 !important;
-        letter-spacing: 1px !important;
-        margin-top: var(--space-3) !important;
-    }
-}
-
-body.login h1 a span,
-body.login h1 a img {
-    display: none !important;
-}
-
-// ====================================================================
-// RIGHT SECTION - FORM
-// ====================================================================
-
-body.login #loginform,
-body.login #login form {
-    background: white !important;
-    box-shadow: none !important;
-    border: none !important;
-    padding: var(--space-10) !important;
     margin: 0 !important;
-    width: 50% !important;
-    max-width: none !important;
-    border-radius: 0 !important;
-    margin-left: auto !important;
     display: flex !important;
     flex-direction: column !important;
     align-items: center !important;
     justify-content: center !important;
-    z-index: 2 !important;
-    position: relative !important;
-
-    @media (max-width: 992px) {
-        width: 100% !important;
-        padding: var(--space-8) !important;
-    }
-}
-
-// Form container width
-body.login #loginform > div,
-body.login #login form > div {
-    width: 100% !important;
-    max-width: 380px !important;
-}
-
-body.login h1 {
-    text-align: center !important;
-    margin: 0 0 var(--space-4) 0 !important;
-    padding: 0 !important;
-    height: auto !important;
-}
-
-body.login h1 a {
-    background: none !important;
-    width: 100% !important;
-    height: auto !important;
-    padding: 0 !important;
-    display: block !important;
+    gap: var(--space-4) !important;
+    text-decoration: none !important;
     color: var(--color-primary) !important;
+}
+
+body.login h1 a::before {
+    content: 'MERIDIANA' !important;
     font-size: var(--font-size-3xl) !important;
     font-weight: 900 !important;
+    color: var(--color-primary) !important;
     letter-spacing: 2px !important;
-    text-decoration: none !important;
+}
 
-    &::before {
-        content: 'MERIDIANA' !important;
-        display: block !important;
-        color: var(--color-primary) !important;
+body.login h1 a::after {
+    content: 'PIATTAFORMA DI FORMAZIONE' !important;
+    font-size: var(--font-size-sm) !important;
+    font-weight: 700 !important;
+    color: var(--color-primary) !important;
+    letter-spacing: 1px !important;
+}
+
+body.login h1 a img,
+body.login h1 a span {
+    display: none !important;
+}
+
+// ====================================================================
+// RIGHT SECTION - LOGIN FORM
+// ====================================================================
+
+body.login #login {
+    grid-column: 2 !important;
+    grid-row: 1 !important;
+    width: 100% !important;
+    height: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+
+    @media (max-width: 992px) {
+        grid-column: 1 !important;
+        grid-row: 2 !important;
+        padding: var(--space-8) !important;
+        min-height: auto !important;
     }
 }
 
-body.login h1 a span,
-body.login h1 a img {
-    display: none !important;
+body.login #loginform,
+body.login #login form {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 380px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: var(--space-6) !important;
 }
 
 // ====================================================================
@@ -200,14 +137,14 @@ body.login .wp-core-ui input[type="email"],
 body.login .wp-core-ui input[type="password"] {
     padding: var(--space-3) var(--space-4) !important;
     font-size: var(--font-size-base) !important;
-    border: 2px solid var(--color-border-input) !important;
+    border: 1px solid #ddd !important;
     border-radius: var(--radius-md) !important;
-    background-color: #f5f5f5 !important;
+    background-color: #f9f9f9 !important;
     color: var(--color-text-primary) !important;
     transition: all 0.2s ease !important;
     box-sizing: border-box !important;
     font-family: var(--font-family-base) !important;
-    margin-bottom: var(--space-4) !important;
+    margin-bottom: 0 !important;
     width: 100% !important;
 
     &::placeholder {
@@ -231,7 +168,6 @@ body.login #rememberme {
     height: 18px !important;
     cursor: pointer !important;
     accent-color: var(--color-primary) !important;
-    border-radius: var(--radius-sm) !important;
     margin-right: var(--space-2) !important;
 }
 
@@ -240,7 +176,7 @@ body.login label[for="rememberme"] {
     align-items: center !important;
     font-size: var(--font-size-sm) !important;
     color: var(--color-text-secondary) !important;
-    margin-bottom: var(--space-4) !important;
+    margin: 0 !important;
     cursor: pointer !important;
 }
 
@@ -250,32 +186,30 @@ body.login label[for="rememberme"] {
 
 body.login .wp-core-ui .button-primary {
     padding: var(--space-3) var(--space-6) !important;
-    min-height: 48px !important;
+    min-height: 44px !important;
     font-size: var(--font-size-base) !important;
     font-weight: var(--font-weight-semibold) !important;
-    background-color: var(--color-primary) !important;
+    background-color: #0073aa !important;
     color: white !important;
     border: none !important;
-    border-radius: var(--radius-lg) !important;
+    border-radius: var(--radius-md) !important;
     cursor: pointer !important;
     transition: all 0.2s ease !important;
-    box-shadow: 0 4px 12px rgba(171, 17, 32, 0.3) !important;
     width: 100% !important;
     box-sizing: border-box !important;
+    margin-top: var(--space-2) !important;
 
     &:hover {
-        background-color: var(--color-primary-dark) !important;
-        box-shadow: 0 6px 16px rgba(171, 17, 32, 0.4) !important;
-        transform: translateY(-2px) !important;
+        background-color: #005a87 !important;
     }
 
     &:active {
-        transform: translateY(0) !important;
+        transform: translateY(1px) !important;
     }
 
     &:focus {
         outline: none !important;
-        box-shadow: 0 0 0 4px rgba(171, 17, 32, 0.2) !important;
+        box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.2) !important;
     }
 }
 
@@ -285,12 +219,12 @@ body.login .wp-core-ui .button-primary {
 
 body.login #login_error,
 body.login .message {
-    background-color: rgba(201, 20, 40, 0.1) !important;
-    border: 1px solid var(--color-error) !important;
+    background-color: #fbeaea !important;
+    border: 1px solid #ca1428 !important;
     border-radius: var(--radius-md) !important;
     padding: var(--space-4) !important;
     margin-bottom: var(--space-6) !important;
-    color: var(--color-error) !important;
+    color: #ca1428 !important;
     font-size: var(--font-size-sm) !important;
     box-sizing: border-box !important;
 }
@@ -304,23 +238,26 @@ body.login #backtoblog {
     text-align: center !important;
     margin-top: var(--space-6) !important;
     padding-top: var(--space-4) !important;
-    border-top: 1px solid var(--color-border) !important;
+    border-top: 1px solid #ddd !important;
+    grid-column: 2 !important;
+    width: 100% !important;
+    padding-right: var(--space-8) !important;
+    padding-left: var(--space-8) !important;
+
+    @media (max-width: 992px) {
+        grid-column: 1 !important;
+    }
 
     a {
-        color: var(--color-primary) !important;
+        color: #0073aa !important;
         text-decoration: none !important;
-        font-weight: var(--font-weight-medium) !important;
+        font-weight: 500 !important;
         font-size: var(--font-size-sm) !important;
         transition: all 0.2s ease !important;
 
         &:hover {
-            color: var(--color-primary-dark) !important;
+            color: #005a87 !important;
             text-decoration: underline !important;
-        }
-
-        &:focus {
-            outline: 2px solid var(--color-primary) !important;
-            outline-offset: 2px !important;
         }
     }
 }
@@ -333,17 +270,12 @@ body.login #backtoblog {
     body.login .wp-core-ui input[type="text"],
     body.login .wp-core-ui input[type="email"],
     body.login .wp-core-ui input[type="password"] {
-        font-size: 16px !important; // Prevent zoom on iOS
-    }
-
-    body.login .wp-core-ui .button-primary {
-        min-height: 52px !important;
         font-size: 16px !important;
     }
 
-    body.login #loginform,
-    body.login #login form {
-        border-radius: var(--radius-lg) !important;
+    body.login .wp-core-ui .button-primary {
+        min-height: 48px !important;
+        font-size: 16px !important;
     }
 }
 
@@ -356,8 +288,11 @@ body.login #backtoblog {
         background: var(--color-bg-primary) !important;
     }
 
-    body.login #loginform,
-    body.login #login form {
+    body.login h1 {
+        background: var(--color-bg-primary) !important;
+    }
+
+    body.login #login {
         background: var(--color-bg-primary) !important;
     }
 
@@ -365,31 +300,11 @@ body.login #backtoblog {
     body.login .wp-core-ui input[type="email"],
     body.login .wp-core-ui input[type="password"] {
         background-color: var(--color-bg-secondary) !important;
-        border-color: var(--color-border-input) !important;
+        border-color: var(--color-border) !important;
         color: var(--color-text-primary) !important;
 
         &:focus {
             background-color: var(--color-bg-primary) !important;
         }
-    }
-}
-
-// ====================================================================
-// ACCESSIBILITY
-// ====================================================================
-
-@media (prefers-reduced-motion: reduce) {
-    body.login .wp-core-ui .button-primary {
-        transition: none !important;
-
-        &:hover {
-            transform: none !important;
-        }
-    }
-
-    body.login .wp-core-ui input[type="text"],
-    body.login .wp-core-ui input[type="email"],
-    body.login .wp-core-ui input[type="password"] {
-        transition: none !important;
     }
 }
