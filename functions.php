@@ -394,6 +394,76 @@ function meridiana_run_db_update_once() {
 }
 
 /**
+ * CUSTOMIZE WP-LOGIN.PHP STYLING
+ * Personalizza la pagina /wp-login.php nativa di WordPress con CSS
+ */
+add_action('login_enqueue_scripts', 'meridiana_login_styles');
+function meridiana_login_styles() {
+    // Carica gli stili della login page
+    wp_enqueue_style(
+        'meridiana-login-custom',
+        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
+        array(),
+        MERIDIANA_CHILD_VERSION
+    );
+}
+
+/**
+ * AGGRESSIVE LOCAL OPTIMIZATION
+ * Ottimizzazione aggressiva per lo sviluppo locale
+ */
+if (defined('WP_ENVIRONMENT_TYPE') && WP_ENVIRONMENT_TYPE === 'local') {
+    // Disabilita PWA
+    add_action('wp_enqueue_scripts', function() {
+        wp_dequeue_script('superpwa-manifest');
+        wp_dequeue_script('superpwa-serviceworker');
+        wp_dequeue_script('superpwa-install');
+    }, 999);
+    remove_action('wp_head', array('SuperPWA', 'wp_head'));
+
+    // Disabilita OneSignal
+    add_action('wp_enqueue_scripts', function() {
+        wp_dequeue_script('onesignal-loader');
+    }, 999);
+
+    // Disabilita emoji
+    remove_action('wp_head', 'print_emoji_detection_script', 7);
+    remove_action('wp_print_styles', 'print_emoji_styles');
+    remove_action('wp_head', 'wp_resource_hints', 2);
+
+    // Disabilita XML-RPC
+    add_filter('xmlrpc_enabled', '__return_false');
+
+    // Disabilita REST API per non-admin
+    add_filter('rest_authentication_errors', function($result) {
+        if (!is_user_logged_in() && !current_user_can('manage_options')) {
+            return new WP_Error('rest_disabled', 'REST API disabled', array('status' => 403));
+        }
+        return $result;
+    });
+
+    // Disabilita revisions
+    if (!defined('WP_POST_REVISIONS')) {
+        define('WP_POST_REVISIONS', false);
+    }
+
+    // Disabilita heartbeat
+    add_action('init', function() {
+        wp_deregister_script('heartbeat');
+    });
+
+    // Mantieni gli stili base per la pagina login
+
+    // Disabilita Gravatar DNS prefetch
+    remove_action('wp_head', 'wp_resource_hints', 2);
+
+    // Disabilita WordPress update checks
+    remove_action('admin_init', '_maybe_update_core');
+    remove_action('admin_init', '_maybe_update_plugins');
+    remove_action('admin_init', '_maybe_update_themes');
+}
+
+/**
  * LEARNDASH INTEGRATION: Mark course as completed when final quiz is passed
  *
  * When user completes the final quiz (Quizzo) with a passing score,

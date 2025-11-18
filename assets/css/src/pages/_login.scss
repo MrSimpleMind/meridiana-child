@@ -1,385 +1,342 @@
 /**
- * Login Page Custom Styles
- * Design system aligned, mobile-first, minimalist
+ * Login Page Custom Styles - Meridiana
+ * Custom styling for native WordPress /wp-login.php
  *
- * Layout: Centered card on clean background
- * Typography: Subtle, readable, consistent with design system
- * Spacing: Unified 4px grid
- * Colors: Brand primary on button, minimal use of other colors
+ * Targets native WordPress login form elements
+ * Colors: Brand primary (red #ab1120) with Meridiana design system
+ * Responsive: Mobile-first approach
  */
 
 // ====================================================================
-// RESET LOGIN PAGE - Rimuovi stili WordPress di default
+// BODY - LOGIN PAGE
 // ====================================================================
 
 body.login {
-    background-color: var(--color-bg-tertiary) !important;
-    font-family: var(--font-family-base) !important;
-    font-size: var(--font-size-base) !important;
-    color: var(--color-text-primary) !important;
+    min-height: 100vh;
+    background: linear-gradient(135deg, var(--color-bg-tertiary) 0%, var(--color-bg-secondary) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-4);
+
+    @include md {
+        padding: var(--space-8);
+    }
 }
 
-.login {
-    // Reset login container default styles
-    background: transparent !important;
+// ====================================================================
+// LOGIN CONTAINER (Main wrapper)
+// ====================================================================
 
-    // ====================================================================
-    // LOGO SECTION
-    // ====================================================================
+#login {
+    width: 100%;
+    max-width: 400px;
 
-    h1 {
-        margin: 0 0 var(--space-8) 0 !important;
-        padding-top: var(--space-8) !important;
-        text-align: center;
+    @include md {
+        max-width: 440px;
+    }
+}
 
-        a {
-            display: inline-block !important;
-            background-image: url('#{$child-uri}/assets/images/logo.svg') !important;
-            background-size: contain !important;
-            background-repeat: no-repeat !important;
-            background-position: center !important;
+// ====================================================================
+// LOGO/TITLE SECTION
+// ====================================================================
 
-            // Mobile: Logo più piccolo
-            width: 240px !important;
-            height: 60px !important;
-            text-indent: -9999px !important;
-            transition: opacity 0.2s ease;
+.login h1 {
+    text-align: center;
+    margin-bottom: var(--space-6);
+    display: flex;
+    justify-content: center;
 
-            &:hover {
-                opacity: 0.8;
-            }
-
-            // Tablet+
-            @include md {
-                width: 280px !important;
-                height: 70px !important;
-            }
-        }
+    @include md {
+        margin-bottom: var(--space-8);
     }
 
-    // ====================================================================
-    // LOGIN FORM CARD
-    // ====================================================================
+    a {
+        color: var(--color-primary);
+        font-size: 28px;
+        font-weight: 900;
+        letter-spacing: 2px;
+        text-decoration: none;
+        transition: all 0.3s ease;
 
-    form#loginform,
-    form {
-        // Card base styles
-        background: var(--color-bg-primary) !important;
-        border: 1px solid var(--color-border-light) !important;
-        border-radius: var(--radius-lg) !important;
-        box-shadow: var(--shadow-sm) !important;
-
-        // Responsive padding: mobile 24px, tablet+ 32px
-        padding: var(--space-6) !important; // 24px
-        margin-bottom: var(--space-6) !important;
-
-        @include md {
-            padding: var(--space-8) !important; // 32px
-        }
-    }
-
-    // ====================================================================
-    // FORM INPUTS
-    // ====================================================================
-
-    #user_login,
-    #user_pass {
-        // Reset WordPress input styles
-        width: 100% !important;
-        padding: var(--space-3) var(--space-4) !important; // 12px 16px
-        margin-bottom: var(--space-4) !important;
-
-        // Typography
-        font-size: var(--font-size-base) !important;
-        font-family: var(--font-family-base) !important;
-        color: var(--color-text-primary) !important;
-
-        // Border & background
-        background-color: var(--color-bg-primary) !important;
-        border: 1px solid var(--color-border-input) !important;
-        border-radius: var(--radius-sm) !important;
-
-        // Transitions
-        transition: border-color 0.2s ease, box-shadow 0.2s ease;
-
-        // Placeholder styling
-        &::placeholder {
-            color: var(--color-text-muted);
-        }
-
-        // Focus state: brand color, subtle glow
+        &:hover,
         &:focus {
-            outline: none !important;
-            border-color: var(--color-primary) !important;
-            box-shadow: 0 0 0 2px rgba(171, 17, 32, 0.1) !important;
+            color: var(--color-primary-dark);
+            text-shadow: 0 2px 8px rgba(171, 17, 32, 0.2);
         }
     }
+}
 
-    // Labels per username e password
+// ====================================================================
+// LOGIN FORM
+// ====================================================================
+
+.login form {
+    background: var(--color-bg-primary);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-md);
+    padding: var(--space-8);
+    margin-top: var(--space-4);
+
+    @include md {
+        padding: var(--space-10);
+        margin-top: var(--space-6);
+    }
+}
+
+// ====================================================================
+// FORM GROUPS / LABELS
+// ====================================================================
+
+.login .user-login-wrap,
+.login .user-pass-wrap {
+    margin-bottom: var(--space-6);
+
     label {
         display: block;
-        margin-bottom: var(--space-2) !important; // 8px
-        font-size: var(--font-size-sm) !important;
-        font-weight: var(--font-weight-medium) !important;
-        color: var(--color-text-primary) !important;
+        font-size: var(--font-size-sm);
+        font-weight: var(--font-weight-semibold);
+        color: var(--color-text-primary);
+        margin-bottom: var(--space-2);
+        text-transform: none;
+        letter-spacing: normal;
+    }
+}
+
+// ====================================================================
+// INPUT FIELDS
+// ====================================================================
+
+#user_login,
+#user_pass {
+    width: 100%;
+    padding: var(--space-3) var(--space-4);
+    font-size: var(--font-size-base);
+    font-family: var(--font-family-base);
+    border: 1px solid var(--color-border-input);
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-primary);
+    color: var(--color-text-primary);
+    transition: all 0.2s ease;
+
+    &:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 3px rgba(171, 17, 32, 0.1);
+        background-color: var(--color-bg-primary);
     }
 
-    // Login form input wrapper (username/password row)
-    .user-pass-wrap {
-        margin-bottom: var(--space-4) !important;
+    &::placeholder {
+        color: var(--color-text-muted);
     }
+}
 
-    // ====================================================================
-    // REMEMBER ME CHECKBOX
-    // ====================================================================
+// ====================================================================
+// REMEMBER ME CHECKBOX
+// ====================================================================
 
-    #rememberme {
-        margin-right: var(--space-2) !important;
+.login .rememberme {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--space-6);
+    font-size: var(--font-size-sm);
+
+    input[type="checkbox"] {
+        margin-right: var(--space-2);
         cursor: pointer;
+        accent-color: var(--color-primary);
     }
 
-    .forgetmenot {
-        display: flex !important;
-        align-items: center;
-        margin-bottom: var(--space-6) !important;
-        font-size: var(--font-size-sm) !important;
+    label {
+        margin: 0;
+        cursor: pointer;
+        color: var(--color-text-secondary);
+    }
+}
 
-        label {
-            margin-bottom: 0 !important;
-            margin-left: var(--space-2) !important;
-            cursor: pointer;
+// ====================================================================
+// SUBMIT BUTTON
+// ====================================================================
+
+.login .button,
+.wp-core-ui .button-primary {
+    width: 100%;
+    padding: var(--space-3) var(--space-6) !important;
+    min-height: 44px;
+    font-size: var(--font-size-base) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    background-color: var(--color-primary) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: var(--radius-md) !important;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba(171, 17, 32, 0.2);
+
+    &:hover,
+    &:focus {
+        background-color: var(--color-primary-dark) !important;
+        box-shadow: 0 4px 12px rgba(171, 17, 32, 0.3);
+        transform: translateY(-2px);
+    }
+
+    &:active {
+        transform: translateY(0);
+    }
+
+    &:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+}
+
+// ====================================================================
+// LOGIN FOOTER LINKS
+// ====================================================================
+
+.login .login-footer {
+    margin-top: var(--space-8);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border);
+    text-align: center;
+    font-size: var(--font-size-sm);
+}
+
+.login a {
+    color: var(--color-primary);
+    text-decoration: none;
+    transition: all 0.2s ease;
+    font-weight: var(--font-weight-medium);
+
+    &:hover,
+    &:focus {
+        color: var(--color-primary-dark);
+        text-decoration: underline;
+    }
+}
+
+// ====================================================================
+// LOST PASSWORD / BACK TO HOME LINKS
+// ====================================================================
+
+.login .nav {
+    margin-top: var(--space-6);
+    text-align: center;
+
+    a {
+        font-size: var(--font-size-sm);
+        display: inline-block;
+
+        &:not(:last-child)::after {
+            content: " • ";
+            margin: 0 var(--space-2);
             color: var(--color-text-secondary);
         }
     }
+}
 
-    // ====================================================================
-    // LOGIN BUTTON
-    // ====================================================================
+// ====================================================================
+// ERROR MESSAGES
+// ====================================================================
+
+.login #login_error,
+.login .message {
+    margin-bottom: var(--space-4);
+    padding: var(--space-4);
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+    animation: slideIn 0.3s ease;
+
+    @keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+}
+
+#login_error {
+    background-color: rgba(201, 20, 40, 0.1);
+    border: 1px solid var(--color-error);
+    color: var(--color-error);
+}
+
+.login .message {
+    background-color: rgba(16, 185, 129, 0.1);
+    border: 1px solid var(--color-success);
+    color: var(--color-success);
+}
+
+// ====================================================================
+// DARK MODE SUPPORT
+// ====================================================================
+
+.dark-mode {
+    body.login {
+        background: linear-gradient(135deg, #0f0f0f 0%, #242424 100%);
+    }
+
+    .login form {
+        background: var(--color-bg-primary);
+        box-shadow: var(--shadow-md);
+    }
+
+    #user_login,
+    #user_pass {
+        background-color: var(--color-bg-secondary);
+        color: var(--color-text-primary);
+        border-color: var(--color-border-input);
+
+        &:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+        }
+    }
+
+    .login .rememberme label {
+        color: var(--color-text-secondary);
+    }
+}
+
+// ====================================================================
+// RESPONSIVE DESIGN
+// ====================================================================
+
+@media (max-width: 600px) {
+    body.login {
+        padding: var(--space-2);
+    }
+
+    .login form {
+        padding: var(--space-6);
+    }
+
+    .login h1 a {
+        font-size: 24px;
+    }
+
+    #user_login,
+    #user_pass {
+        padding: var(--space-2) var(--space-3);
+        font-size: 16px; /* Prevent zoom on iOS */
+    }
 
     .wp-core-ui .button-primary {
-        // Reset WordPress button styles
-        background-color: var(--color-primary) !important;
-        border: 1px solid var(--color-primary) !important;
-        color: white !important;
-        text-shadow: none !important;
-        box-shadow: none !important;
-
-        // Typography & spacing
-        width: 100% !important;
-        padding: var(--space-3) var(--space-6) !important; // 12px 24px
-        margin-top: var(--space-2) !important;
-
-        font-size: var(--font-size-base) !important;
-        font-family: var(--font-family-base) !important;
-        font-weight: var(--font-weight-medium) !important;
-
-        // Min-height per accessibilità (touch target 48px)
-        min-height: 44px;
-
-        // Border radius
-        border-radius: var(--radius-md) !important;
-
-        // Transitions
-        transition: all 0.2s ease;
-        cursor: pointer;
-
-        // Hover state: darker brand color
-        &:hover:not(:disabled) {
-            background-color: var(--color-primary-dark) !important;
-            border-color: var(--color-primary-dark) !important;
-        }
-
-        // Active/pressed state
-        &:active:not(:disabled) {
-            transform: scale(0.98);
-        }
-
-        // Focus/keyboard state
-        &:focus {
-            outline: none !important;
-            box-shadow: 0 0 0 3px rgba(171, 17, 32, 0.2) !important;
-        }
-
-        // Disabled state
-        &:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-    }
-
-    // ====================================================================
-    // LOST PASSWORD & RECOVERY LINKS
-    // ====================================================================
-
-    #nav {
-        // Link section below form
-        margin-top: var(--space-6) !important;
-        text-align: center;
-
-        a {
-            display: inline-block;
-            margin: var(--space-2) 0;
-            color: var(--color-primary);
-            text-decoration: none;
-            font-size: var(--font-size-sm);
-            transition: color 0.2s ease;
-
-            &:hover {
-                color: var(--color-primary-dark);
-                text-decoration: underline;
-            }
-        }
-    }
-
-    // Nascondi il link "Torna a [sito]" se presente
-    // (viene controllato via PHP filters comunque)
-    #nav a.backtoblog,
-    #backtoblog {
-        display: none !important;
-    }
-
-    // ====================================================================
-    // ERROR & SUCCESS MESSAGES
-    // ====================================================================
-
-    .message,
-    #login_error,
-    .login-message {
-        // Message container
-        margin-bottom: var(--space-6) !important;
-        padding: var(--space-4) var(--space-5) !important;
-
-        // Border left accent color
-        border-left: 4px solid var(--color-primary) !important;
-
-        // Typography
-        font-size: var(--font-size-sm) !important;
-        line-height: var(--line-height-normal) !important;
-        color: var(--color-text-primary) !important;
-
-        // Background
-        background-color: var(--color-primary-bg-light) !important;
-        border-radius: var(--radius-sm) !important;
-
-        // Reset WordPress defaults
-        border: none !important;
-        border-left: 4px solid var(--color-primary) !important;
-        box-shadow: none !important;
-    }
-
-    // Error messages (red)
-    #login_error {
-        border-left-color: var(--color-error) !important;
-        background-color: #fef2f2 !important;
-        color: var(--color-text-primary) !important;
-
-        // Links in error
-        a {
-            color: var(--color-error);
-            text-decoration: underline;
-
-            &:hover {
-                color: var(--color-primary-dark);
-            }
-        }
-    }
-
-    // ====================================================================
-    // LANGUAGE SWITCHER (se presente)
-    // ====================================================================
-
-    .language-switcher,
-    .login-language-switcher {
-        margin-top: var(--space-8) !important;
-        text-align: center;
-
-        button,
-        a {
-            font-size: var(--font-size-xs);
-            margin: 0 var(--space-2);
-        }
+        min-height: 48px !important;
+        font-size: 16px !important;
     }
 }
 
 // ====================================================================
-// PAGE LAYOUT (centered card container)
+// HIDE WORDPRESS DEFAULT ELEMENTS (if needed)
 // ====================================================================
 
-html.wp-toolbar body.login {
-    // Account for WordPress admin bar on logged pages
-
-    #login {
-        // Center form on screen
-        width: 100%;
-        max-width: 400px;
-        margin: var(--space-8) auto;
-        padding: 0 var(--space-4);
-
-        @include md {
-            margin-top: var(--space-12);
-            max-width: 420px;
-        }
-    }
-}
-
-// ====================================================================
-// FULL PAGE BACKGROUND
-// ====================================================================
-
-html.wp-toolbar body.login {
-    // Mobile: Full height, top padding for small screens
-    min-height: 100vh;
-    padding-top: var(--space-8);
-
-    @include md {
-        // Tablet+: Vertical center
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        min-height: 100vh;
-        padding: var(--space-4);
-    }
-}
-
-// ====================================================================
-// ACCESSIBILITY & PRINT STYLES
-// ====================================================================
-
-.login {
-    // Skip link (for screen readers)
-    .skip-link {
-        position: absolute;
-        top: -40px;
-        left: 0;
-        background: var(--color-primary);
-        color: white;
-        padding: var(--space-2) var(--space-3);
-        text-decoration: none;
-        z-index: 100;
-
-        &:focus {
-            top: 0;
-        }
-    }
-
-    // Focus visible per keyboard navigation
-    input:focus-visible,
-    button:focus-visible,
-    a:focus-visible {
-        outline: 2px solid var(--color-primary);
-        outline-offset: 2px;
-    }
-}
-
-// Print styles
-@media print {
-    .login {
-        h1 {
-            display: none;
-        }
-
-        #login {
-            max-width: none;
-        }
-    }
+.login .privacy-policy,
+.login-perm {
+    margin-top: var(--space-4);
+    font-size: var(--font-size-xs);
+    text-align: center;
 }
