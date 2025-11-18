@@ -100,28 +100,19 @@ add_action('wp_logout', 'meridiana_logout_redirect');
  * Mantiene i parametri GET come redirect_to
  */
 function meridiana_redirect_wp_login_to_custom_page() {
-    // Only on wp-login.php, not on other login-related pages
+    // Only on wp-login.php
     if (strpos($_SERVER['REQUEST_URI'], '/wp-login.php') === false) {
         return;
     }
 
-    // Don't redirect if already on the custom login page
-    if (strpos($_SERVER['REQUEST_URI'], '/login/') !== false) {
-        return;
-    }
-
-    // Build the redirect URL, maintaining all GET parameters
+    // Build the redirect URL with all query parameters
     $login_page_url = home_url('/login/');
 
-    // Add query string if present
     if (!empty($_SERVER['QUERY_STRING'])) {
-        $login_page_url = add_query_arg(array(), $login_page_url);
-        // Manually append query string to preserve parameters
         $login_page_url = home_url('/login/?' . $_SERVER['QUERY_STRING']);
     }
 
-    // Redirect with 302 (temporary) to avoid caching issues
-    wp_safe_remote_get($login_page_url);
+    // Redirect with 302
     wp_redirect($login_page_url, 302);
     exit;
 }
