@@ -555,5 +555,131 @@ function meridiana_mark_course_complete_on_quiz($quiz_id, $user_obj) {
     }
 }
 
+/**
+ * OFFLINE PAGE SETUP
+ *
+ * Auto-create the /offline/ page if it doesn't exist
+ */
+add_action('init', 'meridiana_create_offline_page', 99);
+function meridiana_create_offline_page() {
+    // Only create once
+    if (defined('MERIDIANA_OFFLINE_PAGE_CHECKED')) {
+        return;
+    }
+    define('MERIDIANA_OFFLINE_PAGE_CHECKED', true);
+
+    // Check if offline page already exists
+    $offline_page = get_page_by_path('offline');
+
+    if (!$offline_page) {
+        // Create the offline page
+        $page_id = wp_insert_post([
+            'post_title'    => 'Offline',
+            'post_name'     => 'offline',
+            'post_type'     => 'page',
+            'post_status'   => 'publish',
+            'post_content'  => 'Pagina offline - Connessione non disponibile',
+            'comment_status' => 'closed',
+            'ping_status'    => 'closed',
+        ]);
+
+        // Set the page template
+        if ($page_id) {
+            update_post_meta($page_id, '_wp_page_template', 'page-offline.php');
+            error_log('Offline page created with ID: ' . $page_id);
+        }
+    }
+}
+
+/**
+ * SERVICE WORKER ENDPOINT
+ *
+ * Create an endpoint to serve the service worker with proper headers
+ */
+add_action('init', 'meridiana_add_service_worker_endpoint');
+function meridiana_add_service_worker_endpoint() {
+    if (!isset($_GET['meridiana_sw'])) {
+        return;
+    }
+
+    // Get the service worker file
+    $sw_file = MERIDIANA_CHILD_DIR . '/assets/js/src/service-worker.js';
+
+    if (!file_exists($sw_file)) {
+        wp_die('Service Worker not found');
+    }
+
+    // Set proper headers for service worker
+    header('Content-Type: application/javascript; charset=utf-8');
+    header('Cache-Control: public, max-age=3600'); // Cache for 1 hour
+    header('Service-Worker-Allowed: /');
+
+    // Output the service worker file
+    readfile($sw_file);
+
+    die();
+}
+
+/**
+ * SERVICE WORKER REGISTRATION
+ *
+ * Register the service worker for offline detection and caching
+ */
+add_action('wp_footer', 'meridiana_register_service_worker');
+function meridiana_register_service_worker() {
+    // Only register on non-admin pages
+    if (is_admin()) {
+        return;
+    }
+
+    // Build service worker URL
+    $sw_url = home_url('/?meridiana_sw=1');
+
+    ?>
+    <script>
+    // Register Service Worker for offline detection
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+            navigator.serviceWorker.register('<?php echo esc_url($sw_url); ?>', {
+                scope: '<?php echo esc_url(home_url('/')); ?>'
+            }).then(function(registration) {
+                console.log('Service Worker registered successfully:', registration);
+            }).catch(function(error) {
+                console.log('Service Worker registration failed:', error);
+            });
+
+            // Listen for updates
+            let refreshing;
+            navigator.serviceWorker.addEventListener('controllerchange', function() {
+                if (refreshing) return;
+                refreshing = true;
+                window.location.reload();
+            });
+        });
+    }
+
+    // Detect online/offline state
+    window.addEventListener('offline', function() {
+        console.log('Connection lost');
+    });
+
+    window.addEventListener('online', function() {
+        console.log('Connection restored');
+    });
+    </script>
+    <?php
+}
+
+/**
+ * ENQUEUE SERVICE WORKER SCRIPT
+ *
+ * Enqueue the service worker JavaScript file
+ */
+add_action('wp_enqueue_scripts', 'meridiana_enqueue_service_worker');
+function meridiana_enqueue_service_worker() {
+    // Note: Service Worker is registered via footer script
+    // The file itself is served directly, not through wp_enqueue_scripts
+}
+
 
 
