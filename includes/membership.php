@@ -119,62 +119,6 @@ function meridiana_redirect_wp_login_to_custom_page() {
 add_action('login_init', 'meridiana_redirect_wp_login_to_custom_page', 1);
 
 /**
- * Enqueue login page styles (CSS compilato da SCSS)
- * Stili minimalisti, design system aligned, mobile-first
- */
-function meridiana_login_enqueue_styles() {
-    // Enqueue CSS della login page compilato da SCSS
-    $login_css_file = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
-    $login_css_version = file_exists($login_css_file) ? md5_file($login_css_file) : MERIDIANA_CHILD_VERSION;
-
-    wp_enqueue_style(
-        'meridiana-login-styles',
-        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
-        array(),
-        $login_css_version
-    );
-}
-add_action('login_enqueue_scripts', 'meridiana_login_enqueue_styles');
-
-/**
- * Cambia URL logo login page
- */
-function meridiana_login_logo_url() {
-    return home_url();
-}
-add_filter('login_headerurl', 'meridiana_login_logo_url');
-
-/**
- * Cambia title logo login page
- */
-function meridiana_login_logo_url_title() {
-    return 'Cooperativa La Meridiana - Piattaforma Formazione';
-}
-add_filter('login_headertext', 'meridiana_login_logo_url_title');
-
-/**
- * Nascondi link "Torna a [sito]" dalla login page
- * (non è necessario poiché il sito è completamente chiuso dietro login)
- */
-function meridiana_remove_backtoblog_link() {
-    // Ritorna una stringa vuota per nascondere il link
-    return '';
-}
-add_filter('login_siteurl', 'meridiana_remove_backtoblog_link');
-
-/**
- * Messaggio custom nella login page
- */
-function meridiana_login_message($message) {
-    // Solo se non ci sono già messaggi di errore
-    if (empty($message)) {
-        $message = '<p class="message">Accedi con le tue credenziali fornite dalla Cooperativa.</p>';
-    }
-    return $message;
-}
-add_filter('login_message', 'meridiana_login_message');
-
-/**
  * Helper: Verifica se l'utente ha accesso al contenuto
  * 
  * @param int $user_id User ID

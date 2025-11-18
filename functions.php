@@ -417,30 +417,6 @@ function meridiana_create_login_page() {
 }
 
 /**
- * CUSTOMIZE WP-LOGIN.PHP STYLING
- * Personalizza la pagina /wp-login.php nativa di WordPress con CSS
- */
-add_action('login_enqueue_scripts', 'meridiana_login_styles');
-function meridiana_login_styles() {
-    // Carica gli stili della login page
-    wp_enqueue_style(
-        'meridiana-login-custom',
-        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
-        array(),
-        MERIDIANA_CHILD_VERSION
-    );
-
-    // Carica lo script per il toggle password
-    wp_enqueue_script(
-        'meridiana-password-toggle',
-        MERIDIANA_CHILD_URI . '/assets/js/src/password-toggle.js',
-        array(),
-        MERIDIANA_CHILD_VERSION,
-        true
-    );
-}
-
-/**
  * AGGRESSIVE LOCAL OPTIMIZATION
  * Ottimizzazione aggressiva per lo sviluppo locale
  */
