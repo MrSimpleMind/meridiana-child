@@ -1,0 +1,357 @@
+/**
+ * Native WordPress Login Page Customization
+ * Meridiana Branding - /wp-login.php
+ */
+
+// ====================================================================
+// BODY & BACKGROUND
+// ====================================================================
+
+body.login {
+    background: linear-gradient(135deg, var(--color-primary) 0%, #8a0e1a 100%) !important;
+    min-height: 100vh;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    font-family: var(--font-family-base) !important;
+    color: var(--color-text-primary) !important;
+    margin: 0 !important;
+    padding: var(--space-4) !important;
+}
+
+// ====================================================================
+// LOGIN CONTAINER
+// ====================================================================
+
+body.login #login {
+    width: 100%;
+    max-width: 420px;
+    background: white !important;
+    border-radius: var(--radius-xl) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15) !important;
+    padding: var(--space-10) !important;
+    margin: 0 auto !important;
+}
+
+// Remove background image
+body.login #loginform,
+body.login #login form {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+    padding: 0 !important;
+}
+
+// ====================================================================
+// LOGIN LOGO/BRANDING
+// ====================================================================
+
+body.login h1 {
+    text-align: center !important;
+    margin: 0 0 var(--space-8) 0 !important;
+}
+
+body.login h1 a {
+    background-image: none !important;
+    width: 200px !important;
+    height: 50px !important;
+    background: none !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    margin: 0 auto !important;
+}
+
+body.login h1 a::before {
+    content: 'MERIDIANA' !important;
+    font-size: var(--font-size-3xl) !important;
+    font-weight: 900 !important;
+    color: var(--color-primary) !important;
+    letter-spacing: 2px !important;
+    display: block !important;
+}
+
+// Hide WordPress logo if present
+body.login h1 a span {
+    display: none !important;
+}
+
+// Add tagline under logo
+body.login h1::after {
+    content: 'Alleanza per la cura delle fragilità' !important;
+    display: block !important;
+    font-size: var(--font-size-sm) !important;
+    font-weight: var(--font-weight-medium) !important;
+    color: var(--color-text-secondary) !important;
+    margin-top: var(--space-2) !important;
+    text-align: center !important;
+    letter-spacing: 0.5px !important;
+}
+
+// ====================================================================
+// FORM INPUTS
+// ====================================================================
+
+body.login .wp-core-ui input[type="text"],
+body.login .wp-core-ui input[type="email"],
+body.login .wp-core-ui input[type="password"] {
+    padding: var(--space-3) var(--space-4) !important;
+    font-size: var(--font-size-base) !important;
+    border: 2px solid var(--color-border-input) !important;
+    border-radius: var(--radius-md) !important;
+    background-color: #f5f5f5 !important;
+    color: var(--color-text-primary) !important;
+    transition: all 0.2s ease !important;
+    box-sizing: border-box !important;
+    font-family: var(--font-family-base) !important;
+
+    &::placeholder {
+        color: var(--color-text-muted) !important;
+    }
+
+    &:focus {
+        outline: none !important;
+        border-color: var(--color-primary) !important;
+        background-color: white !important;
+        box-shadow: 0 0 0 3px rgba(171, 17, 32, 0.1) !important;
+    }
+}
+
+// Fix input widths
+body.login #user_login,
+body.login #user_pass {
+    width: 100% !important;
+    margin-bottom: var(--space-4) !important;
+}
+
+// Remove password strength meter if present
+body.login .wp-pwd {
+    display: none !important;
+}
+
+// ====================================================================
+// FORM LABELS
+// ====================================================================
+
+body.login label {
+    display: block !important;
+    font-size: var(--font-size-sm) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    color: var(--color-text-primary) !important;
+    margin-bottom: var(--space-2) !important;
+}
+
+body.login #loginform {
+    > div {
+        margin-bottom: var(--space-6) !important;
+    }
+}
+
+// ====================================================================
+// CHECKBOX (REMEMBER ME)
+// ====================================================================
+
+body.login #rememberme {
+    width: 18px !important;
+    height: 18px !important;
+    cursor: pointer !important;
+    accent-color: var(--color-primary) !important;
+    border-radius: var(--radius-sm) !important;
+    margin-right: var(--space-2) !important;
+}
+
+body.login label[for="rememberme"] {
+    display: flex !important;
+    align-items: center !important;
+    margin-bottom: var(--space-4) !important;
+    font-size: var(--font-size-sm) !important;
+    color: var(--color-text-secondary) !important;
+    cursor: pointer !important;
+}
+
+// ====================================================================
+// SUBMIT BUTTON
+// ====================================================================
+
+body.login .wp-core-ui .button-primary {
+    padding: var(--space-3) var(--space-6) !important;
+    min-height: 48px !important;
+    font-size: var(--font-size-base) !important;
+    font-weight: var(--font-weight-semibold) !important;
+    background-color: var(--color-primary) !important;
+    color: white !important;
+    border: none !important;
+    border-radius: var(--radius-lg) !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    box-shadow: 0 4px 12px rgba(171, 17, 32, 0.3) !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+
+    &:hover {
+        background-color: var(--color-primary-dark) !important;
+        box-shadow: 0 6px 16px rgba(171, 17, 32, 0.4) !important;
+        transform: translateY(-2px) !important;
+    }
+
+    &:active {
+        transform: translateY(0) !important;
+    }
+
+    &:focus {
+        outline: none !important;
+        box-shadow: 0 0 0 4px rgba(171, 17, 32, 0.2) !important;
+    }
+}
+
+// ====================================================================
+// FOOTER LINKS
+// ====================================================================
+
+body.login #login_error,
+body.login .message {
+    background-color: rgba(201, 20, 40, 0.1) !important;
+    border: 1px solid var(--color-error) !important;
+    color: var(--color-error) !important;
+    border-radius: var(--radius-md) !important;
+    padding: var(--space-4) !important;
+    margin-bottom: var(--space-6) !important;
+    font-size: var(--font-size-sm) !important;
+}
+
+body.login #nav,
+body.login #backtoblog {
+    text-align: center !important;
+    margin-top: var(--space-8) !important;
+    padding-top: var(--space-6) !important;
+    border-top: 1px solid var(--color-border) !important;
+
+    a {
+        color: var(--color-primary) !important;
+        text-decoration: none !important;
+        font-weight: var(--font-weight-medium) !important;
+        transition: all 0.2s ease !important;
+        font-size: var(--font-size-sm) !important;
+
+        &:hover {
+            color: var(--color-primary-dark) !important;
+            text-decoration: underline !important;
+        }
+
+        &:focus {
+            outline: 2px solid var(--color-primary) !important;
+            outline-offset: 2px !important;
+            border-radius: var(--radius-sm) !important;
+        }
+    }
+}
+
+// ====================================================================
+// RESPONSIVE DESIGN
+// ====================================================================
+
+@media (max-width: 768px) {
+    body.login {
+        padding: var(--space-2) !important;
+    }
+
+    body.login #login {
+        max-width: 100% !important;
+        padding: var(--space-6) !important;
+    }
+
+    body.login h1 a::before {
+        font-size: var(--font-size-2xl) !important;
+    }
+
+    body.login .wp-core-ui input[type="text"],
+    body.login .wp-core-ui input[type="email"],
+    body.login .wp-core-ui input[type="password"] {
+        font-size: 16px !important; // Prevent zoom on iOS
+    }
+
+    body.login .wp-core-ui .button-primary {
+        min-height: 52px !important;
+        font-size: 16px !important;
+    }
+}
+
+// ====================================================================
+// DARK MODE
+// ====================================================================
+
+html[data-wp-theme-mode="dark"],
+.dark-mode {
+    body.login {
+        background: linear-gradient(135deg, var(--color-bg-primary) 0%, var(--color-bg-secondary) 100%) !important;
+    }
+
+    body.login #login {
+        background: var(--color-bg-primary) !important;
+    }
+
+    body.login h1 a::before {
+        color: var(--color-primary) !important;
+    }
+
+    body.login .wp-core-ui input[type="text"],
+    body.login .wp-core-ui input[type="email"],
+    body.login .wp-core-ui input[type="password"] {
+        background-color: var(--color-bg-secondary) !important;
+        border-color: var(--color-border-input) !important;
+        color: var(--color-text-primary) !important;
+
+        &:focus {
+            background-color: var(--color-bg-primary) !important;
+        }
+    }
+
+    body.login #nav,
+    body.login #backtoblog {
+        border-top-color: var(--color-border) !important;
+    }
+}
+
+// ====================================================================
+// ACCESSIBILITY
+// ====================================================================
+
+@media (prefers-reduced-motion: reduce) {
+    body.login .wp-core-ui .button-primary {
+        transition: none !important;
+
+        &:hover {
+            transform: none !important;
+        }
+
+        &:active {
+            transform: none !important;
+        }
+    }
+
+    body.login .wp-core-ui input[type="text"],
+    body.login .wp-core-ui input[type="email"],
+    body.login .wp-core-ui input[type="password"] {
+        transition: none !important;
+    }
+}
+
+// ====================================================================
+// HIGH CONTRAST MODE
+// ====================================================================
+
+@media (prefers-contrast: more) {
+    body.login h1 a::before {
+        font-weight: 950 !important;
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    body.login #login {
+        box-shadow: 0 0 0 2px var(--color-primary) !important;
+    }
+
+    body.login .wp-core-ui .button-primary {
+        border-width: 2px !important;
+        font-weight: 900 !important;
+    }
+}

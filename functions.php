@@ -37,21 +37,41 @@ function meridiana_enqueue_styles() {
         array(),
         wp_get_theme('blocksy')->get('Version')
     );
-    
+
     // Force cache bust on CSS file
     $css_file_path = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
     $css_version = file_exists($css_file_path) ? filemtime($css_file_path) : MERIDIANA_CHILD_VERSION;
-    
+
     wp_enqueue_style(
         'meridiana-child-style',
         MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
         array('blocksy-parent-style'),
         $css_version
     );
-    
+
     // CSS comunicazioni integrato in main.css via SCSS
 }
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
+
+/**
+ * ENQUEUE STYLES ON LOGIN PAGE
+ *
+ * Add custom login page styles to /wp-login.php
+ */
+function meridiana_login_enqueue_styles() {
+    // Get CSS file path for version/cache busting
+    $css_file_path = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
+    $css_version = file_exists($css_file_path) ? filemtime($css_file_path) : MERIDIANA_CHILD_VERSION;
+
+    // Enqueue main CSS which includes login styles
+    wp_enqueue_style(
+        'meridiana-login-style',
+        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
+        array(),
+        $css_version
+    );
+}
+add_action('login_enqueue_scripts', 'meridiana_login_enqueue_styles');
 
 /**
  * Returns true when the current request should load the analytics assets.
