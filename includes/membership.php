@@ -114,6 +114,41 @@ function meridiana_login_enqueue_styles() {
 add_action('login_enqueue_scripts', 'meridiana_login_enqueue_styles');
 
 /**
+ * Cambia logo nella login page
+ * Mostra il logo Meridiana al posto del logo WordPress
+ */
+function meridiana_login_headerurl($url) {
+    return home_url();
+}
+add_filter('login_headerurl', 'meridiana_login_headerurl');
+
+/**
+ * Cambia il testo ALT del logo
+ */
+function meridiana_login_headertitle($title) {
+    return get_bloginfo('name');
+}
+add_filter('login_headertitle', 'meridiana_login_headertitle');
+
+/**
+ * Personalizza l'HTML del logo nella login page con CSS
+ * Inietta background-image che mostra il nostro logo
+ */
+function meridiana_login_logo_styles() {
+    $logo_url = MERIDIANA_CHILD_URI . '/assets/images/logo-meridiana.webp';
+    ?>
+    <style>
+        body.login h1 a img {
+            content: url('<?php echo esc_url($logo_url); ?>') !important;
+            width: 200px !important;
+            height: auto !important;
+        }
+    </style>
+    <?php
+}
+add_action('login_head', 'meridiana_login_logo_styles');
+
+/**
  * Helper: Verifica se l'utente ha accesso al contenuto
  * 
  * @param int $user_id User ID
