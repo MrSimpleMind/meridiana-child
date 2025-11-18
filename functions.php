@@ -54,26 +54,6 @@ function meridiana_enqueue_styles() {
 add_action('wp_enqueue_scripts', 'meridiana_enqueue_styles');
 
 /**
- * ENQUEUE STYLES ON LOGIN PAGE
- *
- * Add custom login page styles to /wp-login.php
- */
-function meridiana_login_enqueue_styles() {
-    // Get CSS file path for version/cache busting
-    $css_file_path = MERIDIANA_CHILD_DIR . '/assets/css/dist/main.css';
-    $css_version = file_exists($css_file_path) ? filemtime($css_file_path) : MERIDIANA_CHILD_VERSION;
-
-    // Enqueue main CSS which includes login styles
-    wp_enqueue_style(
-        'meridiana-login-style',
-        MERIDIANA_CHILD_URI . '/assets/css/dist/main.css',
-        array(),
-        $css_version
-    );
-}
-add_action('login_enqueue_scripts', 'meridiana_login_enqueue_styles');
-
-/**
  * Returns true when the current request should load the analytics assets.
  *
  * WordPress may load page-analitiche.php directly via its slug, so
